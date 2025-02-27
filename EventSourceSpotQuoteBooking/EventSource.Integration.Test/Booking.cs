@@ -5,9 +5,8 @@ public class Booking : AggregateRoot
     private readonly Address from;
     private readonly Address to;
 
-    public Booking(Address from, Address to)
+    public override void Apply(Event e)
     {
-        this.from = from;
-        this.to = to;
+        throw new NotImplementedException();
     }
 }

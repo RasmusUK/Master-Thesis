@@ -1,6 +1,7 @@
 namespace EventSource.Core.Interfaces;
 
-public interface IEventHandler<TEvent> where TEvent : Event
+public interface IEventHandler
 {
-    Task HandleAsync(TEvent e);
+    Task HandleAsync<TAggregateRoot>(Event e)
+        where TAggregateRoot : AggregateRoot;
 }

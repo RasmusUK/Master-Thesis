@@ -10,14 +10,21 @@ namespace EventSource.Persistence.Stores;
 public class AggregateRootStore : IAggregateRootStore
 {
     private readonly IMongoCollection<MongoDbAggregateRoot> collection;
-    
+
     public AggregateRootStore(IMongoDbService mongoDbService)
     {
         collection = mongoDbService.AggregateRootCollection;
     }
 
-    public Task SaveAggregateRootAsync(AggregateRoot aggregateRoot)
-        => collection.InsertOneAsync(new MongoDbAggregateRoot(aggregateRoot));
+    public Task SaveAggregateRootAsync(AggregateRoot aggregateRoot) =>
+        collection.InsertOneAsync(new MongoDbAggregateRoot(aggregateRoot));
+
+    public async Task<T?> GetAggregateRootAsync<T>(Guid id)
+        where T : AggregateRoot
+    {
+        var mongoAggregateRoot = await collection.Find(ar => ar.Id == id).FirstOrDefaultAsync();
+        return mongoAggregateRoot.Deserialize<T>();
+    }
 
     public async Task<IReadOnlyCollection<AggregateRoot>> GetAggregateRootsAsync()
     {
