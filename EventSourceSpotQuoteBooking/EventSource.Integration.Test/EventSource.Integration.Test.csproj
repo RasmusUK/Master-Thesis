@@ -5,6 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
+        <RootNamespace>EventSource.Core.Test</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>

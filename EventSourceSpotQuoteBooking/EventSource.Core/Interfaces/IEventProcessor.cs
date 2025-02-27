@@ -1,4 +1,4 @@
-namespace EventSource.Core;
+namespace EventSource.Core.Interfaces;
 
 public interface IEventProcessor
 {

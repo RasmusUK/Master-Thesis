@@ -1,20 +1,16 @@
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
-
 namespace EventSource.Core;
 
 public abstract class Event
 {
-    [BsonId]
-    [BsonRepresentation(BsonType.String)]
     public Guid Id { get; private set; } = Guid.NewGuid();
-    [BsonRepresentation(BsonType.String)]
-    public Guid AggregateId { get; protected set; }
     public DateTime Timestamp { get; private set; } = DateTime.UtcNow;
-    public string Type { get; protected set; }
+    public Guid AggregateId { get; private set; }
 
-    protected Event()
+    protected Event(Guid aggregateId)
     {
-        Type = GetType().ToString();
+        if (aggregateId == Guid.Empty)
+            throw new ArgumentException("AggregateId cannot be empty", nameof(aggregateId));
+
+        AggregateId = aggregateId;
     }
 }
