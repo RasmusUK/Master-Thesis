@@ -2,9 +2,9 @@ namespace EventSource.Core;
 
 public abstract class Event
 {
-    public Guid Id { get; private set; } = Guid.NewGuid();
-    public DateTime Timestamp { get; private set; } = DateTime.UtcNow;
-    public Guid AggregateId { get; private set; }
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+    public Guid AggregateId { get; init; }
 
     protected Event(Guid aggregateId)
     {

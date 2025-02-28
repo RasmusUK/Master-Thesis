@@ -1,50 +1,71 @@
-﻿using EventSource.Core.Interfaces;
+﻿using EventSource.Application;
+using EventSource.Core.Interfaces;
+using EventSource.Persistence;
+using EventSource.Persistence.Entities;
+using EventSource.Persistence.Stores;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
+using EventHandler = EventSource.Application.EventHandler;
 
 namespace EventSource.Core.Test;
 
-public class UnitTest1 //: IDisposable
+public class UnitTest1 : IDisposable
 {
-    // private readonly MongoEventStore mongoEventStore;
-    // private readonly IMongoCollection<Event> eventCollection;
-    // private readonly IEventProcessor eventProcessor;
-    //
-    // public UnitTest1()
-    // {
-    //     var mongoDbOptions = new MongoDbOptions
-    //     {
-    //         EventStore = new EventStoreOptions
-    //         {
-    //             ConnectionString = "mongodb://localhost:27017",
-    //             DatabaseName = "EventSource"
-    //         }
-    //     };
-    //
-    //     var mongoDbIOptions = Options.Create(mongoDbOptions);
-    //     var mongoDbService = new MongoDbService(mongoDbIOptions);
-    //
-    //     mongoEventStore = new MongoEventStore(mongoDbService);
-    //
-    //     eventCollection = mongoDbService.Database.GetCollection<Event>("events");
-    //     eventCollection.DeleteMany(Builders<Event>.Filter.Empty);
-    //
-    //     var projectionHandler = new ProjectionHandler(mongoDbService);
-    //     eventProcessor = new EventProcessor(mongoEventStore, projectionHandler);
-    // }
-    //
-    // [Fact]
-    // public async Task Test1()
-    // {
-    //     var testEvent = new TestEvent("from", "to", new Address("street", "city", "zip", "zipcode"));
-    //     await mongoEventStore.SaveEventAsync(testEvent);
-    //     var events = await mongoEventStore.GetEventsAsync();
-    //     Assert.Single(events);
-    //     Assert.Equal(testEvent.Id, events.First().Id);
-    // }
-    //
-    // public void Dispose()
-    // {
-    //     eventCollection.DeleteMany(Builders<Event>.Filter.Empty);
-    //}
+    private readonly IEventProcessor eventProcessor;
+    private readonly IAggregateRootStore aggregateRootStore;
+    private readonly IEventStore eventStore;
+    private readonly IMongoCollection<MongoDbEvent> eventCollection;
+    private readonly IMongoCollection<MongoDbAggregateRoot> aggregateRootCollection;
+
+    public UnitTest1()
+    {
+        var mongoDbOptions = new MongoDbOptions
+        {
+            EventStore = new EventStoreOptions
+            {
+                ConnectionString = "mongodb://localhost:27017",
+                DatabaseName = "EventSource",
+            },
+        };
+        var mongoDbIOptions = Options.Create(mongoDbOptions);
+        var mongoDbService = new MongoDbService(mongoDbIOptions);
+        eventCollection = mongoDbService.EventCollection;
+        aggregateRootCollection = mongoDbService.AggregateRootCollection;
+        eventStore = new MongoDbEventStore(mongoDbService);
+        aggregateRootStore = new AggregateRootStore(mongoDbService);
+        var eventHandler = new EventHandler(aggregateRootStore);
+        eventProcessor = new EventProcessor(eventStore, eventHandler);
+        Dispose();
+    }
+
+    [Fact]
+    public async Task Test1()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        var events = await eventStore.GetEventsAsync();
+        Assert.Single(events);
+        Assert.Equal(createBookingEvent.Id, events.First().Id);
+
+        var booking = await aggregateRootStore.GetAggregateRootAsync<Booking>(
+            createBookingEvent.AggregateId
+        );
+        Assert.NotNull(booking);
+        Assert.Equal(createBookingEvent.AggregateId, booking.Id);
+
+        Assert.NotNull(booking.GetFrom());
+        Assert.Equal("from", booking.GetFrom().Street);
+        Assert.Equal("Country", booking.GetFrom().GetCountry());
+    }
+
+    public void Dispose()
+    {
+        eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
+        aggregateRootCollection.DeleteMany(Builders<MongoDbAggregateRoot>.Filter.Empty);
+    }
 }

@@ -15,11 +15,7 @@ public class MongoDbEvent : MongoDbEntity<Event>
     public DateTime Timestamp { get; set; }
 
     public MongoDbEvent(Event domainEvent)
-        : base(
-            domainEvent.Id,
-            domainEvent.GetType().ToString(),
-            JsonConvert.SerializeObject(domainEvent)
-        )
+        : base(domainEvent.Id, domainEvent)
     {
         AggregateId = domainEvent.AggregateId;
         Timestamp = domainEvent.Timestamp;

@@ -6,10 +6,5 @@ public abstract class AggregateRoot
 
     protected AggregateRoot() { }
 
-    protected AggregateRoot(Guid id)
-    {
-        Id = id;
-    }
-
     public abstract void Apply(Event e);
 }

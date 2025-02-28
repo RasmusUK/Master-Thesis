@@ -1,6 +1,9 @@
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
+using EventSource.Core;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace EventSource.Persistence.Entities;
 
@@ -16,20 +19,24 @@ public abstract class MongoDbEntity<T>
     [BsonElement("objectData")]
     public string ObjectData { get; set; }
 
-    protected MongoDbEntity(Guid id, string objectType, string objectData)
+    protected MongoDbEntity(Guid id, object obj)
     {
         Id = id;
-        ObjectType = objectType;
-        ObjectData = objectData;
+        ObjectType = obj.GetType().ToString();
+        ObjectData = JsonSerializer.Serialize(obj, JsonSerializerOptionsConfiguration.Options);
     }
 
     public T ToDomain()
     {
-        var type = Type.GetType(ObjectType);
+        var type = Type.GetType(ObjectType) ?? GetTypeFromAssemblies(ObjectType);
         if (type is null)
-            throw new InvalidOperationException($"Could not find type {type}");
+            throw new InvalidOperationException($"Could not find type {ObjectType}");
 
-        var deserialized = JsonConvert.DeserializeObject(ObjectData, type);
+        var deserialized = JsonSerializer.Deserialize(
+            ObjectData,
+            type,
+            JsonSerializerOptionsConfiguration.Options
+        );
         if (deserialized is null)
             throw new InvalidOperationException($"Could not deserialize data for type {type}");
 
@@ -39,7 +46,11 @@ public abstract class MongoDbEntity<T>
     public TE Deserialize<TE>()
         where TE : T
     {
-        var deserialized = JsonConvert.DeserializeObject(ObjectData, typeof(TE));
+        var deserialized = JsonSerializer.Deserialize(
+            ObjectData,
+            typeof(TE),
+            JsonSerializerOptionsConfiguration.Options
+        );
         if (deserialized is null)
             throw new InvalidOperationException(
                 $"Could not deserialize data for type {typeof(TE)}"
@@ -47,4 +58,10 @@ public abstract class MongoDbEntity<T>
 
         return (TE)deserialized;
     }
+
+    private static Type? GetTypeFromAssemblies(string typeName) =>
+        AppDomain
+            .CurrentDomain.GetAssemblies()
+            .Select(a => a.GetType(typeName, false))
+            .FirstOrDefault(t => t is not null);
 }

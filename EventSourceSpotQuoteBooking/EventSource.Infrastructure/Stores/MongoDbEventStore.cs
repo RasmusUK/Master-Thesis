@@ -7,11 +7,11 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoEventStore : IEventStore
+public class MongoDbEventStore : IEventStore
 {
     private readonly IMongoCollection<MongoDbEvent> collection;
 
-    public MongoEventStore(IMongoDbService mongoDbService)
+    public MongoDbEventStore(IMongoDbService mongoDbService)
     {
         collection = mongoDbService.EventCollection;
     }

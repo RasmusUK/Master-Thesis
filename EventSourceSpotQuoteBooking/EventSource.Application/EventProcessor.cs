@@ -25,7 +25,16 @@ public class EventProcessor : IEventProcessor
         await eventStore.SaveEventAsync(e);
         var type = handlers[e.GetType()];
         var x = typeof(EventHandler).GetMethod(nameof(EventHandler.HandleAsync));
+        if (x is null)
+            throw new InvalidOperationException(
+                $"Could not find a method named {nameof(EventHandler.HandleAsync)}"
+            );
         var y = x.MakeGenericMethod(type);
-        y.Invoke(eventHandler, new object[] { e });
+        var task = y.Invoke(eventHandler, new object[] { e });
+        if (task is null)
+            throw new InvalidOperationException(
+                $"Could not invoke {nameof(EventHandler.HandleAsync)}"
+            );
+        await (Task)task;
     }
 }

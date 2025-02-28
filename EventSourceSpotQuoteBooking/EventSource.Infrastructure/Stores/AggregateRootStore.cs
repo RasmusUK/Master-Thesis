@@ -23,7 +23,7 @@ public class AggregateRootStore : IAggregateRootStore
         where T : AggregateRoot
     {
         var mongoAggregateRoot = await collection.Find(ar => ar.Id == id).FirstOrDefaultAsync();
-        return mongoAggregateRoot.Deserialize<T>();
+        return mongoAggregateRoot?.Deserialize<T>();
     }
 
     public async Task<IReadOnlyCollection<AggregateRoot>> GetAggregateRootsAsync()
