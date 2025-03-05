@@ -27,7 +27,4 @@ public class Booking : Entity
     }
 
     private void Apply(AddCustomerToBookingEvent e) => CustomerName = e.CustomerName;
-
-    private void Apply(object e) =>
-        throw new InvalidOperationException($"Could not apply event {e.GetType().Name}");
 }

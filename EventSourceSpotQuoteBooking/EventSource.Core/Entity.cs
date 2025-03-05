@@ -35,4 +35,6 @@ public abstract class Entity
 
         return (TEntity)entity;
     }
+
+    private void Apply(object e) { }
 }
