@@ -7,26 +7,26 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class AggregateRootStore : IAggregateRootStore
+public class EntityStore : IEntityStore
 {
-    private readonly IMongoCollection<MongoDbAggregateRoot> collection;
+    private readonly IMongoCollection<MongoDbEntity> collection;
 
-    public AggregateRootStore(IMongoDbService mongoDbService)
+    public EntityStore(IMongoDbService mongoDbService)
     {
         collection = mongoDbService.AggregateRootCollection;
     }
 
-    public Task SaveAggregateRootAsync(AggregateRoot aggregateRoot) =>
-        collection.InsertOneAsync(new MongoDbAggregateRoot(aggregateRoot));
+    public Task SaveEntityAsync(Entity entity) =>
+        collection.InsertOneAsync(new MongoDbEntity(entity));
 
-    public async Task<T?> GetAggregateRootAsync<T>(Guid id)
-        where T : AggregateRoot
+    public async Task<T?> GetEntityAsync<T>(Guid id)
+        where T : Entity
     {
         var mongoAggregateRoot = await collection.Find(ar => ar.Id == id).FirstOrDefaultAsync();
         return mongoAggregateRoot?.Deserialize<T>();
     }
 
-    public async Task<IReadOnlyCollection<AggregateRoot>> GetAggregateRootsAsync()
+    public async Task<IReadOnlyCollection<Entity>> GetEntitiesAsync()
     {
         var mongoAggregateRoots = await collection.Find(_ => true).ToListAsync();
         return mongoAggregateRoots.Select(ar => ar.ToDomain()).ToImmutableList();

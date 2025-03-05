@@ -12,10 +12,10 @@ namespace EventSource.Core.Test;
 public class UnitTest1 : IDisposable
 {
     private readonly IEventProcessor eventProcessor;
-    private readonly IAggregateRootStore aggregateRootStore;
+    private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
     private readonly IMongoCollection<MongoDbEvent> eventCollection;
-    private readonly IMongoCollection<MongoDbAggregateRoot> aggregateRootCollection;
+    private readonly IMongoCollection<MongoDbEntity> aggregateRootCollection;
 
     public UnitTest1()
     {
@@ -32,8 +32,8 @@ public class UnitTest1 : IDisposable
         eventCollection = mongoDbService.EventCollection;
         aggregateRootCollection = mongoDbService.AggregateRootCollection;
         eventStore = new MongoDbEventStore(mongoDbService);
-        aggregateRootStore = new AggregateRootStore(mongoDbService);
-        var eventHandler = new EventHandler(aggregateRootStore);
+        entityStore = new EntityStore(mongoDbService);
+        var eventHandler = new EventHandler(entityStore);
         eventProcessor = new EventProcessor(eventStore, eventHandler);
         Dispose();
     }
@@ -52,9 +52,7 @@ public class UnitTest1 : IDisposable
         Assert.Single(events);
         Assert.Equal(createBookingEvent.Id, events.First().Id);
 
-        var booking = await aggregateRootStore.GetAggregateRootAsync<Booking>(
-            createBookingEvent.AggregateId
-        );
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.AggregateId);
         Assert.NotNull(booking);
         Assert.Equal(createBookingEvent.AggregateId, booking.Id);
 
@@ -66,6 +64,6 @@ public class UnitTest1 : IDisposable
     public void Dispose()
     {
         eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
-        aggregateRootCollection.DeleteMany(Builders<MongoDbAggregateRoot>.Filter.Empty);
+        aggregateRootCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
     }
 }

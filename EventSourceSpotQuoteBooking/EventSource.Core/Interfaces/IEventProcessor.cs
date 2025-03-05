@@ -6,5 +6,5 @@ public interface IEventProcessor
 
     void RegisterHandler<TEvent, TAggregateRoot>()
         where TEvent : Event
-        where TAggregateRoot : AggregateRoot;
+        where TAggregateRoot : Entity;
 }

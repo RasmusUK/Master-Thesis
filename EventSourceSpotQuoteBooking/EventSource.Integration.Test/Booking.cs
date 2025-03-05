@@ -1,6 +1,6 @@
 namespace EventSource.Core.Test;
 
-public class Booking : AggregateRoot
+public class Booking : Entity
 {
     private Address from;
     private Address to;

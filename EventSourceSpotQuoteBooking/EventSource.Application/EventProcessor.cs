@@ -17,8 +17,7 @@ public class EventProcessor : IEventProcessor
 
     public void RegisterHandler<TEvent, TAggregateRoot>()
         where TEvent : Event
-        where TAggregateRoot : AggregateRoot =>
-        handlers.Add(typeof(TEvent), typeof(TAggregateRoot));
+        where TAggregateRoot : Entity => handlers.Add(typeof(TEvent), typeof(TAggregateRoot));
 
     public async Task ProcessAsync(Event e)
     {

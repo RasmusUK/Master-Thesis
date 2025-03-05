@@ -6,5 +6,5 @@ namespace EventSource.Persistence.Interfaces;
 public interface IMongoDbService
 {
     IMongoCollection<MongoDbEvent> EventCollection { get; }
-    IMongoCollection<MongoDbAggregateRoot> AggregateRootCollection { get; }
+    IMongoCollection<MongoDbEntity> AggregateRootCollection { get; }
 }

@@ -1,11 +1,10 @@
 using EventSource.Core;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace EventSource.Persistence.Entities;
 
-public class MongoDbEvent : MongoDbEntity<Event>
+public class MongoDbEvent : MongoDbBase<Event>
 {
     [BsonElement("aggregateId")]
     [BsonRepresentation(BsonType.String)]

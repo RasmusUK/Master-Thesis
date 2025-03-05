@@ -6,18 +6,18 @@ namespace EventSource.Application;
 
 public class EventHandler : IEventHandler
 {
-    private readonly IAggregateRootStore aggregateRootStore;
+    private readonly IEntityStore entityStore;
 
-    public EventHandler(IAggregateRootStore aggregateRootStore)
+    public EventHandler(IEntityStore entityStore)
     {
-        this.aggregateRootStore = aggregateRootStore;
+        this.entityStore = entityStore;
     }
 
     public async Task HandleAsync<TAggregateRoot>(Event e)
-        where TAggregateRoot : AggregateRoot
+        where TAggregateRoot : Entity
     {
         var aggregateRoot =
-            await aggregateRootStore.GetAggregateRootAsync<TAggregateRoot>(e.AggregateId)
+            await entityStore.GetEntityAsync<TAggregateRoot>(e.AggregateId)
             ?? CreateAggregateRoot<TAggregateRoot>(e.AggregateId);
 
         aggregateRoot.Apply(e);
@@ -25,8 +25,7 @@ public class EventHandler : IEventHandler
     }
 
     private Task AfterHandleAsync<TAggregateRoot>(TAggregateRoot aggregateRoot)
-        where TAggregateRoot : AggregateRoot =>
-        aggregateRootStore.SaveAggregateRootAsync(aggregateRoot);
+        where TAggregateRoot : Entity => entityStore.SaveEntityAsync(aggregateRoot);
 
     private TAggregateRoot CreateAggregateRoot<TAggregateRoot>(Guid id)
     {
@@ -37,14 +36,14 @@ public class EventHandler : IEventHandler
                 $"Could not create an instance of {typeof(TAggregateRoot).Name}"
             );
 
-        var idField = typeof(AggregateRoot).GetField(
-            $"<{nameof(AggregateRoot.Id)}>k__BackingField",
+        var idField = typeof(Entity).GetField(
+            $"<{nameof(Entity.Id)}>k__BackingField",
             BindingFlags.Instance | BindingFlags.NonPublic
         );
 
         if (idField is null)
             throw new InvalidOperationException(
-                $"Could not find a field named {nameof(AggregateRoot.Id)}"
+                $"Could not find a field named {nameof(Entity.Id)}"
             );
 
         idField.SetValue(aggregateRootObject, id);
