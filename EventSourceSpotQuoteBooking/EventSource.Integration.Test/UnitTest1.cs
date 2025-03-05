@@ -47,7 +47,7 @@ public class UnitTest1 : IDisposable
             new Address("from", "to", "zip", "zipcode"),
             new Address("street", "city", "zip", "zipcode")
         );
-        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
         await eventProcessor.ProcessAsync(createBookingEvent);
         var events = await eventStore.GetEventsAsync();
         Assert.Single(events);
@@ -77,8 +77,8 @@ public class UnitTest1 : IDisposable
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
 
-        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
-        eventProcessor.RegisterHandler<UpdateBookingAddressEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
         await eventProcessor.ProcessAsync(createBookingEvent);
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
@@ -107,8 +107,8 @@ public class UnitTest1 : IDisposable
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
 
-        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
-        eventProcessor.RegisterHandler<UpdateBookingAddressEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
         await eventProcessor.ProcessAsync(createBookingEvent);
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
@@ -136,8 +136,8 @@ public class UnitTest1 : IDisposable
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
 
-        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
-        eventProcessor.RegisterHandler<UpdateBookingAddressEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
         await eventProcessor.ProcessAsync(createBookingEvent);
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
@@ -148,6 +148,24 @@ public class UnitTest1 : IDisposable
         Assert.Equal(createBookingEvent.EntityId, booking.Id);
 
         Assert.Equal(updateBookingAddressEvent.From, booking.GetFrom());
+    }
+
+    [Fact]
+    public async Task Test5()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var createBookingEventHandler = new CreateBookingEventHandler(entityStore);
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventHandler(createBookingEventHandler);
+        await eventProcessor.ProcessAsync(createBookingEvent);
+
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
+        Assert.Equal("Booking", booking.Name);
     }
 
     public void Dispose()

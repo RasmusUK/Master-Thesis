@@ -3,11 +3,10 @@ using EventSource.Core.Interfaces;
 
 namespace EventSource.Application;
 
-public class EventHandler : IEventHandler
+public class EventHandler : IEventHandler<Event>
 {
-    public async Task<TEntity> HandleAsync<TEntity>(Event e)
-        where TEntity : Entity
+    public Task HandleAsync(Event e)
     {
-        throw new NotImplementedException();
+        throw new NotSupportedException("This handler should never be called");
     }
 }

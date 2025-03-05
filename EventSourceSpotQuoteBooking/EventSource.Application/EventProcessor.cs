@@ -7,7 +7,8 @@ public class EventProcessor : IEventProcessor
 {
     private readonly IEventStore eventStore;
     private readonly IEntityStore entityStore;
-    private readonly Dictionary<Type, Type> handlers = new();
+    private readonly Dictionary<Type, Type> eventTypeToEntityType = new();
+    private readonly Dictionary<Type, List<object>> eventTypeToHandler = new();
 
     public EventProcessor(IEventStore eventStore, IEntityStore entityStore)
     {
@@ -15,25 +16,59 @@ public class EventProcessor : IEventProcessor
         this.entityStore = entityStore;
     }
 
-    public void RegisterHandler<TEvent, TEntity>()
+    public void RegisterEventToEntity<TEvent, TEntity>()
         where TEvent : Event
-        where TEntity : Entity => handlers.Add(typeof(TEvent), typeof(TEntity));
+        where TEntity : Entity => eventTypeToEntityType.Add(typeof(TEvent), typeof(TEntity));
+
+    public void RegisterEventHandler<TEvent>(IEventHandler<TEvent> eventHandler)
+        where TEvent : Event
+    {
+        var eventType = typeof(TEvent);
+        if (!eventTypeToHandler.ContainsKey(eventType))
+            eventTypeToHandler.Add(eventType, new List<object>());
+
+        eventTypeToHandler[eventType].Add(eventHandler);
+    }
 
     public async Task<Entity> ProcessAsync(Event e)
     {
         await eventStore.SaveEventAsync(e);
-        var entity = await ProcessEntityAsync(e);
+        var entity = await ProcessEntityEventAsync(e);
         await entityStore.SaveEntityAsync(entity);
+        await ProcessEventHandlerAsync(e);
         return entity;
     }
 
-    public async Task<Entity> ProcessHistoryAsync(Event e) => await ProcessEntityAsync(e);
+    public async Task<Entity> ProcessHistoryAsync(Event e) => await ProcessEntityEventAsync(e);
 
-    private async Task<Entity> ProcessEntityAsync(Event e)
+    private async Task<Entity> ProcessEntityEventAsync(Event e)
     {
         var entity = await GetEntityAsync(e);
         ((dynamic)entity).Apply(e);
         return (Entity)entity;
+    }
+
+    private async Task ProcessEventHandlerAsync(Event e)
+    {
+        var eventType = e.GetType();
+        if (eventTypeToHandler.TryGetValue(eventType, out var handlers))
+        {
+            foreach (var handler in handlers)
+            {
+                var handleMethod = handler.GetType().GetMethod(nameof(EventHandler.HandleAsync));
+                if (handleMethod is null)
+                    throw new InvalidOperationException(
+                        $"Could not find a method named {nameof(EventHandler.HandleAsync)}"
+                    );
+                var task = handleMethod.Invoke(handler, new object[] { e });
+                if (task is null)
+                    throw new InvalidOperationException(
+                        $"Could not invoke {nameof(GetEntityAsync)}"
+                    );
+                var entityTask = (Task)task;
+                await entityTask;
+            }
+        }
     }
 
     public async Task<TEntity> GetEntityAsync<TEntity>(Guid id)
@@ -42,14 +77,19 @@ public class EventProcessor : IEventProcessor
 
     private async Task<object> GetEntityAsync(Event e)
     {
-        var type = handlers[e.GetType()];
-        var x = typeof(EventProcessor).GetMethod(nameof(GetEntityAsync));
-        if (x is null)
+        var hasEntityType = eventTypeToEntityType.TryGetValue(e.GetType(), out var type);
+        if (!hasEntityType || type is null)
+            throw new InvalidOperationException(
+                $"Could not find entity type for event {e.GetType()}"
+            );
+
+        var methodInfo = typeof(EventProcessor).GetMethod(nameof(GetEntityAsync));
+        if (methodInfo is null)
             throw new InvalidOperationException(
                 $"Could not find a method named {nameof(GetEntityAsync)}"
             );
-        var y = x.MakeGenericMethod(type);
-        var task = y.Invoke(this, new object[] { e.EntityId });
+        var genericMethod = methodInfo.MakeGenericMethod(type);
+        var task = genericMethod.Invoke(this, new object[] { e.EntityId });
         if (task is null)
             throw new InvalidOperationException($"Could not invoke {nameof(GetEntityAsync)}");
 

@@ -4,6 +4,7 @@ public class Booking : Entity
 {
     private Address from;
     private Address to;
+    public string? Name { get; set; }
 
     public override void Apply(Event e)
     {
