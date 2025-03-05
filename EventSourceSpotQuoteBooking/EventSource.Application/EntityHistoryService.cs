@@ -24,7 +24,7 @@ public class EntityHistoryService : IEntityHistoryService
     )
         where T : Entity
     {
-        var events = await eventStore.GetEventsAsync(id);
+        var events = await eventStore.GetEventsByEntityIdAsync(id);
         var entitiesWithEvents = new List<(T, Event)>();
 
         foreach (var e in events)
