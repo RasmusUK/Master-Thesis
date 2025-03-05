@@ -122,6 +122,35 @@ public class UnitTest1 : IDisposable
         Assert.Equal(updateBookingAddressEvent.From, bookingHistory.Last().GetFrom());
     }
 
+    [Fact]
+    public async Task Test4()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var updateBookingAddressEvent = new UpdateBookingAddressEvent(
+            createBookingEvent.AggregateId,
+            new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
+            new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
+        );
+
+        eventProcessor.RegisterHandler<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterHandler<UpdateBookingAddressEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        await eventProcessor.ProcessAsync(updateBookingAddressEvent);
+
+        await entityHistoryService.GetEntityHistoryAsync<Booking>(createBookingEvent.AggregateId);
+
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.AggregateId);
+        Assert.NotNull(booking);
+        Assert.Equal(createBookingEvent.AggregateId, booking.Id);
+
+        Assert.Equal(updateBookingAddressEvent.From, booking.GetFrom());
+    }
+
     public void Dispose()
     {
         eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
