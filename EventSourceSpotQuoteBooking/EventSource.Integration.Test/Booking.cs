@@ -18,6 +18,12 @@ public class Booking : Entity
         to = e.To;
     }
 
+    private void Apply(UpdateBookingAddressEvent e)
+    {
+        from = e.From;
+        to = e.To;
+    }
+
     private void Apply(object e) =>
         throw new InvalidOperationException($"Could not apply event {e.GetType().Name}");
 }

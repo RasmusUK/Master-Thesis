@@ -19,9 +19,16 @@ public class EventProcessor : IEventProcessor
         where TEvent : Event
         where TAggregateRoot : Entity => handlers.Add(typeof(TEvent), typeof(TAggregateRoot));
 
+    public Task ProcessReplayAsync(Event e) => ProcessEntityHandlerAsync(e);
+
     public async Task ProcessAsync(Event e)
     {
         await eventStore.SaveEventAsync(e);
+        await ProcessEntityHandlerAsync(e);
+    }
+
+    private async Task ProcessEntityHandlerAsync(Event e)
+    {
         var type = handlers[e.GetType()];
         var x = typeof(EventHandler).GetMethod(nameof(EventHandler.HandleAsync));
         if (x is null)

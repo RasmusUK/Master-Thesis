@@ -7,17 +7,22 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class EntityStore : IEntityStore
+public class MongoDbEntityStore : IEntityStore
 {
     private readonly IMongoCollection<MongoDbEntity> collection;
 
-    public EntityStore(IMongoDbService mongoDbService)
+    public MongoDbEntityStore(IMongoDbService mongoDbService)
     {
         collection = mongoDbService.AggregateRootCollection;
     }
 
-    public Task SaveEntityAsync(Entity entity) =>
-        collection.InsertOneAsync(new MongoDbEntity(entity));
+    public async Task SaveEntityAsync(Entity entity)
+    {
+        var filter = Builders<MongoDbEntity>.Filter.Eq(e => e.Id, entity.Id);
+        var updateOptions = new ReplaceOptions { IsUpsert = true };
+
+        await collection.ReplaceOneAsync(filter, new MongoDbEntity(entity), updateOptions);
+    }
 
     public async Task<T?> GetEntityAsync<T>(Guid id)
         where T : Entity

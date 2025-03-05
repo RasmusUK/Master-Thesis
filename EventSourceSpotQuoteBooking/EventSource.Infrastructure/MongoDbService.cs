@@ -23,6 +23,6 @@ public class MongoDbService : IMongoDbService
         var database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
 
         EventCollection = database.GetCollection<MongoDbEvent>("events");
-        AggregateRootCollection = database.GetCollection<MongoDbEntity>("aggregateRoots");
+        AggregateRootCollection = database.GetCollection<MongoDbEntity>("entities");
     }
 }
