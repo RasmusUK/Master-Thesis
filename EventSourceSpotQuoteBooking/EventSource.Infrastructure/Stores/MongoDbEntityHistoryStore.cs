@@ -36,4 +36,21 @@ public class MongoDbEntityHistoryStore : IEntityHistoryStore
 
         return entities;
     }
+
+    public async Task<IReadOnlyCollection<(T, Event)>> GetEntityHistoryWithEventsAsync<T>(Guid id)
+        where T : Entity
+    {
+        var events = await eventStore.GetEventsAsync(id);
+        var entities = new List<(T, Event)>();
+
+        foreach (var e in events)
+        {
+            await eventProcessor.ProcessReplayAsync(e);
+            var entity = await entityStore.GetEntityAsync<T>(id);
+            if (entity is not null)
+                entities.Add((entity, e));
+        }
+
+        return entities;
+    }
 }
