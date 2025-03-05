@@ -53,9 +53,9 @@ public class UnitTest1 : IDisposable
         Assert.Single(events);
         Assert.Equal(createBookingEvent.Id, events.First().Id);
 
-        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.AggregateId);
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
         Assert.NotNull(booking);
-        Assert.Equal(createBookingEvent.AggregateId, booking.Id);
+        Assert.Equal(createBookingEvent.EntityId, booking.Id);
 
         Assert.NotNull(booking.GetFrom());
         Assert.Equal("from", booking.GetFrom().Street);
@@ -72,7 +72,7 @@ public class UnitTest1 : IDisposable
         );
 
         var updateBookingAddressEvent = new UpdateBookingAddressEvent(
-            createBookingEvent.AggregateId,
+            createBookingEvent.EntityId,
             new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
@@ -85,9 +85,9 @@ public class UnitTest1 : IDisposable
         var events = await eventStore.GetEventsAsync();
         Assert.Equal(2, events.Count);
 
-        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.AggregateId);
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
         Assert.NotNull(booking);
-        Assert.Equal(createBookingEvent.AggregateId, booking.Id);
+        Assert.Equal(createBookingEvent.EntityId, booking.Id);
 
         Assert.Equal(updateBookingAddressEvent.From, booking.GetFrom());
     }
@@ -102,7 +102,7 @@ public class UnitTest1 : IDisposable
         );
 
         var updateBookingAddressEvent = new UpdateBookingAddressEvent(
-            createBookingEvent.AggregateId,
+            createBookingEvent.EntityId,
             new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
@@ -113,7 +113,7 @@ public class UnitTest1 : IDisposable
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
         var bookingHistory = await entityHistoryService.GetEntityHistoryAsync<Booking>(
-            createBookingEvent.AggregateId
+            createBookingEvent.EntityId
         );
 
         Assert.Equal(2, bookingHistory.Count);
@@ -131,7 +131,7 @@ public class UnitTest1 : IDisposable
         );
 
         var updateBookingAddressEvent = new UpdateBookingAddressEvent(
-            createBookingEvent.AggregateId,
+            createBookingEvent.EntityId,
             new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
             new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
         );
@@ -141,11 +141,11 @@ public class UnitTest1 : IDisposable
         await eventProcessor.ProcessAsync(createBookingEvent);
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
-        await entityHistoryService.GetEntityHistoryAsync<Booking>(createBookingEvent.AggregateId);
+        await entityHistoryService.GetEntityHistoryAsync<Booking>(createBookingEvent.EntityId);
 
-        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.AggregateId);
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
         Assert.NotNull(booking);
-        Assert.Equal(createBookingEvent.AggregateId, booking.Id);
+        Assert.Equal(createBookingEvent.EntityId, booking.Id);
 
         Assert.Equal(updateBookingAddressEvent.From, booking.GetFrom());
     }

@@ -49,7 +49,7 @@ public class EventProcessor : IEventProcessor
                 $"Could not find a method named {nameof(GetEntityAsync)}"
             );
         var y = x.MakeGenericMethod(type);
-        var task = y.Invoke(this, new object[] { e.AggregateId });
+        var task = y.Invoke(this, new object[] { e.EntityId });
         if (task is null)
             throw new InvalidOperationException($"Could not invoke {nameof(GetEntityAsync)}");
 

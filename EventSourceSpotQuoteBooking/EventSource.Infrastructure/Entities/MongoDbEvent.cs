@@ -16,7 +16,7 @@ public class MongoDbEvent : MongoDbBase<Event>
     public MongoDbEvent(Event domainEvent)
         : base(domainEvent.Id, domainEvent)
     {
-        EventId = domainEvent.AggregateId;
+        EventId = domainEvent.EntityId;
         Timestamp = domainEvent.Timestamp;
     }
 }

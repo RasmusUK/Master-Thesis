@@ -4,13 +4,13 @@ public abstract class Event
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-    public Guid AggregateId { get; init; }
+    public Guid EntityId { get; init; }
 
-    protected Event(Guid aggregateId)
+    protected Event(Guid entityId)
     {
-        if (aggregateId == Guid.Empty)
-            throw new ArgumentException("AggregateId cannot be empty", nameof(aggregateId));
+        if (entityId == Guid.Empty)
+            throw new ArgumentException($"Entity id cannot be empty", nameof(entityId));
 
-        AggregateId = aggregateId;
+        EntityId = entityId;
     }
 }

@@ -11,10 +11,14 @@ public abstract class Entity
     public abstract void Apply(Event e);
 
     public static TEntity Create<TEntity>(Guid id)
+        where TEntity : Entity
     {
-        var aggregateRootObject = Activator.CreateInstance(typeof(TEntity));
+        if (id == Guid.Empty)
+            throw new ArgumentException("Id cannot be empty", nameof(id));
 
-        if (aggregateRootObject is null)
+        var entity = Activator.CreateInstance(typeof(TEntity));
+
+        if (entity is null)
             throw new InvalidOperationException(
                 $"Could not create an instance of {typeof(TEntity).Name}"
             );
@@ -27,8 +31,8 @@ public abstract class Entity
         if (idField is null)
             throw new InvalidOperationException($"Could not find a field named {nameof(Id)}");
 
-        idField.SetValue(aggregateRootObject, id);
+        idField.SetValue(entity, id);
 
-        return (TEntity)aggregateRootObject;
+        return (TEntity)entity;
     }
 }

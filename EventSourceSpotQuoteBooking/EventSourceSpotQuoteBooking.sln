@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Infrastructure"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test", "Test", "{F4B7197B-F0AC-4520-9435-C8D6E05B8355}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Core.Unit.Test", "EventSource.Core.Unit.Test\EventSource.Core.Unit.Test.csproj", "{63438195-E743-4BAC-83B0-F924F84D52C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -32,8 +34,13 @@ Global
 		{484E8FDB-4966-4057-8ADA-664107FF722E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{484E8FDB-4966-4057-8ADA-664107FF722E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{484E8FDB-4966-4057-8ADA-664107FF722E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{63438195-E743-4BAC-83B0-F924F84D52C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{63438195-E743-4BAC-83B0-F924F84D52C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{63438195-E743-4BAC-83B0-F924F84D52C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{63438195-E743-4BAC-83B0-F924F84D52C8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9EDEBD53-0A31-47C9-AB94-3F7FA029F777} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
+		{63438195-E743-4BAC-83B0-F924F84D52C8} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 	EndGlobalSection
 EndGlobal
