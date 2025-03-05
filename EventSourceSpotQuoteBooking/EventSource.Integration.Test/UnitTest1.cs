@@ -1,4 +1,5 @@
 ﻿using EventSource.Application;
+using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence;
 using EventSource.Persistence.Entities;
@@ -14,7 +15,7 @@ public class UnitTest1 : IDisposable
     private readonly IEventProcessor eventProcessor;
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
-    private readonly IEntityHistoryStore entityHistoryStore;
+    private readonly IEntityHistoryService entityHistoryService;
     private readonly IMongoCollection<MongoDbEvent> eventCollection;
     private readonly IMongoCollection<MongoDbEntity> aggregateRootCollection;
 
@@ -34,9 +35,8 @@ public class UnitTest1 : IDisposable
         aggregateRootCollection = mongoDbService.AggregateRootCollection;
         eventStore = new MongoDbEventStore(mongoDbService);
         entityStore = new MongoDbEntityStore(mongoDbService);
-        var eventHandler = new EventHandler(entityStore);
-        eventProcessor = new EventProcessor(eventStore, eventHandler);
-        entityHistoryStore = new MongoDbEntityHistoryStore(eventStore, entityStore, eventProcessor);
+        eventProcessor = new EventProcessor(eventStore, entityStore);
+        entityHistoryService = new EntityHistoryService(eventStore, eventProcessor);
         Dispose();
     }
 
@@ -113,7 +113,7 @@ public class UnitTest1 : IDisposable
         await eventProcessor.ProcessAsync(createBookingEvent);
         await eventProcessor.ProcessAsync(updateBookingAddressEvent);
 
-        var bookingHistory = await entityHistoryStore.GetEntityHistoryAsync<Booking>(
+        var bookingHistory = await entityHistoryService.GetEntityHistoryAsync<Booking>(
             createBookingEvent.AggregateId
         );
 

@@ -2,10 +2,9 @@ namespace EventSource.Core.Interfaces;
 
 public interface IEventProcessor
 {
-    Task ProcessAsync(Event e);
-    Task ProcessReplayAsync(Event e);
-
-    void RegisterHandler<TEvent, TAggregateRoot>()
+    Task<Entity> ProcessAsync(Event e);
+    Task<Entity> ProcessHistoryAsync(Event e);
+    void RegisterHandler<TEvent, TEntity>()
         where TEvent : Event
-        where TAggregateRoot : Entity;
+        where TEntity : Entity;
 }

@@ -8,7 +8,7 @@ public class MongoDbEvent : MongoDbBase<Event>
 {
     [BsonElement("aggregateId")]
     [BsonRepresentation(BsonType.String)]
-    public Guid AggregateId { get; set; }
+    public Guid? AggregateId { get; set; }
 
     [BsonElement("timestamp")]
     public DateTime Timestamp { get; set; }
