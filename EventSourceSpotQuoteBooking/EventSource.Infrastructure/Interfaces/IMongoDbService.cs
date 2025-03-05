@@ -7,4 +7,5 @@ public interface IMongoDbService
 {
     IMongoCollection<MongoDbEvent> EventCollection { get; }
     IMongoCollection<MongoDbEntity> EntityCollection { get; }
+    IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
 }

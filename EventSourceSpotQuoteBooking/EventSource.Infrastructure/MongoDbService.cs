@@ -9,6 +9,7 @@ public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
     public IMongoCollection<MongoDbEntity> EntityCollection { get; }
+    public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
 
     public MongoDbService(IOptions<MongoDbOptions> mongoDbOptions)
     {
@@ -24,5 +25,6 @@ public class MongoDbService : IMongoDbService
 
         EventCollection = database.GetCollection<MongoDbEvent>("events");
         EntityCollection = database.GetCollection<MongoDbEntity>("entities");
+        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>("personalInfos");
     }
 }

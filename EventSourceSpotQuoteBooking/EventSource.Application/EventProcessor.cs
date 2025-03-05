@@ -39,7 +39,20 @@ public class EventProcessor : IEventProcessor
         return entity;
     }
 
-    public async Task<Entity> ProcessHistoryAsync(Event e) => await ProcessEntityEventAsync(e);
+    public async Task<Entity> ProcessReplayAsync(Event e)
+    {
+        var entity = await ProcessEntityEventAsync(e);
+        await entityStore.SaveEntityAsync(entity);
+        await ProcessEventHandlerAsync(e);
+        return entity;
+    }
+
+    public async Task<Entity> ProcessHistoryAsync(Event e)
+    {
+        var entity = await ProcessEntityEventAsync(e);
+        await ProcessEventHandlerAsync(e);
+        return entity;
+    }
 
     private async Task<Entity> ProcessEntityEventAsync(Event e)
     {

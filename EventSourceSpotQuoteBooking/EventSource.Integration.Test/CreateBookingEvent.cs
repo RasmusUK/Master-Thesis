@@ -1,6 +1,6 @@
 namespace EventSource.Core.Test;
 
-public class CreateBookingEvent : Event
+public record CreateBookingEvent : Event
 {
     public Address From { get; init; }
     public Address To { get; init; }

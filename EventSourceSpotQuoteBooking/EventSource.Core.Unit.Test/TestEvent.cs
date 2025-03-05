@@ -1,6 +1,6 @@
 namespace EventSource.Core.Unit.Test;
 
-public class TestEvent : Event
+public record TestEvent : Event
 {
     public TestEvent(Guid entityId)
         : base(entityId) { }

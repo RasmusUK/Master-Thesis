@@ -3,6 +3,7 @@ namespace EventSource.Core.Interfaces;
 public interface IEventProcessor
 {
     Task<Entity> ProcessAsync(Event e);
+    Task<Entity> ProcessReplayAsync(Event e);
     Task<Entity> ProcessHistoryAsync(Event e);
     void RegisterEventToEntity<TEvent, TEntity>()
         where TEvent : Event

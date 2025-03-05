@@ -17,6 +17,8 @@ public class UnitTest1 : IDisposable
     private readonly IEntityHistoryService entityHistoryService;
     private readonly IMongoCollection<MongoDbEvent> eventCollection;
     private readonly IMongoCollection<MongoDbEntity> entityCollection;
+    private readonly IMongoCollection<MongoDbPersonalData> personalDataCollection;
+    private readonly IReplayService replayService;
 
     public UnitTest1()
     {
@@ -30,12 +32,16 @@ public class UnitTest1 : IDisposable
         };
         var mongoDbIOptions = Options.Create(mongoDbOptions);
         var mongoDbService = new MongoDbService(mongoDbIOptions);
+        var personalDataStore = new MongoDbPersonalDataStore(mongoDbService.PersonalDataCollection);
+        var personalDataInterceptor = new PersonalDataInterceptor(personalDataStore);
         eventCollection = mongoDbService.EventCollection;
         entityCollection = mongoDbService.EntityCollection;
-        eventStore = new MongoDbEventStore(mongoDbService);
+        personalDataCollection = mongoDbService.PersonalDataCollection;
+        eventStore = new MongoDbEventStore(mongoDbService, personalDataInterceptor);
         entityStore = new MongoDbEntityStore(mongoDbService);
         eventProcessor = new EventProcessor(eventStore, entityStore);
         entityHistoryService = new EntityHistoryService(eventStore, eventProcessor);
+        replayService = new ReplayService(eventStore, eventProcessor);
         Dispose();
     }
 
@@ -168,9 +174,108 @@ public class UnitTest1 : IDisposable
         Assert.Equal("Booking", booking.Name);
     }
 
+    [Fact]
+    public async Task Test6()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var updateBookingAddressEvent = new UpdateBookingAddressEvent(
+            createBookingEvent.EntityId,
+            new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
+            new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
+        );
+
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        await eventProcessor.ProcessAsync(updateBookingAddressEvent);
+
+        await replayService.ReplayAllEventsAsync();
+
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
+        Assert.Equal(updateBookingAddressEvent.From, booking.GetFrom());
+    }
+
+    [Fact]
+    public async Task Test7()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var updateBookingAddressEvent = new UpdateBookingAddressEvent(
+            createBookingEvent.EntityId,
+            new Address("fromUpdated", "toUpdated", "zipUpdated", "zipcodeUpdated"),
+            new Address("streetUpdated", "cityUpdated", "zipUpdated", "zipcodeUpdated")
+        );
+
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        await eventProcessor.ProcessAsync(updateBookingAddressEvent);
+
+        await replayService.ReplayEventAsync(createBookingEvent);
+
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
+        Assert.Equal(createBookingEvent.From, booking.GetFrom());
+    }
+
+    [Fact]
+    public async Task Test8()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var addCustomerToBookingEvent = new AddCustomerToBookingEvent(
+            createBookingEvent.EntityId,
+            "CustomerName"
+        );
+
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        await eventProcessor.ProcessAsync(addCustomerToBookingEvent);
+
+        var booking = await entityStore.GetEntityAsync<Booking>(createBookingEvent.EntityId);
+        Assert.Equal("CustomerName", booking.CustomerName);
+    }
+
+    [Fact]
+    public async Task Test9()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            Guid.NewGuid(),
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var addCustomerToBookingEvent = new AddCustomerToBookingEvent(
+            createBookingEvent.EntityId,
+            "CustomerName"
+        );
+
+        eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
+        eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
+        await eventProcessor.ProcessAsync(createBookingEvent);
+        await eventProcessor.ProcessAsync(addCustomerToBookingEvent);
+
+        var events = await eventStore.GetEventsAsync();
+        Assert.Null(((AddCustomerToBookingEvent)events.Last()).CustomerName);
+    }
+
     public void Dispose()
     {
         eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
         entityCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
+        personalDataCollection.DeleteMany(Builders<MongoDbPersonalData>.Filter.Empty);
     }
 }

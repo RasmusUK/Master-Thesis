@@ -1,6 +1,6 @@
 namespace EventSource.Core;
 
-public abstract class Event
+public abstract record Event
 {
     public Guid Id { get; init; } = Guid.NewGuid();
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;

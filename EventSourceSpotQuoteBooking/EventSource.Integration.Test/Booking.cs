@@ -2,6 +2,7 @@ namespace EventSource.Core.Test;
 
 public class Booking : Entity
 {
+    public string CustomerName { get; set; }
     private Address from;
     private Address to;
     public string? Name { get; set; }
@@ -24,6 +25,8 @@ public class Booking : Entity
         from = e.From;
         to = e.To;
     }
+
+    private void Apply(AddCustomerToBookingEvent e) => CustomerName = e.CustomerName;
 
     private void Apply(object e) =>
         throw new InvalidOperationException($"Could not apply event {e.GetType().Name}");

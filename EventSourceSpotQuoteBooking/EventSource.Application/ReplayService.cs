@@ -57,13 +57,13 @@ public class ReplayService : IReplayService
 
     public Task ReplayEventsAsync(IReadOnlyCollection<Event> events) => ProcessEvents(events);
 
-    public Task ReplayEventAsync(Event e) => eventProcessor.ProcessAsync(e);
+    public Task ReplayEventAsync(Event e) => eventProcessor.ProcessReplayAsync(e);
 
     private async Task ProcessEvents(IReadOnlyCollection<Event> events)
     {
         foreach (var e in events)
         {
-            await eventProcessor.ProcessAsync(e);
+            await eventProcessor.ProcessReplayAsync(e);
         }
     }
 }
