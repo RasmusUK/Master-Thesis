@@ -1,6 +1,6 @@
 namespace EventSource.Core.Unit.Test;
 
-public class EventTests
+public class EventTest
 {
     [Fact]
     public void Create_Test_Event_Succeeds()
