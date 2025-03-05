@@ -10,10 +10,10 @@ public abstract class MongoDbBase<T>
     [BsonRepresentation(BsonType.String)]
     public Guid Id { get; set; }
 
-    [BsonElement("objectType")]
+    [BsonElement(nameof(ObjectType))]
     public string ObjectType { get; set; }
 
-    [BsonElement("objectData")]
+    [BsonElement(nameof(ObjectData))]
     public string ObjectData { get; set; }
 
     protected MongoDbBase(Guid id, object obj)

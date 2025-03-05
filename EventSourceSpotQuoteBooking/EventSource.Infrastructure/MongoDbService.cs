@@ -8,7 +8,7 @@ namespace EventSource.Persistence;
 public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
-    public IMongoCollection<MongoDbEntity> AggregateRootCollection { get; }
+    public IMongoCollection<MongoDbEntity> EntityCollection { get; }
 
     public MongoDbService(IOptions<MongoDbOptions> mongoDbOptions)
     {
@@ -23,6 +23,6 @@ public class MongoDbService : IMongoDbService
         var database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
 
         EventCollection = database.GetCollection<MongoDbEvent>("events");
-        AggregateRootCollection = database.GetCollection<MongoDbEntity>("entities");
+        EntityCollection = database.GetCollection<MongoDbEntity>("entities");
     }
 }

@@ -6,17 +6,17 @@ namespace EventSource.Persistence.Entities;
 
 public class MongoDbEvent : MongoDbBase<Event>
 {
-    [BsonElement("aggregateId")]
+    [BsonElement(nameof(EventId))]
     [BsonRepresentation(BsonType.String)]
-    public Guid? AggregateId { get; set; }
+    public Guid EventId { get; set; }
 
-    [BsonElement("timestamp")]
+    [BsonElement(nameof(Timestamp))]
     public DateTime Timestamp { get; set; }
 
     public MongoDbEvent(Event domainEvent)
         : base(domainEvent.Id, domainEvent)
     {
-        AggregateId = domainEvent.AggregateId;
+        EventId = domainEvent.AggregateId;
         Timestamp = domainEvent.Timestamp;
     }
 }

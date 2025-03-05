@@ -6,7 +6,6 @@ using EventSource.Persistence.Entities;
 using EventSource.Persistence.Stores;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
-using EventHandler = EventSource.Application.EventHandler;
 
 namespace EventSource.Core.Test;
 
@@ -17,7 +16,7 @@ public class UnitTest1 : IDisposable
     private readonly IEventStore eventStore;
     private readonly IEntityHistoryService entityHistoryService;
     private readonly IMongoCollection<MongoDbEvent> eventCollection;
-    private readonly IMongoCollection<MongoDbEntity> aggregateRootCollection;
+    private readonly IMongoCollection<MongoDbEntity> entityCollection;
 
     public UnitTest1()
     {
@@ -32,7 +31,7 @@ public class UnitTest1 : IDisposable
         var mongoDbIOptions = Options.Create(mongoDbOptions);
         var mongoDbService = new MongoDbService(mongoDbIOptions);
         eventCollection = mongoDbService.EventCollection;
-        aggregateRootCollection = mongoDbService.AggregateRootCollection;
+        entityCollection = mongoDbService.EntityCollection;
         eventStore = new MongoDbEventStore(mongoDbService);
         entityStore = new MongoDbEntityStore(mongoDbService);
         eventProcessor = new EventProcessor(eventStore, entityStore);
@@ -154,6 +153,6 @@ public class UnitTest1 : IDisposable
     public void Dispose()
     {
         eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
-        aggregateRootCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
+        entityCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
     }
 }

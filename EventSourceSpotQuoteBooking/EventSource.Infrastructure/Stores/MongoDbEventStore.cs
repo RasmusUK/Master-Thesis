@@ -26,7 +26,7 @@ public class MongoDbEventStore : IEventStore
 
     public async Task<IReadOnlyCollection<Event>> GetEventsAsync(Guid aggregateId)
     {
-        var mongoEvents = await collection.Find(e => e.AggregateId == aggregateId).ToListAsync();
+        var mongoEvents = await collection.Find(e => e.EventId == aggregateId).ToListAsync();
         return mongoEvents.Select(e => e.ToDomain()).ToImmutableList();
     }
 }

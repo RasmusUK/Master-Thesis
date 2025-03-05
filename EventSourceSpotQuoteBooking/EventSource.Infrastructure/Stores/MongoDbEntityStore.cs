@@ -13,7 +13,7 @@ public class MongoDbEntityStore : IEntityStore
 
     public MongoDbEntityStore(IMongoDbService mongoDbService)
     {
-        collection = mongoDbService.AggregateRootCollection;
+        collection = mongoDbService.EntityCollection;
     }
 
     public async Task SaveEntityAsync(Entity entity)
