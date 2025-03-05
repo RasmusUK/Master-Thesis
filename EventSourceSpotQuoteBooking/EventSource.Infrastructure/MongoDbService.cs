@@ -25,6 +25,6 @@ public class MongoDbService : IMongoDbService
 
         EventCollection = database.GetCollection<MongoDbEvent>("events");
         EntityCollection = database.GetCollection<MongoDbEntity>("entities");
-        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>("personalInfos");
+        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>("personalData");
     }
 }
