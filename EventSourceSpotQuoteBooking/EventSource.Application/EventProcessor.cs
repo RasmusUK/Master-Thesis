@@ -18,7 +18,7 @@ public class EventProcessor : IEventProcessor
 
     public void RegisterEventToEntity<TEvent, TEntity>()
         where TEvent : Event
-        where TEntity : Entity => eventTypeToEntityType.Add(typeof(TEvent), typeof(TEntity));
+        where TEntity : Entity => eventTypeToEntityType.TryAdd(typeof(TEvent), typeof(TEntity));
 
     public void RegisterEventHandler<TEvent>(IEventHandler<TEvent> eventHandler)
         where TEvent : Event

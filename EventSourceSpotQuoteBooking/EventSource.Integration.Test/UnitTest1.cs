@@ -3,6 +3,7 @@ using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence;
 using EventSource.Persistence.Entities;
+using EventSource.Persistence.Interfaces;
 using EventSource.Persistence.Stores;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
@@ -15,33 +16,24 @@ public class UnitTest1 : IDisposable
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
     private readonly IEntityHistoryService entityHistoryService;
-    private readonly IMongoCollection<MongoDbEvent> eventCollection;
-    private readonly IMongoCollection<MongoDbEntity> entityCollection;
-    private readonly IMongoCollection<MongoDbPersonalData> personalDataCollection;
     private readonly IReplayService replayService;
+    private readonly IMongoDbService mongoDbService;
 
-    public UnitTest1()
+    public UnitTest1(
+        IEventProcessor eventProcessor,
+        IEntityStore entityStore,
+        IEventStore eventStore,
+        IEntityHistoryService entityHistoryService,
+        IReplayService replayService,
+        IMongoDbService mongoDbService
+    )
     {
-        var mongoDbOptions = new MongoDbOptions
-        {
-            EventStore = new EventStoreOptions
-            {
-                ConnectionString = "mongodb://localhost:27017",
-                DatabaseName = "EventSource",
-            },
-        };
-        var mongoDbIOptions = Options.Create(mongoDbOptions);
-        var mongoDbService = new MongoDbService(mongoDbIOptions);
-        var personalDataStore = new MongoDbPersonalDataStore(mongoDbService.PersonalDataCollection);
-        var personalDataInterceptor = new PersonalDataInterceptor(personalDataStore);
-        eventCollection = mongoDbService.EventCollection;
-        entityCollection = mongoDbService.EntityCollection;
-        personalDataCollection = mongoDbService.PersonalDataCollection;
-        eventStore = new MongoDbEventStore(mongoDbService, personalDataInterceptor);
-        entityStore = new MongoDbEntityStore(mongoDbService);
-        eventProcessor = new EventProcessor(eventStore, entityStore);
-        entityHistoryService = new EntityHistoryService(eventStore, eventProcessor);
-        replayService = new ReplayService(eventStore, eventProcessor);
+        this.eventProcessor = eventProcessor;
+        this.entityStore = entityStore;
+        this.eventStore = eventStore;
+        this.entityHistoryService = entityHistoryService;
+        this.replayService = replayService;
+        this.mongoDbService = mongoDbService;
         Dispose();
     }
 
@@ -274,8 +266,10 @@ public class UnitTest1 : IDisposable
 
     public void Dispose()
     {
-        eventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
-        entityCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
-        personalDataCollection.DeleteMany(Builders<MongoDbPersonalData>.Filter.Empty);
+        mongoDbService.EventCollection.DeleteMany(Builders<MongoDbEvent>.Filter.Empty);
+        mongoDbService.EntityCollection.DeleteMany(Builders<MongoDbEntity>.Filter.Empty);
+        mongoDbService.PersonalDataCollection.DeleteMany(
+            Builders<MongoDbPersonalData>.Filter.Empty
+        );
     }
 }
