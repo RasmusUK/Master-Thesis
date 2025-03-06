@@ -6,7 +6,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Integration.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Application", "EventSource.Application\EventSource.Application.csproj", "{A83950E7-5E6F-41A3-B9CC-3953F5A44ADA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Infrastructure", "EventSource.Infrastructure\EventSource.Infrastructure.csproj", "{484E8FDB-4966-4057-8ADA-664107FF722E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Persistence", "EventSource.Persistence\EventSource.Persistence.csproj", "{484E8FDB-4966-4057-8ADA-664107FF722E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F4B7197B-F0AC-4520-9435-C8D6E05B8355}"
 EndProject
