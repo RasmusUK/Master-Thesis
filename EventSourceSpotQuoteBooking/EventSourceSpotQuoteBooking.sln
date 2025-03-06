@@ -14,6 +14,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Core.Unit.Test"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Application.Unit.Test", "EventSource.Application.Unit.Test\EventSource.Application.Unit.Test.csproj", "{971A1F2F-1CA9-4A35-A36D-8D5D4F834668}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Infrastructure", "EventSource.Infrastructure\EventSource.Infrastructure.csproj", "{21E4673A-C897-4C91-8E3B-4D23734F240B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -44,6 +46,10 @@ Global
 		{971A1F2F-1CA9-4A35-A36D-8D5D4F834668}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{971A1F2F-1CA9-4A35-A36D-8D5D4F834668}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{971A1F2F-1CA9-4A35-A36D-8D5D4F834668}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21E4673A-C897-4C91-8E3B-4D23734F240B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21E4673A-C897-4C91-8E3B-4D23734F240B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21E4673A-C897-4C91-8E3B-4D23734F240B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21E4673A-C897-4C91-8E3B-4D23734F240B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{9EDEBD53-0A31-47C9-AB94-3F7FA029F777} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
