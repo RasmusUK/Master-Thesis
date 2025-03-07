@@ -1,6 +1,6 @@
-using System.Text.Json;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using Newtonsoft.Json;
 
 namespace EventSource.Persistence.Entities;
 
@@ -20,7 +20,7 @@ public abstract class MongoDbBase<T>
     {
         Id = id;
         ObjectType = obj.GetType().ToString();
-        ObjectData = JsonSerializer.Serialize(obj, JsonSerializerOptionsConfiguration.Options);
+        ObjectData = JsonConvert.SerializeObject(obj);
     }
 
     public T ToDomain()
@@ -29,11 +29,7 @@ public abstract class MongoDbBase<T>
         if (type is null)
             throw new InvalidOperationException($"Could not find type '{ObjectType}'");
 
-        var deserialized = JsonSerializer.Deserialize(
-            ObjectData,
-            type,
-            JsonSerializerOptionsConfiguration.Options
-        );
+        var deserialized = JsonConvert.DeserializeObject(ObjectData, type);
         if (deserialized is null)
             throw new InvalidOperationException($"Could not deserialize data for type '{type}'");
 
@@ -43,11 +39,7 @@ public abstract class MongoDbBase<T>
     public TE Deserialize<TE>()
         where TE : T
     {
-        var deserialized = JsonSerializer.Deserialize(
-            ObjectData,
-            typeof(TE),
-            JsonSerializerOptionsConfiguration.Options
-        );
+        var deserialized = JsonConvert.DeserializeObject(ObjectData, typeof(TE));
         if (deserialized is null)
             throw new InvalidOperationException(
                 $"Could not deserialize data for type '{typeof(TE)}' as '{ObjectType}'"
