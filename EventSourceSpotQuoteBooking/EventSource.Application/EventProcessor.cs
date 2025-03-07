@@ -33,7 +33,7 @@ public class EventProcessor : IEventProcessor
     public async Task<Entity> ProcessAsync(Event e)
     {
         var entity = await ProcessEntityEventAsync(e);
-        if (e.EntityId is null)
+        if (e.EntityId is null || e.EntityId == Guid.Empty)
             e.EntityId = entity.Id;
         await eventStore.SaveEventAsync(e);
         await ProcessSaveEntityAsync(entity);
