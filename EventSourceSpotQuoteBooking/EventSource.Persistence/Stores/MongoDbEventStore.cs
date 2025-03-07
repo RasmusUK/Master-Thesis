@@ -52,7 +52,7 @@ public class MongoDbEventStore : IEventStore
 
     public async Task<IReadOnlyCollection<Event>> GetEventsByEntityIdAsync(Guid entityId)
     {
-        var mongoEvents = await collection.Find(e => e.EventId == entityId).ToListAsync();
+        var mongoEvents = await collection.Find(e => e.EntityId == entityId).ToListAsync();
         return await ToDomain(mongoEvents);
     }
 
@@ -62,7 +62,7 @@ public class MongoDbEventStore : IEventStore
     )
     {
         var mongoEvents = await collection
-            .Find(e => e.EventId == entityId && e.Timestamp <= until)
+            .Find(e => e.EntityId == entityId && e.Timestamp <= until)
             .ToListAsync();
         return await ToDomain(mongoEvents);
     }
@@ -74,7 +74,7 @@ public class MongoDbEventStore : IEventStore
     )
     {
         var mongoEvents = await collection
-            .Find(e => e.EventId == entityId && e.Timestamp >= from && e.Timestamp <= until)
+            .Find(e => e.EntityId == entityId && e.Timestamp >= from && e.Timestamp <= until)
             .ToListAsync();
         return await ToDomain(mongoEvents);
     }

@@ -13,7 +13,7 @@ public class CreateBookingEventHandler : IEventHandler<CreateBookingEvent>
 
     public async Task HandleAsync(CreateBookingEvent e)
     {
-        var booking = await entityStore.GetEntityAsync<Booking>(e.EntityId);
+        var booking = await entityStore.GetEntityByIdAsync<Booking>(e.EntityId.Value);
         booking.Name = "Booking";
         await entityStore.SaveEntityAsync(booking);
     }

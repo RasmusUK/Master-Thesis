@@ -6,9 +6,9 @@ namespace EventSource.Persistence.Entities;
 
 public class MongoDbEvent : MongoDbBase<Event>
 {
-    [BsonElement(nameof(EventId))]
+    [BsonElement(nameof(EntityId))]
     [BsonRepresentation(BsonType.String)]
-    public Guid EventId { get; set; }
+    public Guid EntityId { get; set; }
 
     [BsonElement(nameof(Timestamp))]
     public DateTime Timestamp { get; set; }
@@ -16,7 +16,9 @@ public class MongoDbEvent : MongoDbBase<Event>
     public MongoDbEvent(Event domainEvent)
         : base(domainEvent.Id, domainEvent)
     {
-        EventId = domainEvent.EntityId;
+        if (domainEvent.EntityId == Guid.Empty)
+            throw new ArgumentException($"Entity id cannot be empty", nameof(domainEvent.EntityId));
+        EntityId = domainEvent.EntityId!.Value;
         Timestamp = domainEvent.Timestamp;
     }
 }

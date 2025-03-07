@@ -1,9 +1,14 @@
+using System.Linq.Expressions;
+
 namespace EventSource.Core.Interfaces;
 
 public interface IEntityStore
 {
-    Task SaveEntityAsync(Entity entity);
-    Task<T?> GetEntityAsync<T>(Guid id)
-        where T : Entity;
-    Task<IReadOnlyCollection<Entity>> GetEntitiesAsync();
+    Task SaveEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity;
+
+    Task<TEntity?> GetEntityByFilterAsync<TEntity>(Expression<Func<TEntity, bool>> filter)
+        where TEntity : Entity;
+    Task<TEntity?> GetEntityByIdAsync<TEntity>(Guid id)
+        where TEntity : Entity;
 }

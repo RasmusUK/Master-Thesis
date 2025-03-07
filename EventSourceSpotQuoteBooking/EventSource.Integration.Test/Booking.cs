@@ -3,8 +3,8 @@ namespace EventSource.Core.Test;
 public class Booking : Entity
 {
     public string CustomerName { get; set; }
-    private Address from;
-    private Address to;
+    public Address From { get; private set; }
+    public Address to { get; private set; }
     public string? Name { get; set; }
 
     public override void Apply(Event e)
@@ -12,17 +12,15 @@ public class Booking : Entity
         Apply((dynamic)e);
     }
 
-    public Address GetFrom() => from;
-
     private void Apply(CreateBookingEvent e)
     {
-        from = e.From;
+        From = e.From;
         to = e.To;
     }
 
     private void Apply(UpdateBookingAddressEvent e)
     {
-        from = e.From;
+        From = e.From;
         to = e.To;
     }
 

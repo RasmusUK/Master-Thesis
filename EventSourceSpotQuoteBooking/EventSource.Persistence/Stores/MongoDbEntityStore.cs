@@ -1,7 +1,6 @@
-using System.Collections.Immutable;
+using System.Linq.Expressions;
 using EventSource.Core;
 using EventSource.Core.Interfaces;
-using EventSource.Persistence.Entities;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Driver;
 
@@ -9,31 +8,38 @@ namespace EventSource.Persistence.Stores;
 
 public class MongoDbEntityStore : IEntityStore
 {
-    private readonly IMongoCollection<MongoDbEntity> collection;
+    private readonly IMongoDbService mongoDbService;
 
     public MongoDbEntityStore(IMongoDbService mongoDbService)
     {
-        collection = mongoDbService.EntityCollection;
+        this.mongoDbService = mongoDbService;
     }
 
-    public async Task SaveEntityAsync(Entity entity)
+    public async Task SaveEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity
     {
-        var filter = Builders<MongoDbEntity>.Filter.Eq(e => e.Id, entity.Id);
+        var collection = GetCollection<TEntity>();
+        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
         var updateOptions = new ReplaceOptions { IsUpsert = true };
-
-        await collection.ReplaceOneAsync(filter, new MongoDbEntity(entity), updateOptions);
+        await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
 
-    public async Task<T?> GetEntityAsync<T>(Guid id)
-        where T : Entity
-    {
-        var mongoAggregateRoot = await collection.Find(ar => ar.Id == id).FirstOrDefaultAsync();
-        return mongoAggregateRoot?.Deserialize<T>();
-    }
+    public async Task<TEntity?> GetEntityByFilterAsync<TEntity>(
+        Expression<Func<TEntity, bool>> filter
+    )
+        where TEntity : Entity => await GetCollection<TEntity>().Find(filter).FirstOrDefaultAsync();
 
-    public async Task<IReadOnlyCollection<Entity>> GetEntitiesAsync()
+    public async Task<TEntity?> GetEntityByIdAsync<TEntity>(Guid id)
+        where TEntity : Entity =>
+        await GetCollection<TEntity>().Find(e => e.Id == id).FirstOrDefaultAsync();
+
+    private IMongoCollection<TEntity> GetCollection<TEntity>()
+        where TEntity : Entity
     {
-        var mongoAggregateRoots = await collection.Find(_ => true).ToListAsync();
-        return mongoAggregateRoots.Select(ar => ar.ToDomain()).ToImmutableList();
+        var collectionName = typeof(TEntity).FullName;
+        if (string.IsNullOrEmpty(collectionName))
+            throw new InvalidOperationException("Collection name is null.");
+        return mongoDbService.GetCollection<TEntity>(collectionName);
+        ;
     }
 }

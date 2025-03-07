@@ -32,9 +32,11 @@ public class EventProcessor : IEventProcessor
 
     public async Task<Entity> ProcessAsync(Event e)
     {
-        await eventStore.SaveEventAsync(e);
         var entity = await ProcessEntityEventAsync(e);
-        await entityStore.SaveEntityAsync(entity);
+        if (e.EntityId is null)
+            e.EntityId = entity.Id;
+        await eventStore.SaveEventAsync(e);
+        await ProcessSaveEntityAsync(entity);
         await ProcessEventHandlerAsync(e);
         return entity;
     }
@@ -84,9 +86,13 @@ public class EventProcessor : IEventProcessor
         }
     }
 
+    private Task ProcessSaveEntityAsync(Entity entity) =>
+        (Task)((dynamic)entityStore).SaveEntityAsync((dynamic)entity);
+
     public async Task<TEntity> GetEntityAsync<TEntity>(Guid id)
         where TEntity : Entity =>
-        await entityStore.GetEntityAsync<TEntity>(id) ?? Entity.Create<TEntity>(id);
+        await entityStore.GetEntityByFilterAsync<TEntity>(e => e.Id == id)
+        ?? Entity.Create<TEntity>();
 
     private async Task<object> GetEntityAsync(Event e)
     {
