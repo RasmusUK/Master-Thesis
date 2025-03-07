@@ -11,7 +11,6 @@ namespace EventSource.Persistence;
 public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
-    public IMongoCollection<MongoDbEntity> EntityCollection { get; }
     public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
     public IMongoDatabase database { get; init; }
 
@@ -31,7 +30,6 @@ public class MongoDbService : IMongoDbService
         database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
 
         EventCollection = database.GetCollection<MongoDbEvent>("events");
-        EntityCollection = database.GetCollection<MongoDbEntity>("entities");
         PersonalDataCollection = database.GetCollection<MongoDbPersonalData>("personalData");
     }
 
