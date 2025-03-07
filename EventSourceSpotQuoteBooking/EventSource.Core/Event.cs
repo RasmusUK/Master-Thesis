@@ -2,8 +2,8 @@ namespace EventSource.Core;
 
 public abstract record Event
 {
-    public Guid Id { get; init; }
-    public DateTime Timestamp { get; init; }
+    public Guid Id { get; init; } = Guid.NewGuid();
+    public DateTime Timestamp { get; init; } = DateTime.UtcNow;
     private Guid? entityId;
 
     public Guid? EntityId
@@ -20,11 +20,7 @@ public abstract record Event
         }
     }
 
-    protected Event()
-    {
-        Id = Guid.NewGuid();
-        Timestamp = DateTime.UtcNow;
-    }
+    protected Event() { }
 
     protected Event(Guid entityId)
     {
@@ -32,7 +28,5 @@ public abstract record Event
             throw new ArgumentException($"Entity id cannot be empty", nameof(entityId));
 
         EntityId = entityId;
-        Id = Guid.NewGuid();
-        Timestamp = DateTime.UtcNow;
     }
 }

@@ -87,6 +87,23 @@ public class UnitTest1 : IDisposable
     }
 
     [Fact]
+    public async Task Test11()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var booking = await eventProcessor.ProcessAsync(createBookingEvent);
+
+        var events = await eventStore.GetEventsAsync();
+        Assert.Equal(1, events.Count);
+
+        Assert.Equal(createBookingEvent.Id, events.First().Id);
+        Assert.Equal(createBookingEvent.Timestamp, events.First().Timestamp);
+    }
+
+    [Fact]
     public async Task Test3()
     {
         var createBookingEvent = new CreateBookingEvent(
