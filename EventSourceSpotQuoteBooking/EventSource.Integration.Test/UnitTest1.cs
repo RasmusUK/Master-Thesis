@@ -1,11 +1,7 @@
-﻿using EventSource.Application;
-using EventSource.Application.Interfaces;
+﻿using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
-using EventSource.Persistence;
 using EventSource.Persistence.Entities;
 using EventSource.Persistence.Interfaces;
-using EventSource.Persistence.Stores;
-using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace EventSource.Core.Test;
