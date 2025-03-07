@@ -196,7 +196,7 @@ public class UnitTest1 : IDisposable
         await replayService.ReplayEventAsync(createBookingEvent);
 
         var fetchedBooking = await entityStore.GetEntityByIdAsync<Booking>(booking.Id);
-        Assert.Equal(updateBookingAddressEvent.From, fetchedBooking.From);
+        Assert.Equal(createBookingEvent.From, fetchedBooking.From);
     }
 
     [Fact]

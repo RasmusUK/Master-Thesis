@@ -44,7 +44,9 @@ public class EventProcessor : IEventProcessor
     public async Task<Entity> ProcessReplayAsync(Event e)
     {
         var entity = await ProcessEntityEventAsync(e);
-        await entityStore.SaveEntityAsync(entity);
+        if (e.EntityId is null || e.EntityId == Guid.Empty)
+            e.EntityId = entity.Id;
+        await ProcessSaveEntityAsync(entity);
         await ProcessEventHandlerAsync(e);
         return entity;
     }
