@@ -4,7 +4,8 @@ public class Booking : Entity
 {
     public string CustomerName { get; set; }
     public Address From { get; private set; }
-    public Address to { get; private set; }
+    public Address To { get; private set; }
+    public Address Test { get; set; }
     public string? Name { get; set; }
 
     public override void Apply(Event e)
@@ -15,13 +16,13 @@ public class Booking : Entity
     private void Apply(CreateBookingEvent e)
     {
         From = e.From;
-        to = e.To;
+        To = e.To;
     }
 
     private void Apply(UpdateBookingAddressEvent e)
     {
         From = e.From;
-        to = e.To;
+        To = e.To;
     }
 
     private void Apply(AddCustomerToBookingEvent e) => CustomerName = e.CustomerName;

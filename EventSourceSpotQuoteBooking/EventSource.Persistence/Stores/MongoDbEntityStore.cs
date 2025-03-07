@@ -33,6 +33,13 @@ public class MongoDbEntityStore : IEntityStore
         where TEntity : Entity =>
         await GetCollection<TEntity>().Find(e => e.Id == id).FirstOrDefaultAsync();
 
+    public async Task<TProjection?> GetProjectionByFilterAsync<TEntity, TProjection>(
+        Expression<Func<TEntity, bool>> filter,
+        Expression<Func<TEntity, TProjection>> projection
+    )
+        where TEntity : Entity =>
+        await GetCollection<TEntity>().Find(filter).Project(projection).FirstOrDefaultAsync();
+
     private IMongoCollection<TEntity> GetCollection<TEntity>()
         where TEntity : Entity
     {

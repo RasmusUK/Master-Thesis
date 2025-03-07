@@ -15,6 +15,7 @@ public class UnitTest1 : IDisposable
     private readonly IEntityHistoryService entityHistoryService;
     private readonly IReplayService replayService;
     private readonly IMongoDbService mongoDbService;
+    private readonly IEntityStore mongoDbEntityStore;
 
     public UnitTest1(
         IEventProcessor eventProcessor,
@@ -22,7 +23,8 @@ public class UnitTest1 : IDisposable
         IEventStore eventStore,
         IEntityHistoryService entityHistoryService,
         IReplayService replayService,
-        IMongoDbService mongoDbService
+        IMongoDbService mongoDbService,
+        IEntityStore mongoDbEntityStore
     )
     {
         this.eventProcessor = eventProcessor;
@@ -31,6 +33,7 @@ public class UnitTest1 : IDisposable
         this.entityHistoryService = entityHistoryService;
         this.replayService = replayService;
         this.mongoDbService = mongoDbService;
+        this.mongoDbEntityStore = mongoDbEntityStore;
         eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
@@ -84,23 +87,6 @@ public class UnitTest1 : IDisposable
         Assert.Equal(createBookingEvent.EntityId, fetchedBooking.Id);
 
         Assert.Equal(updateBookingAddressEvent.From, fetchedBooking.From);
-    }
-
-    [Fact]
-    public async Task Test11()
-    {
-        var createBookingEvent = new CreateBookingEvent(
-            new Address("from", "to", "zip", "zipcode"),
-            new Address("street", "city", "zip", "zipcode")
-        );
-
-        var booking = await eventProcessor.ProcessAsync(createBookingEvent);
-
-        var events = await eventStore.GetEventsAsync();
-        Assert.Equal(1, events.Count);
-
-        Assert.Equal(createBookingEvent.Id, events.First().Id);
-        Assert.Equal(createBookingEvent.Timestamp, events.First().Timestamp);
     }
 
     [Fact]
@@ -258,15 +244,55 @@ public class UnitTest1 : IDisposable
 
         await eventProcessor.ProcessAsync(createBookingEvent);
 
-        var mongoDbEntityStore1 = new MongoDbEntityStore(mongoDbService);
+        var mongoDbEntityStore = new MongoDbEntityStore(mongoDbService);
         var booking = new Booking();
         booking.CustomerName = "Test10";
-        await mongoDbEntityStore1.SaveEntityAsync(booking);
-        var bookingReturned = await mongoDbEntityStore1.GetEntityByFilterAsync<Booking>(b =>
+        await mongoDbEntityStore.SaveEntityAsync(booking);
+        var bookingReturned = await mongoDbEntityStore.GetEntityByFilterAsync<Booking>(b =>
             b.CustomerName == "Test10"
         );
         Assert.NotNull(bookingReturned);
         Assert.Equal(booking.CustomerName, bookingReturned.CustomerName);
+    }
+
+    [Fact]
+    public async Task Test11()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        var booking = await eventProcessor.ProcessAsync(createBookingEvent);
+
+        var events = await eventStore.GetEventsAsync();
+        Assert.Equal(1, events.Count);
+
+        Assert.Equal(createBookingEvent.Id, events.First().Id);
+        Assert.Equal(createBookingEvent.Timestamp, events.First().Timestamp);
+    }
+
+    [Fact]
+    public async Task Test12()
+    {
+        var createBookingEvent = new CreateBookingEvent(
+            new Address("from", "to", "zip", "zipcode"),
+            new Address("street", "city", "zip", "zipcode")
+        );
+
+        await eventProcessor.ProcessAsync(createBookingEvent);
+
+        var booking = new Booking();
+        booking.CustomerName = "Test10";
+        booking.Test = new Address("from", "to", "zip", "zipcode");
+        await mongoDbEntityStore.SaveEntityAsync(booking);
+
+        var address = await mongoDbEntityStore.GetProjectionByFilterAsync<Booking, Address>(
+            b => b.CustomerName == "Test10",
+            b => b.Test
+        );
+        Assert.NotNull(address);
+        Assert.Equal(booking.Test, address);
     }
 
     public void Dispose()
