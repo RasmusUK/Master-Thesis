@@ -29,8 +29,10 @@ public class MongoDbService : IMongoDbService
         var mongoClient = new MongoClient(mongoUrl);
         database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
 
-        EventCollection = database.GetCollection<MongoDbEvent>("events");
-        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>("personalData");
+        EventCollection = database.GetCollection<MongoDbEvent>(nameof(MongoDbEvent));
+        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>(
+            nameof(MongoDbPersonalData)
+        );
     }
 
     public IMongoCollection<TEntity> GetCollection<TEntity>(string collectionName) =>
