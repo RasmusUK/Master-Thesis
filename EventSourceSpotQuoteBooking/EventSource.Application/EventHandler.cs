@@ -3,10 +3,7 @@ using EventSource.Core.Interfaces;
 
 namespace EventSource.Application;
 
-public class EventHandler : IEventHandler<Event>
+public abstract class EventHandler : IEventHandler<Event>
 {
-    public Task HandleAsync(Event e)
-    {
-        throw new NotSupportedException("This handler should never be called");
-    }
+    public abstract Task HandleAsync(Event e);
 }
