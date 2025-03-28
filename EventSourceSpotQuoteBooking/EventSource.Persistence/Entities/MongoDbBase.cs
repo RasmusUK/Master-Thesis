@@ -1,3 +1,5 @@
+using System.Text.RegularExpressions;
+using EventSource.Core.Events;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
@@ -25,7 +27,10 @@ public abstract class MongoDbBase<T>
 
     public T ToDomain()
     {
-        var type = Type.GetType(ObjectType) ?? GetTypeFromAssemblies(ObjectType);
+        var type =
+            Type.GetType(ObjectType)
+            ?? GetTypeFromAssemblies(ObjectType)
+            ?? ResolveKnownGenericEventType(ObjectType);
         if (type is null)
             throw new InvalidOperationException($"Could not find type '{ObjectType}'");
 
@@ -53,4 +58,31 @@ public abstract class MongoDbBase<T>
             .CurrentDomain.GetAssemblies()
             .Select(a => a.GetType(typeName, false))
             .FirstOrDefault(t => t is not null);
+
+    private static Type? ResolveKnownGenericEventType(string typeName)
+    {
+        var match = Regex.Match(typeName, @"^(.*)\`1\[(.*)\]$");
+        if (!match.Success)
+            return null;
+
+        var baseTypeName = match.Groups[1].Value.Trim();
+        var argTypeName = match.Groups[2].Value.Trim();
+
+        var argType = GetTypeFromAssemblies(argTypeName);
+        if (argType is null)
+            return null;
+
+        var openGenericType = KnownGenericEventTypes.FirstOrDefault(t =>
+            t.FullName == baseTypeName
+        );
+
+        return openGenericType?.MakeGenericType(argType);
+    }
+
+    private static readonly Type[] KnownGenericEventTypes =
+    {
+        typeof(CreateEvent<>),
+        typeof(UpdateEvent<>),
+        typeof(DeleteEvent<>),
+    };
 }

@@ -299,7 +299,7 @@ public class UnitTest1 : IDisposable
     }
 
     [Fact]
-    public async Task Test13()
+    public async Task RepoCreateReadById()
     {
         var quote = new Quote(100.0, "DKK", "QuoteTest");
 
@@ -310,6 +310,152 @@ public class UnitTest1 : IDisposable
         Assert.Equal(quote.Price, quoteReturned.Price);
         Assert.Equal(quote.Currency, quoteReturned.Currency);
         Assert.Equal(quote.Name, quoteReturned.Name);
+    }
+
+    [Fact]
+    public async Task RepoReadAll()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        var quotes = await quoteRepository.ReadAllAsync();
+        Assert.Equal(2, quotes.Count);
+    }
+
+    [Fact]
+    public async Task RepoReadByFilter()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        var quote = await quoteRepository.ReadByFilterAsync(q => q.Name == "QuoteTest1");
+        Assert.NotNull(quote);
+        Assert.Equal(quote1.Id, quote.Id);
+    }
+
+    [Fact]
+    public async Task RepoReadAllByFilter()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+        var quote3 = new Quote(200.0, "DKK", "QuoteTest3");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        await quoteRepository.CreateAsync(quote3);
+        var quotes = await quoteRepository.ReadAllByFilterAsync(q => q.Price == 100);
+        Assert.Equal(2, quotes.Count);
+    }
+
+    [Fact]
+    public async Task RepoReadProjectionById()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+        var quote3 = new Quote(200.0, "DKK", "QuoteTest3");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        await quoteRepository.CreateAsync(quote3);
+        var price = await quoteRepository.ReadProjectionByIdAsync(quote1.Id, q => q.Price);
+        Assert.Equal(quote1.Price, price);
+    }
+
+    [Fact]
+    public async Task RepoReadProjectionByFilter()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+        var quote3 = new Quote(200.0, "DKK", "QuoteTest3");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        await quoteRepository.CreateAsync(quote3);
+        var price = await quoteRepository.ReadProjectionByFilterAsync(
+            q => q.Id == quote1.Id,
+            q => q.Price
+        );
+        Assert.Equal(quote1.Price, price);
+    }
+
+    [Fact]
+    public async Task RepoReadAllProjections()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+        var quote3 = new Quote(200.0, "DKK", "QuoteTest3");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        await quoteRepository.CreateAsync(quote3);
+        var prices = await quoteRepository.ReadAllProjectionsAsync(q => q.Price);
+        Assert.Equal(3, prices.Count);
+    }
+
+    [Fact]
+    public async Task RepoReadAllProjectionsByFilter()
+    {
+        var quote1 = new Quote(100.0, "DKK", "QuoteTest1");
+        var quote2 = new Quote(100.0, "DKK", "QuoteTest2");
+        var quote3 = new Quote(200.0, "DKK", "QuoteTest3");
+
+        await quoteRepository.CreateAsync(quote1);
+        await quoteRepository.CreateAsync(quote2);
+        await quoteRepository.CreateAsync(quote3);
+        var prices = await quoteRepository.ReadAllProjectionsByFilterAsync(
+            q => q.Price,
+            q => q.Price == 100
+        );
+        Assert.Equal(2, prices.Count);
+    }
+
+    [Fact]
+    public async Task RepoUpdate()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote = await quoteRepository.ReadByIdAsync(id);
+        Assert.Equal(100, quote.Price);
+
+        quote.Price = 200;
+        await quoteRepository.UpdateAsync(quote);
+
+        quote = await quoteRepository.ReadByIdAsync(id);
+        Assert.Equal(200, quote.Price);
+    }
+
+    [Fact]
+    public async Task RepoDelete()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote = await quoteRepository.ReadByIdAsync(id);
+        Assert.NotNull(quote);
+
+        await quoteRepository.DeleteAsync(quote);
+        quote = await quoteRepository.ReadByIdAsync(id);
+        Assert.Null(quote);
+    }
+
+    [Fact]
+    public async Task RepoCreateCreatesEvent()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        var events = await eventStore.GetEventsByEntityIdAsync(id);
+        Assert.Single(events);
+        var e = events.First();
+        Assert.Equal(e.EntityId, id);
     }
 
     public void Dispose()

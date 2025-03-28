@@ -33,6 +33,10 @@ public class MongoDbEntityStore : IEntityStore, IMongoDbEntityStore
         await collection.ReplaceOneAsync(session, filter, entity, updateOptions);
     }
 
+    public Task DeleteEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+        where TEntity : Entity =>
+        GetCollection<TEntity>().DeleteOneAsync(session, e => e.Id == entity.Id);
+
     public async Task<TEntity?> GetEntityByFilterAsync<TEntity>(
         Expression<Func<TEntity, bool>> filter
     )
@@ -48,6 +52,28 @@ public class MongoDbEntityStore : IEntityStore, IMongoDbEntityStore
     )
         where TEntity : Entity =>
         await GetCollection<TEntity>().Find(filter).Project(projection).FirstOrDefaultAsync();
+
+    public async Task<IReadOnlyCollection<TEntity>> GetAllAsync<TEntity>()
+        where TEntity : Entity => await GetCollection<TEntity>().Find(_ => true).ToListAsync();
+
+    public async Task<IReadOnlyCollection<TEntity>> GetAllByFilterAsync<TEntity>(
+        Expression<Func<TEntity, bool>> filter
+    )
+        where TEntity : Entity => await GetCollection<TEntity>().Find(filter).ToListAsync();
+
+    public async Task<IReadOnlyCollection<TProjection>> GetAllProjectionsAsync<
+        TEntity,
+        TProjection
+    >(Expression<Func<TEntity, TProjection>> projection)
+        where TEntity : Entity =>
+        await GetCollection<TEntity>().Find(_ => true).Project(projection).ToListAsync();
+
+    public async Task<IReadOnlyCollection<TProjection>> GetAllProjectionsByFilterAsync<
+        TEntity,
+        TProjection
+    >(Expression<Func<TEntity, TProjection>> projection, Expression<Func<TEntity, bool>> filter)
+        where TEntity : Entity =>
+        await GetCollection<TEntity>().Find(filter).Project(projection).ToListAsync();
 
     private IMongoCollection<TEntity> GetCollection<TEntity>()
         where TEntity : Entity

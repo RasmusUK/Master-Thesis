@@ -8,7 +8,11 @@ public interface IRepository<T>
     Task<Guid> CreateAsync(T entity);
     Task<T?> ReadByIdAsync(Guid id);
     Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter);
-    Task<T?> ReadProjectionByFilterAsync<TProjection>(
+    Task<TProjection?> ReadProjectionByIdAsync<TProjection>(
+        Guid id,
+        Expression<Func<T, TProjection>> projection
+    );
+    Task<TProjection?> ReadProjectionByFilterAsync<TProjection>(
         Expression<Func<T, bool>> filter,
         Expression<Func<T, TProjection>> projection
     );
@@ -22,5 +26,5 @@ public interface IRepository<T>
         Expression<Func<T, bool>> filter
     );
     Task UpdateAsync(T entity);
-    Task DeleteAsync(Guid id);
+    Task DeleteAsync(T entity);
 }

@@ -1,11 +1,11 @@
-namespace EventSource.Core;
+namespace EventSource.Core.Events;
 
-public record CreateEvent<T> : Event
+public record DeleteEvent<T> : Event
     where T : Entity
 {
     public T Entity { get; init; }
 
-    public CreateEvent(T entity)
+    public DeleteEvent(T entity)
         : base(entity.Id)
     {
         Entity = entity;

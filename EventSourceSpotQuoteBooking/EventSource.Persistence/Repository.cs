@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using EventSource.Core;
+using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Interfaces;
 
@@ -44,51 +45,66 @@ public class Repository<T> : IRepository<T>
 
     public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
 
-    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter) =>
+        entityStore.GetEntityByFilterAsync(filter);
 
-    public Task<T?> ReadProjectionByFilterAsync<TProjection>(
+    public Task<TProjection?> ReadProjectionByIdAsync<TProjection>(
+        Guid id,
+        Expression<Func<T, TProjection>> projection
+    ) => entityStore.GetProjectionByFilterAsync(x => x.Id == id, projection);
+
+    public Task<TProjection?> ReadProjectionByFilterAsync<TProjection>(
         Expression<Func<T, bool>> filter,
         Expression<Func<T, TProjection>> projection
-    )
-    {
-        throw new NotImplementedException();
-    }
+    ) => entityStore.GetProjectionByFilterAsync(filter, projection);
 
-    public Task<IReadOnlyCollection<T>> ReadAllAsync()
-    {
-        throw new NotImplementedException();
-    }
+    public Task<IReadOnlyCollection<T>> ReadAllAsync() => entityStore.GetAllAsync<T>();
 
-    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter)
-    {
-        throw new NotImplementedException();
-    }
+    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter) =>
+        entityStore.GetAllByFilterAsync(filter);
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsAsync<TProjection>(
         Expression<Func<T, TProjection>> projection
-    )
-    {
-        throw new NotImplementedException();
-    }
+    ) => entityStore.GetAllProjectionsAsync(projection);
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsByFilterAsync<TProjection>(
         Expression<Func<T, TProjection>> projection,
         Expression<Func<T, bool>> filter
-    )
+    ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
+
+    public async Task UpdateAsync(T entity)
     {
-        throw new NotImplementedException();
+        var e = new UpdateEvent<T>(entity);
+        using var session = await mongoDbService.StartSessionAsync();
+        try
+        {
+            session.StartTransaction();
+            await eventStore.SaveEventAsync(e, session);
+            await entityStore.SaveEntityAsync(entity, session);
+            await session.CommitTransactionAsync();
+        }
+        catch
+        {
+            await session.AbortTransactionAsync();
+            throw;
+        }
     }
 
-    public Task UpdateAsync(T entity)
+    public async Task DeleteAsync(T entity)
     {
-        throw new NotImplementedException();
-    }
-
-    public Task DeleteAsync(Guid id)
-    {
-        throw new NotImplementedException();
+        var e = new DeleteEvent<T>(entity);
+        using var session = await mongoDbService.StartSessionAsync();
+        try
+        {
+            session.StartTransaction();
+            await eventStore.SaveEventAsync(e, session);
+            await entityStore.DeleteEntityAsync(entity, session);
+            await session.CommitTransactionAsync();
+        }
+        catch
+        {
+            await session.AbortTransactionAsync();
+            throw;
+        }
     }
 }

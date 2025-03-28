@@ -8,4 +8,6 @@ public interface IMongoDbEntityStore : IEntityStore
 {
     Task SaveEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
         where TEntity : Entity;
+    Task DeleteEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+        where TEntity : Entity;
 }
