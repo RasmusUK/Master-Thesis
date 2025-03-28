@@ -1,4 +1,6 @@
+using EventSource.Core.Interfaces;
 using EventSource.Infrastructure;
+using EventSource.Persistence;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

@@ -10,6 +10,7 @@ namespace EventSource.Persistence;
 
 public class MongoDbService : IMongoDbService
 {
+    private readonly MongoClient mongoClient;
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
     public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
     public IMongoDatabase database { get; init; }
@@ -26,7 +27,7 @@ public class MongoDbService : IMongoDbService
             throw new ArgumentException("MongoDb database name is required");
 
         var mongoUrl = MongoUrl.Create(eventStoreOptions.ConnectionString);
-        var mongoClient = new MongoClient(mongoUrl);
+        mongoClient = new MongoClient(mongoUrl);
         database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
 
         EventCollection = database.GetCollection<MongoDbEvent>(nameof(MongoDbEvent));
@@ -37,6 +38,8 @@ public class MongoDbService : IMongoDbService
 
     public IMongoCollection<TEntity> GetCollection<TEntity>(string collectionName) =>
         database.GetCollection<TEntity>(collectionName);
+
+    public Task<IClientSessionHandle> StartSessionAsync() => mongoClient.StartSessionAsync();
 }
 
 public class GuidAsStringConvention : IMemberMapConvention

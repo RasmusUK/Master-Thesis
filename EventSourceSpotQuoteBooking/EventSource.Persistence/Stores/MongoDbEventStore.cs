@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoDbEventStore : IEventStore
+public class MongoDbEventStore : IEventStore, IMongoDbEventStore
 {
     private readonly IMongoCollection<MongoDbEvent> collection;
     private readonly IPersonalDataInterceptor personalDataInterceptor;
@@ -25,6 +25,12 @@ public class MongoDbEventStore : IEventStore
     {
         e = await personalDataInterceptor.ProcessEventForStorage(e);
         await collection.InsertOneAsync(new MongoDbEvent(e));
+    }
+
+    public async Task SaveEventAsync(Event e, IClientSessionHandle session)
+    {
+        e = await personalDataInterceptor.ProcessEventForStorage(e);
+        await collection.InsertOneAsync(session, new MongoDbEvent(e));
     }
 
     public async Task<IReadOnlyCollection<Event>> GetEventsAsync()

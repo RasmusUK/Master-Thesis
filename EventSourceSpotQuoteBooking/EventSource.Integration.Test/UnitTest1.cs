@@ -16,6 +16,7 @@ public class UnitTest1 : IDisposable
     private readonly IReplayService replayService;
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityStore mongoDbEntityStore;
+    private readonly IRepository<Quote> quoteRepository;
 
     public UnitTest1(
         IEventProcessor eventProcessor,
@@ -24,7 +25,8 @@ public class UnitTest1 : IDisposable
         IEntityHistoryService entityHistoryService,
         IReplayService replayService,
         IMongoDbService mongoDbService,
-        IEntityStore mongoDbEntityStore
+        IEntityStore mongoDbEntityStore,
+        IRepository<Quote> quoteRepository
     )
     {
         this.eventProcessor = eventProcessor;
@@ -34,6 +36,7 @@ public class UnitTest1 : IDisposable
         this.replayService = replayService;
         this.mongoDbService = mongoDbService;
         this.mongoDbEntityStore = mongoDbEntityStore;
+        this.quoteRepository = quoteRepository;
         eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
@@ -293,6 +296,20 @@ public class UnitTest1 : IDisposable
         );
         Assert.NotNull(address);
         Assert.Equal(booking.Test, address);
+    }
+
+    [Fact]
+    public async Task Test13()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest");
+
+        var quoteId = await quoteRepository.CreateAsync(quote);
+        var quoteReturned = await quoteRepository.ReadByIdAsync(quoteId);
+        Assert.NotNull(quoteReturned);
+        Assert.Equal(quote.Id, quoteReturned.Id);
+        Assert.Equal(quote.Price, quoteReturned.Price);
+        Assert.Equal(quote.Currency, quoteReturned.Currency);
+        Assert.Equal(quote.Name, quoteReturned.Name);
     }
 
     public void Dispose()

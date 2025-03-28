@@ -13,11 +13,6 @@ public class SpotQuoteBooking : Entity
     public ShippingDetails ShippingDetails { get; private set; }
     public DateTime ValidUntil { get; private set; }
 
-    public override void Apply(Event e)
-    {
-        Apply((dynamic)e);
-    }
-
     private void Apply(CreateSpotQuoteBookingEvent e)
     {
         AddressFrom = e.AddressFrom;

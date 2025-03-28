@@ -11,7 +11,21 @@ public abstract class Entity
         Id = Guid.NewGuid();
     }
 
-    public abstract void Apply(Event e);
+    public void Apply(Event e)
+    {
+        var method = GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .FirstOrDefault(m =>
+                m.Name == nameof(Apply)
+                && m.GetParameters().Length == 1
+                && m.GetParameters()[0].ParameterType == e.GetType()
+            );
+
+        if (method is not null)
+            method.Invoke(this, new object[] { e });
+        else
+            Apply(e);
+    }
 
     public static TEntity Create<TEntity>()
         where TEntity : Entity

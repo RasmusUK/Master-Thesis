@@ -31,6 +31,9 @@ public static class DependencyInjection
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
             .AddSingleton<IMongoDbService, MongoDbService>()
             .AddSingleton<IEntityStore, MongoDbEntityStore>()
+            .AddSingleton<IMongoDbEntityStore, MongoDbEntityStore>()
             .AddSingleton<IEventStore, MongoDbEventStore>()
-            .AddSingleton<IPersonalDataStore, MongoDbPersonalDataStore>();
+            .AddSingleton<IMongoDbEventStore, MongoDbEventStore>()
+            .AddSingleton<IPersonalDataStore, MongoDbPersonalDataStore>()
+            .AddSingleton(typeof(IRepository<>), typeof(Repository<>));
 }
