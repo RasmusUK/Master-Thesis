@@ -5,5 +5,5 @@ namespace EventSource.Persistence.Interfaces;
 
 public interface IMongoDbEventStore
 {
-    Task SaveEventAsync(Event e, IClientSessionHandle session);
+    Task InsertEventAsync(Event e, IClientSessionHandle session);
 }

@@ -35,17 +35,7 @@ public class EventProcessor : IEventProcessor
         var entity = await ProcessEntityEventAsync(e);
         if (e.EntityId is null || e.EntityId == Guid.Empty)
             e.EntityId = entity.Id;
-        await eventStore.SaveEventAsync(e);
-        await ProcessSaveEntityAsync(entity);
-        await ProcessEventHandlerAsync(e);
-        return entity;
-    }
-
-    public async Task<Entity> ProcessReplayAsync(Event e)
-    {
-        var entity = await ProcessEntityEventAsync(e);
-        if (e.EntityId is null || e.EntityId == Guid.Empty)
-            e.EntityId = entity.Id;
+        await eventStore.InsertEventAsync(e);
         await ProcessSaveEntityAsync(entity);
         await ProcessEventHandlerAsync(e);
         return entity;
@@ -89,7 +79,7 @@ public class EventProcessor : IEventProcessor
     }
 
     private Task ProcessSaveEntityAsync(Entity entity) =>
-        (Task)((dynamic)entityStore).SaveEntityAsync((dynamic)entity);
+        (Task)((dynamic)entityStore).UpsertEntityAsync((dynamic)entity);
 
     public async Task<TEntity> GetEntityAsync<TEntity>(Guid id)
         where TEntity : Entity =>

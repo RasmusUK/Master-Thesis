@@ -8,11 +8,17 @@ public class ReplayService : IReplayService
 {
     private readonly IEventStore eventStore;
     private readonly IEventProcessor eventProcessor;
+    private readonly IEntityStore entityStore;
 
-    public ReplayService(IEventStore eventStore, IEventProcessor eventProcessor)
+    public ReplayService(
+        IEventStore eventStore,
+        IEventProcessor eventProcessor,
+        IEntityStore entityStore
+    )
     {
         this.eventStore = eventStore;
         this.eventProcessor = eventProcessor;
+        this.entityStore = entityStore;
     }
 
     public async Task ReplayAllEventsAsync()
@@ -57,13 +63,13 @@ public class ReplayService : IReplayService
 
     public Task ReplayEventsAsync(IReadOnlyCollection<Event> events) => ProcessEvents(events);
 
-    public Task ReplayEventAsync(Event e) => eventProcessor.ProcessReplayAsync(e);
+    public Task ReplayEventAsync(Event e) => eventProcessor.ProcessAsync(e);
 
     private async Task ProcessEvents(IReadOnlyCollection<Event> events)
     {
         foreach (var e in events)
         {
-            await eventProcessor.ProcessReplayAsync(e);
+            await eventProcessor.ProcessAsync(e);
         }
     }
 }

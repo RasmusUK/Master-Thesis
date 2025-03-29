@@ -250,7 +250,7 @@ public class UnitTest1 : IDisposable
         var mongoDbEntityStore = new MongoDbEntityStore(mongoDbService);
         var booking = new Booking();
         booking.CustomerName = "Test10";
-        await mongoDbEntityStore.SaveEntityAsync(booking);
+        await mongoDbEntityStore.UpsertEntityAsync(booking);
         var bookingReturned = await mongoDbEntityStore.GetEntityByFilterAsync<Booking>(b =>
             b.CustomerName == "Test10"
         );
@@ -288,7 +288,7 @@ public class UnitTest1 : IDisposable
         var booking = new Booking();
         booking.CustomerName = "Test10";
         booking.Test = new Address("from", "to", "zip", "zipcode");
-        await mongoDbEntityStore.SaveEntityAsync(booking);
+        await mongoDbEntityStore.UpsertEntityAsync(booking);
 
         var address = await mongoDbEntityStore.GetProjectionByFilterAsync<Booking, Address>(
             b => b.CustomerName == "Test10",
@@ -456,6 +456,54 @@ public class UnitTest1 : IDisposable
         Assert.Single(events);
         var e = events.First();
         Assert.Equal(e.EntityId, id);
+    }
+
+    [Fact]
+    public async Task RepoCreateUpdateEvent()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote.Price = 200;
+        await quoteRepository.UpdateAsync(quote);
+
+        var events = await eventStore.GetEventsByEntityIdAsync(id);
+        Assert.Equal(2, events.Count);
+    }
+
+    [Fact]
+    public async Task RepoCreateDeleteEvent()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        await quoteRepository.DeleteAsync(quote);
+
+        var events = await eventStore.GetEventsByEntityIdAsync(id);
+        Assert.Equal(2, events.Count);
+    }
+
+    [Fact]
+    public async Task RepoReplayEvent()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote.Price = 200;
+        await quoteRepository.UpdateAsync(quote);
+
+        quote.Price = 300;
+        await quoteRepository.UpdateAsync(quote);
+
+        var events = await eventStore.GetEventsByEntityIdAsync(id);
+        Assert.Equal(3, events.Count);
+
+        await replayService.ReplayEventAsync(events.ToList()[1]);
+        var quoteReturned = await quoteRepository.ReadByIdAsync(id);
+        Assert.Equal(200, quoteReturned.Price);
     }
 
     public void Dispose()

@@ -31,8 +31,8 @@ public class Repository<T> : IRepository<T>
         try
         {
             session.StartTransaction();
-            await eventStore.SaveEventAsync(e, session);
-            await entityStore.SaveEntityAsync(entity, session);
+            await eventStore.InsertEventAsync(e, session);
+            await entityStore.InsertEntityAsync(entity, session);
             await session.CommitTransactionAsync();
             return entity.Id;
         }
@@ -79,8 +79,8 @@ public class Repository<T> : IRepository<T>
         try
         {
             session.StartTransaction();
-            await eventStore.SaveEventAsync(e, session);
-            await entityStore.SaveEntityAsync(entity, session);
+            await eventStore.InsertEventAsync(e, session);
+            await entityStore.UpdateEntityAsync(entity, session);
             await session.CommitTransactionAsync();
         }
         catch
@@ -97,7 +97,7 @@ public class Repository<T> : IRepository<T>
         try
         {
             session.StartTransaction();
-            await eventStore.SaveEventAsync(e, session);
+            await eventStore.InsertEventAsync(e, session);
             await entityStore.DeleteEntityAsync(entity, session);
             await session.CommitTransactionAsync();
         }

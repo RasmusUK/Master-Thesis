@@ -4,7 +4,7 @@ namespace EventSource.Core.Interfaces;
 
 public interface IEntityStore
 {
-    Task SaveEntityAsync<TEntity>(TEntity entity)
+    Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity;
 
     Task<TEntity?> GetEntityByFilterAsync<TEntity>(Expression<Func<TEntity, bool>> filter)

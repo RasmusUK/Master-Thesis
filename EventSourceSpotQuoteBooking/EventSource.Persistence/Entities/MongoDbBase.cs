@@ -73,7 +73,7 @@ public abstract class MongoDbBase<T>
             return null;
 
         var openGenericType = KnownGenericEventTypes.FirstOrDefault(t =>
-            t.FullName == baseTypeName
+            t.FullName.Replace("`1", "") == baseTypeName
         );
 
         return openGenericType?.MakeGenericType(argType);

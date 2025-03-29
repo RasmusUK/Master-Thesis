@@ -21,14 +21,18 @@ public class MongoDbEventStore : IEventStore, IMongoDbEventStore
         collection = mongoDbService.EventCollection;
     }
 
-    public async Task SaveEventAsync(Event e)
+    public async Task InsertEventAsync(Event e)
     {
+        if (await EventExistsAsync(e))
+            return;
         e = await personalDataInterceptor.ProcessEventForStorage(e);
         await collection.InsertOneAsync(new MongoDbEvent(e));
     }
 
-    public async Task SaveEventAsync(Event e, IClientSessionHandle session)
+    public async Task InsertEventAsync(Event e, IClientSessionHandle session)
     {
+        if (await EventExistsAsync(e))
+            return;
         e = await personalDataInterceptor.ProcessEventForStorage(e);
         await collection.InsertOneAsync(session, new MongoDbEvent(e));
     }
@@ -95,4 +99,6 @@ public class MongoDbEventStore : IEventStore, IMongoDbEventStore
 
         return processedEvents.ToList();
     }
+
+    private Task<bool> EventExistsAsync(Event e) => collection.Find(x => x.Id == e.Id).AnyAsync();
 }

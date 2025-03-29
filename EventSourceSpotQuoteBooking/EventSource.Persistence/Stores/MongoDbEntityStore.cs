@@ -1,12 +1,11 @@
 using System.Linq.Expressions;
 using EventSource.Core;
-using EventSource.Core.Interfaces;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoDbEntityStore : IEntityStore, IMongoDbEntityStore
+public class MongoDbEntityStore : IMongoDbEntityStore
 {
     private readonly IMongoDbService mongoDbService;
 
@@ -15,7 +14,7 @@ public class MongoDbEntityStore : IEntityStore, IMongoDbEntityStore
         this.mongoDbService = mongoDbService;
     }
 
-    public async Task SaveEntityAsync<TEntity>(TEntity entity)
+    public async Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity
     {
         var collection = GetCollection<TEntity>();
@@ -24,12 +23,19 @@ public class MongoDbEntityStore : IEntityStore, IMongoDbEntityStore
         await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
 
-    public async Task SaveEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+    public async Task InsertEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+        where TEntity : Entity
+    {
+        var collection = GetCollection<TEntity>();
+        await collection.InsertOneAsync(session, entity);
+    }
+
+    public async Task UpdateEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
         where TEntity : Entity
     {
         var collection = GetCollection<TEntity>();
         var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
-        var updateOptions = new ReplaceOptions { IsUpsert = true };
+        var updateOptions = new ReplaceOptions { IsUpsert = false };
         await collection.ReplaceOneAsync(session, filter, entity, updateOptions);
     }
 

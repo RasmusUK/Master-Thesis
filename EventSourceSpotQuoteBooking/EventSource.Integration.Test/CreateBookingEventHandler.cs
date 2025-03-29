@@ -15,6 +15,6 @@ public class CreateBookingEventHandler : IEventHandler<CreateBookingEvent>
     {
         var booking = await entityStore.GetEntityByIdAsync<Booking>(e.EntityId.Value);
         booking.Name = "Booking";
-        await entityStore.SaveEntityAsync(booking);
+        await entityStore.UpsertEntityAsync(booking);
     }
 }

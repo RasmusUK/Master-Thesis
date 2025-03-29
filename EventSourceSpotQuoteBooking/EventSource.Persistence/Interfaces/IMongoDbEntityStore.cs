@@ -6,7 +6,9 @@ namespace EventSource.Persistence.Interfaces;
 
 public interface IMongoDbEntityStore : IEntityStore
 {
-    Task SaveEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+    Task InsertEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
+        where TEntity : Entity;
+    Task UpdateEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
         where TEntity : Entity;
     Task DeleteEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
         where TEntity : Entity;
