@@ -27,31 +27,21 @@ public class Repository<T> : IRepository<T>
 
     public async Task<Guid> CreateAsync(T entity)
     {
-        await ExecuteInTransactionAsync(async session =>
-        {
-            await eventStore.InsertEventAsync(new CreateEvent<T>(entity), session);
-            await entityStore.InsertEntityAsync(entity, session);
-        });
-
+        await eventStore.InsertEventAsync(new CreateEvent<T>(entity));
+        await entityStore.InsertEntityAsync(entity);
         return entity.Id;
     }
 
     public async Task UpdateAsync(T entity)
     {
-        await ExecuteInTransactionAsync(async session =>
-        {
-            await eventStore.InsertEventAsync(new UpdateEvent<T>(entity), session);
-            await entityStore.UpdateEntityAsync(entity, session);
-        });
+        await eventStore.InsertEventAsync(new UpdateEvent<T>(entity));
+        await entityStore.UpdateEntityAsync(entity);
     }
 
     public async Task DeleteAsync(T entity)
     {
-        await ExecuteInTransactionAsync(async session =>
-        {
-            await eventStore.InsertEventAsync(new DeleteEvent<T>(entity), session);
-            await entityStore.DeleteEntityAsync(entity, session);
-        });
+        await eventStore.InsertEventAsync(new DeleteEvent<T>(entity));
+        await entityStore.DeleteEntityAsync(entity);
     }
 
     public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
@@ -99,4 +89,33 @@ public class Repository<T> : IRepository<T>
             throw;
         }
     }
+
+    // public async Task<Guid> CreateAsync(T entity)
+    // {
+    //     await ExecuteInTransactionAsync(async session =>
+    //     {
+    //         await eventStore.InsertEventAsync(new CreateEvent<T>(entity), session);
+    //         await entityStore.InsertEntityAsync(entity, session);
+    //     });
+    //
+    //     return entity.Id;
+    // }
+    //
+    // public async Task UpdateAsync(T entity)
+    // {
+    //     await ExecuteInTransactionAsync(async session =>
+    //     {
+    //         await eventStore.InsertEventAsync(new UpdateEvent<T>(entity), session);
+    //         await entityStore.UpdateEntityAsync(entity, session);
+    //     });
+    // }
+    //
+    // public async Task DeleteAsync(T entity)
+    // {
+    //     await ExecuteInTransactionAsync(async session =>
+    //     {
+    //         await eventStore.InsertEventAsync(new DeleteEvent<T>(entity), session);
+    //         await entityStore.DeleteEntityAsync(entity, session);
+    //     });
+    // }
 }

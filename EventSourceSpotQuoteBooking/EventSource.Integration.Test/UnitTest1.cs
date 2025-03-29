@@ -1,9 +1,10 @@
-﻿using EventSource.Application.Interfaces;
+﻿using System.Diagnostics;
+using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
-using EventSource.Persistence.Entities;
 using EventSource.Persistence.Interfaces;
 using EventSource.Persistence.Stores;
 using MongoDB.Driver;
+using Xunit.Abstractions;
 
 namespace EventSource.Core.Test;
 
@@ -17,6 +18,7 @@ public class UnitTest1 : IDisposable
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityStore mongoDbEntityStore;
     private readonly IRepository<Quote> quoteRepository;
+    private readonly ITestOutputHelper testOutputHelper;
 
     public UnitTest1(
         IEventProcessor eventProcessor,
@@ -26,7 +28,8 @@ public class UnitTest1 : IDisposable
         IReplayService replayService,
         IMongoDbService mongoDbService,
         IEntityStore mongoDbEntityStore,
-        IRepository<Quote> quoteRepository
+        IRepository<Quote> quoteRepository,
+        ITestOutputHelper testOutputHelper
     )
     {
         this.eventProcessor = eventProcessor;
@@ -37,6 +40,7 @@ public class UnitTest1 : IDisposable
         this.mongoDbService = mongoDbService;
         this.mongoDbEntityStore = mongoDbEntityStore;
         this.quoteRepository = quoteRepository;
+        this.testOutputHelper = testOutputHelper;
         eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
@@ -554,6 +558,45 @@ public class UnitTest1 : IDisposable
         Assert.Equal(200.0, history[1].Price);
         Assert.Equal(300.0, history[2].Price);
         Assert.Equal(300.0, history[3].Price);
+    }
+
+    [Fact]
+    public async Task PerformanceTest10X()
+    {
+        await quoteRepository.CreateAsync(new Quote(100.0, "DKK", "Warmup"));
+
+        var runs = 10;
+        var count = 100;
+        var timings = new List<long>();
+
+        for (var iteration = 1; iteration <= runs; iteration++)
+        {
+            var quotes = Enumerable
+                .Range(0, count)
+                .Select(i => new Quote(i + iteration * 10000, "DKK", $"Quote{i}"))
+                .ToArray();
+
+            var stopwatch = Stopwatch.StartNew();
+            var tasks = quotes.Select(q => quoteRepository.CreateAsync(q)).ToArray();
+            await Task.WhenAll(tasks);
+            stopwatch.Stop();
+
+            var elapsed = stopwatch.ElapsedMilliseconds;
+            timings.Add(elapsed);
+            testOutputHelper.WriteLine($"Run {iteration}: Inserted {count} quotes in {elapsed} ms");
+        }
+
+        var average = timings.Average();
+        var min = timings.Min();
+        var max = timings.Max();
+
+        testOutputHelper.WriteLine($"\nInserted {runs * count} quotes in {timings.Sum()} ms");
+        testOutputHelper.WriteLine($"Average: {average:F2} ms");
+        testOutputHelper.WriteLine($"Min: {min} ms");
+        testOutputHelper.WriteLine($"Max: {max} ms");
+
+        var fetchedQuotes = await quoteRepository.ReadAllAsync();
+        Assert.Equal(runs * count + 1, fetchedQuotes.Count);
     }
 
     public void Dispose()

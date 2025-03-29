@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoDbEventStore : IEventStore, IMongoDbEventStore
+public class MongoDbEventStore : IMongoDbEventStore
 {
     private readonly IMongoCollection<MongoDbEvent> collection;
     private readonly IPersonalDataInterceptor personalDataInterceptor;

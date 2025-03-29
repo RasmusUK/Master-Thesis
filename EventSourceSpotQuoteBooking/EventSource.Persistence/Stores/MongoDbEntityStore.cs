@@ -14,6 +14,13 @@ public class MongoDbEntityStore : IMongoDbEntityStore
         this.mongoDbService = mongoDbService;
     }
 
+    public async Task InsertEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity
+    {
+        var collection = GetCollection<TEntity>();
+        await collection.InsertOneAsync(entity);
+    }
+
     public async Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity
     {
@@ -31,6 +38,15 @@ public class MongoDbEntityStore : IMongoDbEntityStore
     {
         var collection = GetCollection<TEntity>();
         await collection.InsertOneAsync(session, entity);
+    }
+
+    public async Task UpdateEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity
+    {
+        var collection = GetCollection<TEntity>();
+        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
+        var updateOptions = new ReplaceOptions { IsUpsert = false };
+        await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
 
     public async Task UpdateEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)

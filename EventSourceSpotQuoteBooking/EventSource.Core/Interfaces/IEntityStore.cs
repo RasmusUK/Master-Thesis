@@ -4,12 +4,14 @@ namespace EventSource.Core.Interfaces;
 
 public interface IEntityStore
 {
+    Task InsertEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity;
     Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity;
-
+    Task UpdateEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity;
     Task DeleteEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity;
-
     Task<TEntity?> GetEntityByFilterAsync<TEntity>(Expression<Func<TEntity, bool>> filter)
         where TEntity : Entity;
     Task<TEntity?> GetEntityByIdAsync<TEntity>(Guid id)
