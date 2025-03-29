@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using EventSource.Core;
 using EventSource.Persistence.Interfaces;
@@ -8,6 +9,7 @@ namespace EventSource.Persistence.Stores;
 public class MongoDbEntityStore : IMongoDbEntityStore
 {
     private readonly IMongoDbService mongoDbService;
+    private readonly ConcurrentDictionary<Type, object> collectionCache = new();
 
     public MongoDbEntityStore(IMongoDbService mongoDbService)
     {
@@ -100,13 +102,21 @@ public class MongoDbEntityStore : IMongoDbEntityStore
         where TEntity : Entity =>
         await GetCollection<TEntity>().Find(filter).Project(projection).ToListAsync();
 
-    private IMongoCollection<TEntity> GetCollection<TEntity>()
-        where TEntity : Entity
+    private IMongoCollection<T> GetCollection<T>()
     {
-        var collectionName = typeof(TEntity).FullName;
-        if (string.IsNullOrEmpty(collectionName))
-            throw new InvalidOperationException("Collection name is null.");
-        return mongoDbService.GetCollection<TEntity>(collectionName);
-        ;
+        var type = typeof(T);
+
+        return (IMongoCollection<T>)
+            collectionCache.GetOrAdd(
+                type,
+                _ =>
+                {
+                    var collectionName = type.FullName;
+                    if (string.IsNullOrEmpty(collectionName))
+                        throw new InvalidOperationException("Collection name is null.");
+
+                    return mongoDbService.GetCollection<T>(collectionName);
+                }
+            );
     }
 }

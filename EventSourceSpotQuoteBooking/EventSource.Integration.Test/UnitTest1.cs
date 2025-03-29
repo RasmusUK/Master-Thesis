@@ -566,7 +566,7 @@ public class UnitTest1 : IDisposable
         await quoteRepository.CreateAsync(new Quote(100.0, "DKK", "Warmup"));
 
         var runs = 10;
-        var count = 100;
+        var count = 250;
         var timings = new List<long>();
 
         for (var iteration = 1; iteration <= runs; iteration++)
