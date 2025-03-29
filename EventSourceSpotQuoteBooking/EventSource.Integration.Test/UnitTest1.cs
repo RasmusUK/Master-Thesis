@@ -606,7 +606,7 @@ public class UnitTest1 : IDisposable
             $"\nFetched {fetchedQuotes.Count} quotes in {stopwatchReadQuotes.ElapsedMilliseconds} ms"
         );
         testOutputHelper.WriteLine(
-            $"Average time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedQuotes.Count} ms"
+            $"Average time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedQuotes.Count:F2} ms"
         );
 
         var stopwatchReadEvents = Stopwatch.StartNew();
@@ -616,7 +616,7 @@ public class UnitTest1 : IDisposable
             $"\nFetched {events.Count} events in {stopwatchReadEvents.ElapsedMilliseconds} ms"
         );
         testOutputHelper.WriteLine(
-            $"Average time per event: {stopwatchReadEvents.ElapsedMilliseconds / events.Count} ms"
+            $"Average time per event: {stopwatchReadEvents.ElapsedMilliseconds / events.Count:F2} ms"
         );
 
         var stopwatchReplay = Stopwatch.StartNew();
@@ -626,7 +626,7 @@ public class UnitTest1 : IDisposable
             $"\nReplayed {events.Count} events in {stopwatchReplay.ElapsedMilliseconds} ms"
         );
         testOutputHelper.WriteLine(
-            $"Average time per event: {stopwatchReplay.ElapsedMilliseconds / events.Count} ms"
+            $"Average time per event: {stopwatchReplay.ElapsedMilliseconds / events.Count:F2} ms"
         );
 
         Assert.Equal(runs * count + 1, fetchedQuotes.Count);
