@@ -3,6 +3,7 @@ using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Interfaces;
+using MongoDB.Driver;
 
 namespace EventSource.Persistence;
 
@@ -26,21 +27,31 @@ public class Repository<T> : IRepository<T>
 
     public async Task<Guid> CreateAsync(T entity)
     {
-        var e = new CreateEvent<T>(entity);
-        using var session = await mongoDbService.StartSessionAsync();
-        try
+        await ExecuteInTransactionAsync(async session =>
         {
-            session.StartTransaction();
-            await eventStore.InsertEventAsync(e, session);
+            await eventStore.InsertEventAsync(new CreateEvent<T>(entity), session);
             await entityStore.InsertEntityAsync(entity, session);
-            await session.CommitTransactionAsync();
-            return entity.Id;
-        }
-        catch
+        });
+
+        return entity.Id;
+    }
+
+    public async Task UpdateAsync(T entity)
+    {
+        await ExecuteInTransactionAsync(async session =>
         {
-            await session.AbortTransactionAsync();
-            throw;
-        }
+            await eventStore.InsertEventAsync(new UpdateEvent<T>(entity), session);
+            await entityStore.UpdateEntityAsync(entity, session);
+        });
+    }
+
+    public async Task DeleteAsync(T entity)
+    {
+        await ExecuteInTransactionAsync(async session =>
+        {
+            await eventStore.InsertEventAsync(new DeleteEvent<T>(entity), session);
+            await entityStore.DeleteEntityAsync(entity, session);
+        });
     }
 
     public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
@@ -72,33 +83,14 @@ public class Repository<T> : IRepository<T>
         Expression<Func<T, bool>> filter
     ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
 
-    public async Task UpdateAsync(T entity)
+    private async Task ExecuteInTransactionAsync(Func<IClientSessionHandle, Task> action)
     {
-        var e = new UpdateEvent<T>(entity);
         using var session = await mongoDbService.StartSessionAsync();
-        try
-        {
-            session.StartTransaction();
-            await eventStore.InsertEventAsync(e, session);
-            await entityStore.UpdateEntityAsync(entity, session);
-            await session.CommitTransactionAsync();
-        }
-        catch
-        {
-            await session.AbortTransactionAsync();
-            throw;
-        }
-    }
+        session.StartTransaction();
 
-    public async Task DeleteAsync(T entity)
-    {
-        var e = new DeleteEvent<T>(entity);
-        using var session = await mongoDbService.StartSessionAsync();
         try
         {
-            session.StartTransaction();
-            await eventStore.InsertEventAsync(e, session);
-            await entityStore.DeleteEntityAsync(entity, session);
+            await action(session);
             await session.CommitTransactionAsync();
         }
         catch
