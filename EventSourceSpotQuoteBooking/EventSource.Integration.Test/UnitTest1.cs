@@ -599,13 +599,38 @@ public class UnitTest1 : IDisposable
         testOutputHelper.WriteLine($"Min per quote: {min / count:F2} ms");
         testOutputHelper.WriteLine($"Max per quote: {max / count:F2} ms");
 
-        var stopwatchRead = Stopwatch.StartNew();
+        var stopwatchReadQuotes = Stopwatch.StartNew();
         var fetchedQuotes = await quoteRepository.ReadAllAsync();
-        stopwatchRead.Stop();
+        stopwatchReadQuotes.Stop();
         testOutputHelper.WriteLine(
-            $"\nFetched {fetchedQuotes.Count} quotes in {stopwatchRead.ElapsedMilliseconds} ms"
+            $"\nFetched {fetchedQuotes.Count} quotes in {stopwatchReadQuotes.ElapsedMilliseconds} ms"
         );
+        testOutputHelper.WriteLine(
+            $"\nAverage time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedQuotes.Count} ms"
+        );
+
+        var stopwatchReadEvents = Stopwatch.StartNew();
+        var events = await eventStore.GetEventsAsync();
+        stopwatchReadEvents.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {events.Count} events in {stopwatchReadEvents.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"\nAverage time per event: {stopwatchReadEvents.ElapsedMilliseconds / events.Count} ms"
+        );
+
+        var stopwatchReplay = Stopwatch.StartNew();
+        await replayService.ReplayAllEventsAsync();
+        stopwatchReplay.Stop();
+        testOutputHelper.WriteLine(
+            $"\nReplayed {events.Count} events in {stopwatchReplay.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"\nAverage time per event: {stopwatchReplay.ElapsedMilliseconds / events.Count} ms"
+        );
+
         Assert.Equal(runs * count + 1, fetchedQuotes.Count);
+        Assert.Equal(runs * count + 1, events.Count);
     }
 
     public void Dispose()
