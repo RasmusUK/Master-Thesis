@@ -612,6 +612,16 @@ public class UnitTest1 : IDisposable
             $"Average time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedQuotes.Count:F2} ms"
         );
 
+        var stopwatchReadObjectsProjection = Stopwatch.StartNew();
+        var fetchedProjections = await quoteRepository.ReadAllProjectionsAsync(b => b.Name);
+        stopwatchReadObjectsProjection.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {fetchedProjections.Count} projections in {stopwatchReadObjectsProjection.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"Average time per projection: {stopwatchReadObjectsProjection.ElapsedMilliseconds / fetchedProjections.Count:F2} ms"
+        );
+
         var stopwatchReadEvents = Stopwatch.StartNew();
         var events = await eventStore.GetEventsAsync();
         stopwatchReadEvents.Stop();
@@ -623,7 +633,7 @@ public class UnitTest1 : IDisposable
         );
 
         var stopwatchReplay = Stopwatch.StartNew();
-        await replayService.ReplayAllEventsAsync();
+        await replayService.ReplayEventsAsync(events);
         stopwatchReplay.Stop();
         testOutputHelper.WriteLine(
             $"\nReplayed {events.Count} events in {stopwatchReplay.ElapsedMilliseconds} ms"
@@ -674,14 +684,24 @@ public class UnitTest1 : IDisposable
         testOutputHelper.WriteLine($"Min per object: {min / count:F2} ms");
         testOutputHelper.WriteLine($"Max per object: {max / count:F2} ms");
 
-        var stopwatchReadQuotes = Stopwatch.StartNew();
+        var stopwatchReadObjects = Stopwatch.StartNew();
         var fetchedObjects = await bigObjectRepository.ReadAllAsync();
-        stopwatchReadQuotes.Stop();
+        stopwatchReadObjects.Stop();
         testOutputHelper.WriteLine(
-            $"\nFetched {fetchedObjects.Count} objects in {stopwatchReadQuotes.ElapsedMilliseconds} ms"
+            $"\nFetched {fetchedObjects.Count} objects in {stopwatchReadObjects.ElapsedMilliseconds} ms"
         );
         testOutputHelper.WriteLine(
-            $"Average time per object: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedObjects.Count:F2} ms"
+            $"Average time per object: {stopwatchReadObjects.ElapsedMilliseconds / fetchedObjects.Count:F2} ms"
+        );
+
+        var stopwatchReadObjectsProjection = Stopwatch.StartNew();
+        var fetchedProjections = await bigObjectRepository.ReadAllProjectionsAsync(b => b.Name);
+        stopwatchReadObjectsProjection.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {fetchedProjections.Count} projections in {stopwatchReadObjectsProjection.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"Average time per projection: {stopwatchReadObjectsProjection.ElapsedMilliseconds / fetchedProjections.Count:F2} ms"
         );
 
         var stopwatchReadEvents = Stopwatch.StartNew();
@@ -695,7 +715,7 @@ public class UnitTest1 : IDisposable
         );
 
         var stopwatchReplay = Stopwatch.StartNew();
-        await replayService.ReplayAllEventsAsync();
+        await replayService.ReplayEventsAsync(events);
         stopwatchReplay.Stop();
         testOutputHelper.WriteLine(
             $"\nReplayed {events.Count} events in {stopwatchReplay.ElapsedMilliseconds} ms"
