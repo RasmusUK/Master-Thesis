@@ -4,7 +4,11 @@ public class BigObject : Entity
 {
     // 11 + (11 * 6) + (11 * 6 * 4) + (11 * 6 * 4 * 2) = 869 nodes
     public string Name { get; set; } = "Parent BigObject";
-
+    public int Number { get; set; } = 42000;
+    public double Price { get; set; } = 42000;
+    public string Description { get; set; } = "This is a big object";
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Level1Node Node1 { get; set; } = new Level1Node();
 
     public List<Level1Node> Children { get; set; } =
@@ -14,6 +18,11 @@ public class BigObject : Entity
 public class Level1Node
 {
     public string Name { get; set; }
+    public int Number { get; set; } = 42000;
+    public double Price { get; set; } = 42000;
+    public string Description { get; set; } = "This is a big object";
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Level2Node Node2 { get; set; }
     public List<Level2Node> Siblings { get; set; }
 
@@ -31,6 +40,11 @@ public class Level1Node
 public class Level2Node
 {
     public string Name { get; set; }
+    public int Number { get; set; } = 42000;
+    public double Price { get; set; } = 42000;
+    public string Description { get; set; } = "This is a big object";
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Level3Node Node3 { get; set; }
     public List<Level3Node> Leaves { get; set; }
 
@@ -45,6 +59,11 @@ public class Level2Node
 public class Level3Node
 {
     public string Name { get; set; }
+    public int Number { get; set; } = 42000;
+    public double Price { get; set; } = 42000;
+    public string Description { get; set; } = "This is a big object";
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public List<Level4Node> Details { get; set; }
 
     public Level3Node(string name = "Level3 Node")
@@ -60,6 +79,11 @@ public class Level3Node
 public class Level4Node
 {
     public string Info { get; set; }
+    public int Number { get; set; } = 42000;
+    public double Price { get; set; } = 42000;
+    public string Description { get; set; } = "This is a big object";
+    public Guid Guid { get; set; } = Guid.NewGuid();
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public Level4Node(string info = "Level4 Info")
     {
