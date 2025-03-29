@@ -599,7 +599,12 @@ public class UnitTest1 : IDisposable
         testOutputHelper.WriteLine($"Min per quote: {min / count:F2} ms");
         testOutputHelper.WriteLine($"Max per quote: {max / count:F2} ms");
 
+        var stopwatchRead = Stopwatch.StartNew();
         var fetchedQuotes = await quoteRepository.ReadAllAsync();
+        stopwatchRead.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {fetchedQuotes.Count} quotes in {stopwatchRead.ElapsedMilliseconds} ms"
+        );
         Assert.Equal(runs * count + 1, fetchedQuotes.Count);
     }
 
