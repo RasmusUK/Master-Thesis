@@ -18,6 +18,7 @@ public class UnitTest1 : IDisposable
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityStore mongoDbEntityStore;
     private readonly IRepository<Quote> quoteRepository;
+    private readonly IRepository<BigObject> bigObjectRepository;
     private readonly ITestOutputHelper testOutputHelper;
 
     public UnitTest1(
@@ -29,7 +30,8 @@ public class UnitTest1 : IDisposable
         IMongoDbService mongoDbService,
         IEntityStore mongoDbEntityStore,
         IRepository<Quote> quoteRepository,
-        ITestOutputHelper testOutputHelper
+        ITestOutputHelper testOutputHelper,
+        IRepository<BigObject> bigObjectRepository
     )
     {
         this.eventProcessor = eventProcessor;
@@ -41,6 +43,7 @@ public class UnitTest1 : IDisposable
         this.mongoDbEntityStore = mongoDbEntityStore;
         this.quoteRepository = quoteRepository;
         this.testOutputHelper = testOutputHelper;
+        this.bigObjectRepository = bigObjectRepository;
         eventProcessor.RegisterEventToEntity<CreateBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<AddCustomerToBookingEvent, Booking>();
         eventProcessor.RegisterEventToEntity<UpdateBookingAddressEvent, Booking>();
@@ -561,7 +564,7 @@ public class UnitTest1 : IDisposable
     }
 
     [Fact]
-    public async Task PerformanceTest10X()
+    public async Task PerformanceTestSmallObject()
     {
         await quoteRepository.CreateAsync(new Quote(100.0, "DKK", "Warmup"));
 
@@ -630,6 +633,78 @@ public class UnitTest1 : IDisposable
         );
 
         Assert.Equal(runs * count + 1, fetchedQuotes.Count);
+        Assert.Equal(runs * count + 1, events.Count);
+    }
+
+    [Fact]
+    public async Task PerformanceTestBigObject()
+    {
+        await bigObjectRepository.CreateAsync(new BigObject());
+
+        var runs = 10;
+        var count = 250;
+        var timings = new List<long>();
+
+        for (var iteration = 1; iteration <= runs; iteration++)
+        {
+            var objects = Enumerable.Range(0, count).Select(i => new BigObject()).ToArray();
+
+            var stopwatch = Stopwatch.StartNew();
+            var tasks = objects.Select(q => bigObjectRepository.CreateAsync(q)).ToArray();
+            await Task.WhenAll(tasks);
+            stopwatch.Stop();
+
+            var elapsed = stopwatch.ElapsedMilliseconds;
+            timings.Add(elapsed);
+            testOutputHelper.WriteLine(
+                $"Run {iteration}: Inserted {count} objects in {elapsed} ms"
+            );
+        }
+
+        var average = timings.Average();
+        var min = timings.Min();
+        var max = timings.Max();
+
+        var nrOfObjects = runs * count;
+        testOutputHelper.WriteLine($"\nInserted {nrOfObjects} objects in {timings.Sum()} ms");
+        testOutputHelper.WriteLine($"Average: {average:F2} ms");
+        testOutputHelper.WriteLine($"Min: {min:F2} ms");
+        testOutputHelper.WriteLine($"Max: {max:F2} ms");
+        testOutputHelper.WriteLine($"Average per object: {average / count:F2} ms");
+        testOutputHelper.WriteLine($"Min per object: {min / count:F2} ms");
+        testOutputHelper.WriteLine($"Max per object: {max / count:F2} ms");
+
+        var stopwatchReadQuotes = Stopwatch.StartNew();
+        var fetchedObjects = await bigObjectRepository.ReadAllAsync();
+        stopwatchReadQuotes.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {fetchedObjects.Count} objects in {stopwatchReadQuotes.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"Average time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedObjects.Count:F2} ms"
+        );
+
+        var stopwatchReadEvents = Stopwatch.StartNew();
+        var events = await eventStore.GetEventsAsync();
+        stopwatchReadEvents.Stop();
+        testOutputHelper.WriteLine(
+            $"\nFetched {events.Count} events in {stopwatchReadEvents.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"Average time per event: {stopwatchReadEvents.ElapsedMilliseconds / events.Count:F2} ms"
+        );
+
+        var stopwatchReplay = Stopwatch.StartNew();
+        await replayService.ReplayAllEventsAsync();
+        stopwatchReplay.Stop();
+        testOutputHelper.WriteLine(
+            $"\nReplayed {events.Count} events in {stopwatchReplay.ElapsedMilliseconds} ms"
+        );
+        testOutputHelper.WriteLine(
+            $"Average time per event: {stopwatchReplay.ElapsedMilliseconds / events.Count:F2} ms"
+        );
+
+        Assert.Equal(runs * count + 1, fetchedObjects.Count);
         Assert.Equal(runs * count + 1, events.Count);
     }
 
