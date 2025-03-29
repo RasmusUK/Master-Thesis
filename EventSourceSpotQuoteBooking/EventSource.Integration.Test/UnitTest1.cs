@@ -681,7 +681,7 @@ public class UnitTest1 : IDisposable
             $"\nFetched {fetchedObjects.Count} objects in {stopwatchReadQuotes.ElapsedMilliseconds} ms"
         );
         testOutputHelper.WriteLine(
-            $"Average time per quote: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedObjects.Count:F2} ms"
+            $"Average time per object: {stopwatchReadQuotes.ElapsedMilliseconds / fetchedObjects.Count:F2} ms"
         );
 
         var stopwatchReadEvents = Stopwatch.StartNew();
