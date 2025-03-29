@@ -1,5 +1,6 @@
 using EventSource.Application.Interfaces;
 using EventSource.Core;
+using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
 
 namespace EventSource.Application;
@@ -29,10 +30,48 @@ public class EntityHistoryService : IEntityHistoryService
 
         foreach (var e in events)
         {
-            var entity = await eventProcessor.ProcessHistoryAsync(e);
-            entitiesWithEvents.Add(((T)entity, e));
+            if (IsRepoEvent(e, typeof(T)))
+            {
+                var entity = GetEntityFromRepoEvent<T>(e);
+                entitiesWithEvents.Add((entity, e));
+            }
+            else
+            {
+                var entity = await eventProcessor.ProcessHistoryAsync(e);
+                entitiesWithEvents.Add(((T)entity, e));
+            }
         }
 
         return entitiesWithEvents;
+    }
+
+    private static bool IsRepoEvent(Event e, Type targetEntityType)
+    {
+        var eventType = e.GetType();
+
+        return eventType.IsGenericType
+            && IsSubclassOfRepoEvent(eventType)
+            && eventType.GenericTypeArguments[0] == targetEntityType;
+    }
+
+    private static bool IsSubclassOfRepoEvent(Type? type)
+    {
+        while (type is not null && type != typeof(object))
+        {
+            var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
+            if (cur == typeof(RepoEvent<>))
+                return true;
+
+            type = type.BaseType;
+        }
+
+        return false;
+    }
+
+    private static T GetEntityFromRepoEvent<T>(Event e)
+        where T : Entity
+    {
+        dynamic dynEvent = e;
+        return (T)dynEvent.Entity;
     }
 }

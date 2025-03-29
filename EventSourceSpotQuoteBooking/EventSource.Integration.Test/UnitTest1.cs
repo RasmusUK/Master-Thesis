@@ -533,6 +533,29 @@ public class UnitTest1 : IDisposable
         Assert.Null(quoteReturned2);
     }
 
+    [Fact]
+    public async Task RepoGetHistory()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote.Price = 200;
+        await quoteRepository.UpdateAsync(quote);
+
+        quote.Price = 300;
+        await quoteRepository.UpdateAsync(quote);
+
+        await quoteRepository.DeleteAsync(quote);
+
+        var history = (await entityHistoryService.GetEntityHistoryAsync<Quote>(id)).ToList();
+        Assert.Equal(4, history.Count);
+        Assert.Equal(100.0, history[0].Price);
+        Assert.Equal(200.0, history[1].Price);
+        Assert.Equal(300.0, history[2].Price);
+        Assert.Equal(300.0, history[3].Price);
+    }
+
     public void Dispose()
     {
         using var cursor = mongoDbService
