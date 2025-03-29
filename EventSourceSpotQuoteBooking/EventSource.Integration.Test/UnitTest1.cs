@@ -506,6 +506,33 @@ public class UnitTest1 : IDisposable
         Assert.Equal(200, quoteReturned.Price);
     }
 
+    [Fact]
+    public async Task RepoReplayEvents()
+    {
+        var quote = new Quote(100.0, "DKK", "QuoteTest1");
+
+        var id = await quoteRepository.CreateAsync(quote);
+
+        quote.Price = 200;
+        await quoteRepository.UpdateAsync(quote);
+
+        quote.Price = 300;
+        await quoteRepository.UpdateAsync(quote);
+
+        await quoteRepository.DeleteAsync(quote);
+
+        var events = (await eventStore.GetEventsByEntityIdAsync(id)).ToList();
+
+        await replayService.ReplayEventsAsync(events.Take(3).ToList());
+        var quoteReturned = await quoteRepository.ReadByIdAsync(id);
+        Assert.Equal(300, quoteReturned.Price);
+
+        await replayService.ReplayEventAsync(events.Last());
+
+        var quoteReturned2 = await quoteRepository.ReadByIdAsync(id);
+        Assert.Null(quoteReturned2);
+    }
+
     public void Dispose()
     {
         using var cursor = mongoDbService

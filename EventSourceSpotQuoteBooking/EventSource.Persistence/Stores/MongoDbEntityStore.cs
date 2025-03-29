@@ -23,6 +23,9 @@ public class MongoDbEntityStore : IMongoDbEntityStore
         await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
 
+    public Task DeleteEntityAsync<TEntity>(TEntity entity)
+        where TEntity : Entity => GetCollection<TEntity>().DeleteOneAsync(e => e.Id == entity.Id);
+
     public async Task InsertEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
         where TEntity : Entity
     {
