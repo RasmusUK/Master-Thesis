@@ -590,10 +590,14 @@ public class UnitTest1 : IDisposable
         var min = timings.Min();
         var max = timings.Max();
 
-        testOutputHelper.WriteLine($"\nInserted {runs * count} quotes in {timings.Sum()} ms");
+        var nrOfQuotes = runs * count;
+        testOutputHelper.WriteLine($"\nInserted {nrOfQuotes} quotes in {timings.Sum()} ms");
         testOutputHelper.WriteLine($"Average: {average:F2} ms");
-        testOutputHelper.WriteLine($"Min: {min} ms");
-        testOutputHelper.WriteLine($"Max: {max} ms");
+        testOutputHelper.WriteLine($"Min: {min:F2} ms");
+        testOutputHelper.WriteLine($"Max: {max:F2} ms");
+        testOutputHelper.WriteLine($"Average per quote: {average / count:F2} ms");
+        testOutputHelper.WriteLine($"Min per quote: {min / count:F2} ms");
+        testOutputHelper.WriteLine($"Max per quote: {max / count:F2} ms");
 
         var fetchedQuotes = await quoteRepository.ReadAllAsync();
         Assert.Equal(runs * count + 1, fetchedQuotes.Count);
