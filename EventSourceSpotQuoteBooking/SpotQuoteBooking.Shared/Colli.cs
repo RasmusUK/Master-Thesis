@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.Shared;
+namespace SpotQuoteBooking.EventSource.Core;
 
 public record Colli(
     int NumberOfUnits,

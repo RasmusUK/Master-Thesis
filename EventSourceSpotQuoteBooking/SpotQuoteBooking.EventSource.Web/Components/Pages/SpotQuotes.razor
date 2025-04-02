@@ -1,0 +1,43 @@
+﻿@page "/spot-quotes"
+@using SpotQuoteBooking.EventSource.Core
+@using global::EventSource.Core.Interfaces
+@using Direction = SpotQuoteBooking.EventSource.Core.Direction
+@inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
+
+<PageTitle>Spot Quotes</PageTitle>
+
+<h1>Spot Quotes</h1>
+
+<MudDataGrid Items="@spotQuoteBookings">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="Id" />
+        <PropertyColumn Property="x => x.ValidUntil" Title="Valid until" />
+    </Columns>
+</MudDataGrid>
+
+<p>Count = @spotQuoteBookings.Count()</p>
+
+@code {
+    private IEnumerable<SpotQuoteBooking> spotQuoteBookings = new List<SpotQuoteBooking>();
+    SpotQuoteBooking spotQuoteBooking = new SpotQuoteBooking
+    {
+        AddressFrom = new Address("My company", "DK", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
+        AddressTo = new Address("My company", "DK", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
+        Direction = Direction.Import,
+        TransportMode = TransportMode.Courier,
+        Incoterm = Incoterm.DDP,
+        ValidUntil = DateTime.UtcNow.AddDays(5),
+        ShippingDetails = new ShippingDetails(
+            new List<Colli>
+            {
+                new (1, ColliType.Box, 10, 20, 30, 200, 0.1)
+            }, 
+            "Some description", 
+            DateTime.UtcNow.AddDays(2))
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        spotQuoteBookings = await SpotQuoteBookingRepository.ReadAllAsync();
+    }
+}

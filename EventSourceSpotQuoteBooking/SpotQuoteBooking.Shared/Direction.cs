@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.Shared;
+namespace SpotQuoteBooking.EventSource.Core;
 
 public record Direction(string Value)
 {

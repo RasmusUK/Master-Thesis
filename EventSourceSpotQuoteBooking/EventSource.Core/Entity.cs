@@ -4,12 +4,7 @@ namespace EventSource.Core;
 
 public abstract class Entity
 {
-    public Guid Id { get; init; }
-
-    protected Entity()
-    {
-        Id = Guid.NewGuid();
-    }
+    public Guid Id { get; init; } = Guid.NewGuid();
 
     public void Apply(Event e)
     {

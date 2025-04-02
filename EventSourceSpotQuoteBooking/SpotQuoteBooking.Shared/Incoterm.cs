@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.Shared;
+namespace SpotQuoteBooking.EventSource.Core;
 
 public record Incoterm(string Value)
 {

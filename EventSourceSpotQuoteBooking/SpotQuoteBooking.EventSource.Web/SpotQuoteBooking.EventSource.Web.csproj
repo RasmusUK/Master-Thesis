@@ -19,4 +19,9 @@
       <ProjectReference Include="..\SpotQuoteBooking.Shared\SpotQuoteBooking.Shared.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="MudBlazor" Version="8.5.1" />
+    </ItemGroup>
+
+
 </Project>
