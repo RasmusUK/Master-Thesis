@@ -86,9 +86,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.Draft,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
@@ -107,9 +104,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.SpotQuote,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
@@ -130,9 +124,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.Accepted,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
@@ -149,9 +140,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.Requote,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
@@ -170,9 +158,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.NotAccepted,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
@@ -193,9 +178,6 @@ public class Seeder : ISeeder
                 ValidUntil = DateTime.UtcNow.AddDays(5),
                 ShippingDetails = shippingDetails,
                 Status = BookingStatus.Requote,
-                Email = "mail@test.com",
-                Attention = "Attention",
-                CompanyName = "My company",
             };
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }

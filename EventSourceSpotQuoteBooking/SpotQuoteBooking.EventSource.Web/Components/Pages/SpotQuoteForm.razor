@@ -5,7 +5,6 @@
 @using SpotQuoteBooking.Shared
 @using SpotQuoteBooking.Shared.Data
 @using Direction = SpotQuoteBooking.Shared.Direction
-@using System.Runtime.CompilerServices
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 @inject IRepository<Customer> CustomerRepository
 @inject NavigationManager Navigation
@@ -26,18 +25,21 @@
                         <MudAutocomplete @bind-Value="@transportMode"
                                          Label="Transport mode"
                                          Clearable="true"
+                                         MaxItems="null"
                                          SearchFunc="@SearchTransportModes"/>
                     </MudItem>
                     <MudItem xs="3">
                         <MudAutocomplete @bind-Value="@incoterm"
                                          Label="Incoterm"
                                          Clearable="true"
+                                         MaxItems="null"
                                          SearchFunc="@SearchIncoterms"/>
                     </MudItem>
                     <MudItem xs="3">
                         <MudAutocomplete @bind-Value="@customer"
                                          Label="Customers"
                                          Clearable="true"
+                                         MaxItems="100"
                                          SearchFunc="@SearchCustomers"/>
                     </MudItem>
                     <MudItem xs="3">
@@ -59,22 +61,23 @@
             <MudCardContent>
                 <MudGrid>
                     <MudItem xs="3">
-                        <MudTextField @bind-Value="model.CompanyName" Label="Company name" Clearable="true"></MudTextField>
+                        <MudTextField @bind-Value="model.AddressFrom.CompanyName" Label="Company name" Clearable="true"></MudTextField>
                     </MudItem>
                     <MudItem xs="3">
-                        <MudTextField @bind-Value="model.Email" Label="Email" Clearable="true"></MudTextField>
+                        <MudTextField @bind-Value="model.AddressFrom.Email" Label="Email" Clearable="true"></MudTextField>
                     </MudItem>
                     <MudItem xs="3">
-                        <MudTextField @bind-Value="model.Phone" Label="Phone" Clearable="true"></MudTextField>
+                        <MudTextField @bind-Value="model.AddressFrom.Phone" Label="Phone" Clearable="true"></MudTextField>
                     </MudItem>
                     <MudItem xs="3">
-                        <MudTextField @bind-Value="model.Attention" Label="Attention" Clearable="true"></MudTextField>
+                        <MudTextField @bind-Value="model.AddressFrom.Attention" Label="Attention" Clearable="true"></MudTextField>
                     </MudItem>
                     <MudFlexBreak />
                     <MudItem xs="3">
                         <MudAutocomplete @bind-Value="model.AddressFrom.Country"
                                          Label="Country"
                                          Clearable="true"
+                                         MaxItems="null"
                                          SearchFunc="@SearchCountries"/>
                     </MudItem>
                     <MudItem xs="3">
@@ -110,11 +113,6 @@
     <MudStep Title="Write the tests">If you write the tests first you will design a better API when you write the code</MudStep>
     <MudStep Title="Write the documentation" SecondaryText="... or not">Some consider writing readable code more important than writing documentation.</MudStep>
 </MudStepper>
-
-
-
-
-
 
 
 <MudButton OnClick="@Save">@(IsNew ? "Create" : "Update")</MudButton>
