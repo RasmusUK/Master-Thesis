@@ -10,34 +10,61 @@
 
 <h3>@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</h3>
 
-<MudStack Row="true">
-    <MudAutocomplete  @bind-Value="@transportMode" 
-                      Label="Transport mode" 
-                      Dense="true" 
-                      SearchFunc="@SearchTransportModes"/>
-    <MudAutocomplete  @bind-Value="@incoterm" 
-                      Label="Incoterm" 
-                      Dense="true" 
-                      SearchFunc="@SearchIncoterms"/>
-    <MudAutocomplete  @bind-Value="@customer" 
-                      Label="Customers" 
-                      Dense="true" 
-                      SearchFunc="@SearchCustomers"/>
-    <MudStack>
-        <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@direction">
-            <MudToggleItem Value="@Direction.Import" Text="Import" />
-            <MudToggleItem Value="@Direction.Export" Text="Export" />
-        </MudToggleGroup>
-    </MudStack>
-</MudStack>
+<MudStepper NonLinear>
+    <MudStep Title="General info">
+        <MudStack>
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6">Basic info</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack Row="true">
+                        <MudAutocomplete @bind-Value="@transportMode"
+                                         Label="Transport mode"
+                                         Dense="true"
+                                         SearchFunc="@SearchTransportModes"/>
+                        <MudAutocomplete @bind-Value="@incoterm"
+                                         Label="Incoterm"
+                                         Dense="true"
+                                         SearchFunc="@SearchIncoterms"/>
+                        <MudAutocomplete @bind-Value="@customer"
+                                         Label="Customers"
+                                         Dense="true"
+                                         SearchFunc="@SearchCustomers"/>
+                        <MudStack>
+                            <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@direction">
+                                <MudToggleItem Value="@Direction.Import" Text="Import"/>
+                                <MudToggleItem Value="@Direction.Export" Text="Export"/>
+                            </MudToggleGroup>
+                        </MudStack>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6">From</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudStack Row="true">
+                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+            </MudStack>
+
+
+    </MudStep>
+    <MudStep Title="Write the tests">If you write the tests first you will design a better API when you write the code</MudStep>
+    <MudStep Title="Write the documentation" SecondaryText="... or not">Some consider writing readable code more important than writing documentation.</MudStep>
+</MudStepper>
 
 
 
-<MudStack Row="true">
-    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-</MudStack>
+
+
+
 
 <MudButton OnClick="@Save">@(IsNew ? "Create" : "Update")</MudButton>
 
