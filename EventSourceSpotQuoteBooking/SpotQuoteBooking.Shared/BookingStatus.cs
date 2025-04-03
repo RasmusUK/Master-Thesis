@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.EventSource.Core;
+namespace SpotQuoteBooking.Shared;
 
 public record BookingStatus(string Value)
 {
@@ -8,4 +8,6 @@ public record BookingStatus(string Value)
     public static readonly BookingStatus Requote = new("Requote");
     public static readonly BookingStatus PendingSubmit = new("Pending Submit");
     public static readonly BookingStatus NotAccepted = new("Not Accepted");
+
+    public override string ToString() => Value;
 }

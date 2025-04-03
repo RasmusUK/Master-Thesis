@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.EventSource.Core;
+namespace SpotQuoteBooking.Shared;
 
 public record TransportMode(string Value)
 {
@@ -8,16 +8,5 @@ public record TransportMode(string Value)
     public static readonly TransportMode Rail = new("Rail");
     public static readonly TransportMode Courier = new("Courier");
 
-    public static TransportMode GetTransportMode(string value)
-    {
-        return value switch
-        {
-            "Air" => Air,
-            "Sea" => Sea,
-            "Road" => Road,
-            "Rail" => Rail,
-            "Courier" => Courier,
-            _ => throw new ArgumentException($"Unknown transport mode: {value}"),
-        };
-    }
+    public override string ToString() => Value;
 }

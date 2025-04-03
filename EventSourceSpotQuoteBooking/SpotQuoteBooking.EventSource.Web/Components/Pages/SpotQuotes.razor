@@ -1,6 +1,7 @@
 ﻿@page "/spot-quotes"
 @using SpotQuoteBooking.EventSource.Core
 @using global::EventSource.Core.Interfaces
+@using SpotQuoteBooking.Shared
 @using Direction = SpotQuoteBooking.EventSource.Core.Direction
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 
@@ -8,21 +9,26 @@
 
 <h1>Spot Quotes</h1>
 
-<MudDataGrid Items="@spotQuoteBookings">
+<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings">
     <Columns>
-        <PropertyColumn Property="x => x.Id" Title="Id" />
-        <PropertyColumn Property="x => x.ValidUntil" Title="Valid until" />
+        <PropertyColumn Property="x => x.CreatedAt" Title="Created Time"/>
+        <PropertyColumn Property="x => x.TransportMode" Title="Mode"/>
+        <PropertyColumn Property="x => x.AddressFrom.CountryCode" Title="Pickup"/>
+        <PropertyColumn Property="x => x.AddressTo.CountryCode" Title="Delivery"/>
+        <PropertyColumn Property="x => x.ValidUntil" Title="Validity"/>
+        <PropertyColumn Property="x => x.Status" Title="Status"/>
     </Columns>
+    <PagerContent>
+        <MudDataGridPager T="SpotQuoteBooking"/>
+    </PagerContent>
 </MudDataGrid>
-
-<p>Count = @spotQuoteBookings.Count()</p>
 
 @code {
     private IEnumerable<SpotQuoteBooking> spotQuoteBookings = new List<SpotQuoteBooking>();
     SpotQuoteBooking spotQuoteBooking = new SpotQuoteBooking
     {
-        AddressFrom = new Address("My company", "DK", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
-        AddressTo = new Address("My company", "DK", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
+        AddressFrom = new Address("My company", "DE", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
+        AddressTo = new Address("My company", "SE", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
         Direction = Direction.Import,
         TransportMode = TransportMode.Courier,
         Incoterm = Incoterm.DDP,
@@ -33,7 +39,8 @@
                 new (1, ColliType.Box, 10, 20, 30, 200, 0.1)
             }, 
             "Some description", 
-            DateTime.UtcNow.AddDays(2))
+            DateTime.UtcNow.AddDays(2)),
+        Status = BookingStatus.Draft
     };
 
     protected override async Task OnInitializedAsync()
