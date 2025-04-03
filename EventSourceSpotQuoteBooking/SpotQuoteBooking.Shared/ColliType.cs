@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.EventSource.Core;
+namespace SpotQuoteBooking.Shared;
 
 public record ColliType(string Value)
 {
@@ -15,5 +15,13 @@ public record ColliType(string Value)
             "Container" => Container,
             _ => throw new ArgumentException($"Unknown colli type: {value}"),
         };
+    }
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is ColliType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(ColliType)}");
     }
 }

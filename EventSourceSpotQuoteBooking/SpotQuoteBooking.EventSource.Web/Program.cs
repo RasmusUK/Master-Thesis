@@ -4,8 +4,9 @@ using SpotQuoteBooking.EventSource.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 builder.Services.AddMudServices();
+
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddEventSourcing(builder.Configuration);
 
@@ -17,8 +18,10 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseAntiforgery();
 app.UseHttpsRedirection();
+
+app.UseAntiforgery();
+
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
 

@@ -1,27 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-    <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <Content Include="..\.dockerignore">
-        <Link>.dockerignore</Link>
-      </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\EventSource.Infrastructure\EventSource.Infrastructure.csproj" />
-      <ProjectReference Include="..\SpotQuoteBooking.EventSource.Application\SpotQuoteBooking.EventSource.Application.csproj" />
-      <ProjectReference Include="..\SpotQuoteBooking.Shared\SpotQuoteBooking.Shared.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <PackageReference Include="MudBlazor" Version="8.5.1" />
-    </ItemGroup>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
 
 
+  <ItemGroup>
+    <PackageReference Include="MudBlazor" Version="8.*" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventSource.Infrastructure\EventSource.Infrastructure.csproj" />
+    <ProjectReference Include="..\SpotQuoteBooking.EventSource.Core\SpotQuoteBooking.EventSource.Core.csproj" />
+  </ItemGroup>
 </Project>

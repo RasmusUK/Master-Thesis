@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.EventSource.Core;
+namespace SpotQuoteBooking.Shared;
 
 public record Direction(string Value)
 {
@@ -13,5 +13,13 @@ public record Direction(string Value)
             "Export" => Export,
             _ => throw new ArgumentException($"Unknown direction: {value}"),
         };
+    }
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is Direction other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(Direction)}");
     }
 }

@@ -1,3 +1,5 @@
+using SpotQuoteBooking.Shared;
+
 namespace SpotQuoteBooking.EventSource.Core;
 
 public record Colli(

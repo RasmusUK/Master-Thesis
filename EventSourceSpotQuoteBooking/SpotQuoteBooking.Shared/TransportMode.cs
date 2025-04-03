@@ -9,4 +9,12 @@ public record TransportMode(string Value)
     public static readonly TransportMode Courier = new("Courier");
 
     public override string ToString() => Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is TransportMode other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(TransportMode)}");
+    }
 }

@@ -1,6 +1,6 @@
 namespace SpotQuoteBooking.Shared;
 
-public record BookingStatus(string Value)
+public record BookingStatus(string Value) : IComparable
 {
     public static readonly BookingStatus SpotQuote = new("Spot Quote");
     public static readonly BookingStatus Accepted = new("Accepted");
@@ -10,4 +10,12 @@ public record BookingStatus(string Value)
     public static readonly BookingStatus NotAccepted = new("Not Accepted");
 
     public override string ToString() => Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is BookingStatus other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(BookingStatus)}");
+    }
 }

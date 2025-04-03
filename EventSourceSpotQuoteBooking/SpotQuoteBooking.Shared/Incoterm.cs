@@ -1,4 +1,4 @@
-namespace SpotQuoteBooking.EventSource.Core;
+namespace SpotQuoteBooking.Shared;
 
 public record Incoterm(string Value)
 {
@@ -16,24 +16,11 @@ public record Incoterm(string Value)
     public static readonly Incoterm DDU = new("DDU");
     public static readonly Incoterm DAT = new("DAT");
 
-    public static Incoterm GetIncoterm(string value)
+    public int CompareTo(object? obj)
     {
-        return value switch
-        {
-            "EXW" => EXW,
-            "FCA" => FCA,
-            "FAS" => FAS,
-            "FOB" => FOB,
-            "CFR" => CFR,
-            "CIF" => CIF,
-            "CPT" => CPT,
-            "CIP" => CIP,
-            "DAP" => DAP,
-            "DPU" => DPU,
-            "DDP" => DDP,
-            "DDU" => DDU,
-            "DAT" => DAT,
-            _ => throw new ArgumentException($"Unknown incoterm: {value}"),
-        };
+        if (obj is Incoterm other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(Incoterm)}");
     }
 }
