@@ -1,6 +1,6 @@
 namespace SpotQuoteBooking.Shared;
 
-public record ColliType(string Value)
+public record ColliType(string Value) : IComparable
 {
     public static readonly ColliType Pallet = new("Pallet");
     public static readonly ColliType Box = new("Box");

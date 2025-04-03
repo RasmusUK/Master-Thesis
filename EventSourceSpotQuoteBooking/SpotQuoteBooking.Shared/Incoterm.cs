@@ -1,6 +1,6 @@
 namespace SpotQuoteBooking.Shared;
 
-public record Incoterm(string Value)
+public record Incoterm(string Value) : IComparable
 {
     public static readonly Incoterm EXW = new("EXW");
     public static readonly Incoterm FCA = new("FCA");

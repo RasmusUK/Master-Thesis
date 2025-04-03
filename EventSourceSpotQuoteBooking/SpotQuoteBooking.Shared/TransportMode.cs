@@ -1,6 +1,6 @@
 namespace SpotQuoteBooking.Shared;
 
-public record TransportMode(string Value)
+public record TransportMode(string Value) : IComparable
 {
     public static readonly TransportMode Air = new("Air");
     public static readonly TransportMode Sea = new("Sea");

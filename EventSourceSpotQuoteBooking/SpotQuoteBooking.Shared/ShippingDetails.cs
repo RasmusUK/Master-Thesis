@@ -1,5 +1,3 @@
-using SpotQuoteBooking.EventSource.Core;
-
 namespace SpotQuoteBooking.Shared;
 
 public record ShippingDetails(

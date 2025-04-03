@@ -1,6 +1,6 @@
 namespace SpotQuoteBooking.Shared;
 
-public record Direction(string Value)
+public record Direction(string Value) : IComparable
 {
     public static readonly Direction Import = new("Import");
     public static readonly Direction Export = new("Export");
