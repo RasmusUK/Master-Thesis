@@ -1,15 +1,21 @@
-@page "/SpotQuotes"
+@page "/spot-quotes"
 @using SpotQuoteBooking.EventSource.Core
 @using global::EventSource.Core.Interfaces
 @using SpotQuoteBooking.Shared
 @using Direction = SpotQuoteBooking.Shared.Direction
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
+@inject NavigationManager Navigation
 
 <PageTitle>Spot Quotes</PageTitle>
 
-<h1>Spot Quotes</h1>
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="pt-5 pb-5">
+    <h1>Spot Quotes</h1>
+    <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@CreateNew" Variant="Variant.Filled">
+        Create
+    </MudButton>
+</MudStack>
 
-<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings">
+<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick">
     <Columns>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time"/>
         <PropertyColumn Property="x => x.TransportMode" Title="Mode"/>
@@ -46,5 +52,15 @@
     protected override async Task OnInitializedAsync()
     {
         spotQuoteBookings = await SpotQuoteBookingRepository.ReadAllAsync();
+    }
+    
+    private void CreateNew()
+    {
+        Navigation.NavigateTo("/spot-quotes/create");
+    }
+
+    private void OnRowClick(DataGridRowClickEventArgs<SpotQuoteBooking> e)
+    {
+        Navigation.NavigateTo($"/spot-quotes/edit/{e.Item.Id}");
     }
 }

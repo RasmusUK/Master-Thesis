@@ -5,15 +5,7 @@ public record Direction(string Value) : IComparable
     public static readonly Direction Import = new("Import");
     public static readonly Direction Export = new("Export");
 
-    public static Direction GetDirection(string value)
-    {
-        return value switch
-        {
-            "Import" => Import,
-            "Export" => Export,
-            _ => throw new ArgumentException($"Unknown direction: {value}"),
-        };
-    }
+    public override string ToString() => Value;
 
     public int CompareTo(object? obj)
     {
@@ -22,4 +14,9 @@ public record Direction(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(Direction)}");
     }
+
+    public static IReadOnlyCollection<Direction> GetAll() =>
+        new List<Direction> { Import, Export }
+            .OrderBy(x => x.Value)
+            .ToList();
 }

@@ -16,6 +16,8 @@ public record Incoterm(string Value) : IComparable
     public static readonly Incoterm DDU = new("DDU");
     public static readonly Incoterm DAT = new("DAT");
 
+    public override string ToString() => Value;
+
     public int CompareTo(object? obj)
     {
         if (obj is Incoterm other)
@@ -23,4 +25,9 @@ public record Incoterm(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(Incoterm)}");
     }
+
+    public static IReadOnlyCollection<Incoterm> GetAll() =>
+        new List<Incoterm> { EXW, FCA, FAS, FOB, CFR, CIF, CPT, CIP, DAP, DPU, DDP, DDU, DAT }
+            .OrderBy(x => x.Value)
+            .ToList();
 }

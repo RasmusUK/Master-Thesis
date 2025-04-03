@@ -18,4 +18,9 @@ public record BookingStatus(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(BookingStatus)}");
     }
+
+    public static IReadOnlyCollection<BookingStatus> GetAll() =>
+        new List<BookingStatus> { SpotQuote, Accepted, Draft, Requote, PendingSubmit, NotAccepted }
+            .OrderBy(x => x.Value)
+            .ToList();
 }

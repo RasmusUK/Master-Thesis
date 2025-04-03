@@ -17,4 +17,9 @@ public record TransportMode(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(TransportMode)}");
     }
+
+    public static IReadOnlyCollection<TransportMode> GetAll() =>
+        new List<TransportMode> { Air, Sea, Road, Rail, Courier }
+            .OrderBy(x => x.Value)
+            .ToList();
 }

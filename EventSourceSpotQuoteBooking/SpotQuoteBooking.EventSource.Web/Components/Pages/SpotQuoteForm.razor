@@ -1,0 +1,93 @@
+@page "/spot-quotes/create"
+@page "/spot-quotes/edit/{Id:guid}"
+@using global::EventSource.Core.Interfaces
+@using SpotQuoteBooking.EventSource.Core
+@using SpotQuoteBooking.Shared
+@using Direction = SpotQuoteBooking.Shared.Direction
+@inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
+@inject IRepository<Customer> CustomerRepository
+@inject NavigationManager Navigation
+
+<h3>@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</h3>
+
+<MudStack Row="true">
+    <MudAutocomplete  @bind-Value="@transportMode" 
+                      Label="Transport mode" 
+                      Dense="true" 
+                      SearchFunc="@SearchTransportModes"/>
+    <MudAutocomplete  @bind-Value="@incoterm" 
+                      Label="Incoterm" 
+                      Dense="true" 
+                      SearchFunc="@SearchIncoterms"/>
+    <MudAutocomplete  @bind-Value="@customer" 
+                      Label="Customers" 
+                      Dense="true" 
+                      SearchFunc="@SearchCustomers"/>
+    <MudStack>
+        <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@direction">
+            <MudToggleItem Value="@Direction.Import" Text="Import" />
+            <MudToggleItem Value="@Direction.Export" Text="Export" />
+        </MudToggleGroup>
+    </MudStack>
+</MudStack>
+
+
+
+<MudStack Row="true">
+    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+    <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
+</MudStack>
+
+<MudButton OnClick="@Save">@(IsNew ? "Create" : "Update")</MudButton>
+
+@code {
+    [Parameter] public Guid? Id { get; set; }
+
+    private SpotQuoteBooking model = new();
+    private IEnumerable<Customer> customers = new List<Customer>();
+    private string textValue { get; set; } = string.Empty;
+    private TransportMode? transportMode;
+    private Incoterm? incoterm;
+    private Customer? customer;
+    private Direction direction = Direction.Import;
+    private readonly List<TransportMode> transportModes = TransportMode.GetAll().ToList();
+
+    private bool IsNew => Id == null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerRepository.ReadAllAsync();
+        if (!IsNew)
+        {
+            var existing = await SpotQuoteBookingRepository.ReadByIdAsync(Id!.Value);
+            if (existing is not null)
+                model = existing;
+        }
+    }
+
+    private async Task Save()
+    {
+        if (IsNew)
+            await SpotQuoteBookingRepository.CreateAsync(model);
+        else
+            await SpotQuoteBookingRepository.UpdateAsync(model);
+
+        Navigation.NavigateTo("/spot-quotes");
+    }
+
+    private async Task<IEnumerable<TransportMode>> SearchTransportModes(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            transportModes : 
+            transportModes.Where(x => x.Value.ToLower().Contains(value.ToLower()));
+    
+    private async Task<IEnumerable<Incoterm>> SearchIncoterms(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            Incoterm.GetAll() : 
+            Incoterm.GetAll().Where(x => x.Value.ToLower().Contains(value.ToLower())); 
+    
+    private async Task<IEnumerable<Customer>> SearchCustomers(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            customers : 
+            customers.Where(x => x.Name.ToLower().Contains(value.ToLower())); 
+}
