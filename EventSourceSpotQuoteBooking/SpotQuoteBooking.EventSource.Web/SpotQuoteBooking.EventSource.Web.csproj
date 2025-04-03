@@ -16,4 +16,9 @@
     <ProjectReference Include="..\EventSource.Infrastructure\EventSource.Infrastructure.csproj" />
     <ProjectReference Include="..\SpotQuoteBooking.EventSource.Core\SpotQuoteBooking.EventSource.Core.csproj" />
   </ItemGroup>
+
+
+  <ItemGroup>
+    <_ContentIncludedByDefault Remove="Data\Countries.json" />
+  </ItemGroup>
 </Project>

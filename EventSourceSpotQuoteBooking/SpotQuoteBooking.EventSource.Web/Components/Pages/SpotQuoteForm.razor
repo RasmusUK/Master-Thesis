@@ -3,57 +3,108 @@
 @using global::EventSource.Core.Interfaces
 @using SpotQuoteBooking.EventSource.Core
 @using SpotQuoteBooking.Shared
+@using SpotQuoteBooking.Shared.Data
 @using Direction = SpotQuoteBooking.Shared.Direction
+@using System.Runtime.CompilerServices
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 @inject IRepository<Customer> CustomerRepository
 @inject NavigationManager Navigation
+@inject ICountryFetcher CountryFetcher
 
 <h3>@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</h3>
 
 <MudStepper NonLinear>
     <MudStep Title="General info">
         <MudStack>
-            <MudCard>
-                <MudCardHeader>
-                    <MudText Typo="Typo.h6">Basic info</MudText>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudStack Row="true">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">Basic info</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="3">
                         <MudAutocomplete @bind-Value="@transportMode"
                                          Label="Transport mode"
-                                         Dense="true"
+                                         Clearable="true"
                                          SearchFunc="@SearchTransportModes"/>
+                    </MudItem>
+                    <MudItem xs="3">
                         <MudAutocomplete @bind-Value="@incoterm"
                                          Label="Incoterm"
-                                         Dense="true"
+                                         Clearable="true"
                                          SearchFunc="@SearchIncoterms"/>
+                    </MudItem>
+                    <MudItem xs="3">
                         <MudAutocomplete @bind-Value="@customer"
                                          Label="Customers"
-                                         Dense="true"
+                                         Clearable="true"
                                          SearchFunc="@SearchCustomers"/>
+                    </MudItem>
+                    <MudItem xs="3">
                         <MudStack>
                             <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@direction">
                                 <MudToggleItem Value="@Direction.Import" Text="Import"/>
                                 <MudToggleItem Value="@Direction.Export" Text="Export"/>
                             </MudToggleGroup>
                         </MudStack>
-                    </MudStack>
-                </MudCardContent>
-            </MudCard>
-            <MudCard>
-                <MudCardHeader>
-                    <MudText Typo="Typo.h6">From</MudText>
-                </MudCardHeader>
-                <MudCardContent>
-                    <MudStack Row="true">
-                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                        <MudTextField @bind-Value="textValue" Label="Outlined" Variant="Variant.Outlined" Margin="Margin.Dense"></MudTextField>
-                    </MudStack>
-                </MudCardContent>
-            </MudCard>
-            </MudStack>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
 
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6">From</MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.CompanyName" Label="Company name" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.Email" Label="Email" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.Phone" Label="Phone" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.Attention" Label="Attention" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem xs="3">
+                        <MudAutocomplete @bind-Value="model.AddressFrom.Country"
+                                         Label="Country"
+                                         Clearable="true"
+                                         SearchFunc="@SearchCountries"/>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.AddressFrom.ZipCode" Label="Zip code" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.AddressFrom.City" Label="City" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.AddressFrom.AddressLine1" Label="Address line 1" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudTextField @bind-Value="model.AddressFrom.AddressLine2" Label="Address line 2" Clearable="true"></MudTextField>
+                    </MudItem>
+                    <MudFlexBreak />
+                    <MudItem xs="3">
+                        @if (transportMode == TransportMode.Air)
+                        {
+                            <MudTextField @bind-Value="model.AddressFrom.Airport" Label="Airport" Clearable="true"></MudTextField>
+                        }
+                        @if (transportMode == TransportMode.Sea)
+                        {
+                            <MudTextField @bind-Value="model.AddressTo.Port" Label="Port" Clearable="true"></MudTextField>
+                        }
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+</MudStack>
 
     </MudStep>
     <MudStep Title="Write the tests">If you write the tests first you will design a better API when you write the code</MudStep>
@@ -71,20 +122,27 @@
 @code {
     [Parameter] public Guid? Id { get; set; }
 
-    private SpotQuoteBooking model = new();
+    private SpotQuoteBooking model = new()
+    {
+        AddressFrom = new Address(),
+        AddressTo = new Address()
+    };
     private IEnumerable<Customer> customers = new List<Customer>();
-    private string textValue { get; set; } = string.Empty;
+    private IEnumerable<Country> countries = new List<Country>();
+    private readonly List<TransportMode> transportModes = TransportMode.GetAll().ToList();
+
     private TransportMode? transportMode;
     private Incoterm? incoterm;
     private Customer? customer;
+    private Country? country;
     private Direction direction = Direction.Import;
-    private readonly List<TransportMode> transportModes = TransportMode.GetAll().ToList();
 
     private bool IsNew => Id == null;
 
     protected override async Task OnInitializedAsync()
     {
         customers = await CustomerRepository.ReadAllAsync();
+        countries = CountryFetcher.GetCountries();
         if (!IsNew)
         {
             var existing = await SpotQuoteBookingRepository.ReadByIdAsync(Id!.Value);
@@ -106,15 +164,21 @@
     private async Task<IEnumerable<TransportMode>> SearchTransportModes(string value, CancellationToken cancellationToken) => 
         string.IsNullOrEmpty(value) ? 
             transportModes : 
-            transportModes.Where(x => x.Value.ToLower().Contains(value.ToLower()));
+            transportModes.Where(x => x.Value.Contains(value, StringComparison.InvariantCultureIgnoreCase));
     
     private async Task<IEnumerable<Incoterm>> SearchIncoterms(string value, CancellationToken cancellationToken) => 
         string.IsNullOrEmpty(value) ? 
             Incoterm.GetAll() : 
-            Incoterm.GetAll().Where(x => x.Value.ToLower().Contains(value.ToLower())); 
+            Incoterm.GetAll().Where(x => x.Value.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
     
     private async Task<IEnumerable<Customer>> SearchCustomers(string value, CancellationToken cancellationToken) => 
         string.IsNullOrEmpty(value) ? 
             customers : 
-            customers.Where(x => x.Name.ToLower().Contains(value.ToLower())); 
+            customers.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
+    
+    private async Task<IEnumerable<Country>> SearchCountries(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            countries : 
+            countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
 }

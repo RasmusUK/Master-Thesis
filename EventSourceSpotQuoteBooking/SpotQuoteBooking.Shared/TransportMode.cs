@@ -5,7 +5,6 @@ public record TransportMode(string Value) : IComparable
     public static readonly TransportMode Air = new("Air");
     public static readonly TransportMode Sea = new("Sea");
     public static readonly TransportMode Road = new("Road");
-    public static readonly TransportMode Rail = new("Rail");
     public static readonly TransportMode Courier = new("Courier");
 
     public override string ToString() => Value;
@@ -19,7 +18,7 @@ public record TransportMode(string Value) : IComparable
     }
 
     public static IReadOnlyCollection<TransportMode> GetAll() =>
-        new List<TransportMode> { Air, Sea, Road, Rail, Courier }
+        new List<TransportMode> { Air, Sea, Road, Courier }
             .OrderBy(x => x.Value)
             .ToList();
 }

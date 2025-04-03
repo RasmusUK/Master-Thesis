@@ -2,6 +2,7 @@
 @using SpotQuoteBooking.EventSource.Core
 @using global::EventSource.Core.Interfaces
 @using SpotQuoteBooking.Shared
+@using SpotQuoteBooking.Shared.Data
 @using Direction = SpotQuoteBooking.Shared.Direction
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 @inject NavigationManager Navigation
@@ -15,12 +16,12 @@
     </MudButton>
 </MudStack>
 
-<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick">
+<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick" Loading="@loading">
     <Columns>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time"/>
         <PropertyColumn Property="x => x.TransportMode" Title="Mode"/>
-        <PropertyColumn Property="x => x.AddressFrom.CountryCode" Title="Pickup"/>
-        <PropertyColumn Property="x => x.AddressTo.CountryCode" Title="Delivery"/>
+        <PropertyColumn Property="x => x.AddressFrom.Country.Code" Title="Pickup"/>
+        <PropertyColumn Property="x => x.AddressTo.Country.Code" Title="Delivery"/>
         <PropertyColumn Property="x => x.ValidUntil" Title="Validity"/>
         <PropertyColumn Property="x => x.Status" Title="Status"/>
     </Columns>
@@ -31,27 +32,12 @@
 
 @code {
     private IEnumerable<SpotQuoteBooking> spotQuoteBookings = new List<SpotQuoteBooking>();
-    SpotQuoteBooking spotQuoteBooking = new SpotQuoteBooking
-    {
-        AddressFrom = new Address("My company", "DE", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
-        AddressTo = new Address("My company", "SE", "Denmark", "Copenhagen NW", "2400", "Lærkevej 2", null, "mail@email.com", "+45 12345678", "Something", null, null),
-        Direction = Direction.Import,
-        TransportMode = TransportMode.Courier,
-        Incoterm = Incoterm.DDP,
-        ValidUntil = DateTime.UtcNow.AddDays(5),
-        ShippingDetails = new ShippingDetails(
-            new List<Colli>
-            {
-                new (1, ColliType.Box, 10, 20, 30, 200, 0.1)
-            }, 
-            "Some description", 
-            DateTime.UtcNow.AddDays(2)),
-        Status = BookingStatus.Draft
-    };
+    private bool loading = true;
 
     protected override async Task OnInitializedAsync()
     {
         spotQuoteBookings = await SpotQuoteBookingRepository.ReadAllAsync();
+        loading = false;
     }
     
     private void CreateNew()
