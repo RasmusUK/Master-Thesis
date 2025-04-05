@@ -2,8 +2,6 @@
 @page "/spot-quotes/edit/{Id:guid}"
 @using global::EventSource.Core.Interfaces
 @using SpotQuoteBooking.EventSource.Core
-@using SpotQuoteBooking.Shared
-@using SpotQuoteBooking.Shared.Data
 @using Direction = SpotQuoteBooking.Shared.Direction
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 @inject IRepository<Customer> CustomerRepository
@@ -22,21 +20,21 @@
             <MudCardContent>
                 <MudGrid>
                     <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@transportMode"
+                        <MudAutocomplete @bind-Value="@model.TransportMode"
                                          Label="Transport mode"
                                          Clearable="true"
                                          MaxItems="null"
                                          SearchFunc="@SearchTransportModes"/>
                     </MudItem>
                     <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@incoterm"
+                        <MudAutocomplete @bind-Value="@model.Incoterm"
                                          Label="Incoterm"
                                          Clearable="true"
                                          MaxItems="null"
                                          SearchFunc="@SearchIncoterms"/>
                     </MudItem>
                     <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@customer"
+                        <MudAutocomplete @bind-Value="@model.Customer"
                                          Label="Customers"
                                          Clearable="true"
                                          MaxItems="100"
@@ -44,7 +42,7 @@
                     </MudItem>
                     <MudItem xs="3">
                         <MudStack>
-                            <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@direction">
+                            <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@model.Direction">
                                 <MudToggleItem Value="@Direction.Import" Text="Import"/>
                                 <MudToggleItem Value="@Direction.Export" Text="Export"/>
                             </MudToggleGroup>
@@ -54,61 +52,15 @@
             </MudCardContent>
         </MudCard>
 
-        <MudCard>
-            <MudCardHeader>
-                <MudText Typo="Typo.h6">From</MudText>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.CompanyName" Label="Company name" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.Email" Label="Email" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.Phone" Label="Phone" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.Attention" Label="Attention" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudFlexBreak />
-                    <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="model.AddressFrom.Country"
-                                         Label="Country"
-                                         Clearable="true"
-                                         MaxItems="null"
-                                         SearchFunc="@SearchCountries"/>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.ZipCode" Label="Zip code" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.City" Label="City" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudFlexBreak />
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.AddressLine1" Label="Address line 1" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudTextField @bind-Value="model.AddressFrom.AddressLine2" Label="Address line 2" Clearable="true"></MudTextField>
-                    </MudItem>
-                    <MudFlexBreak />
-                    <MudItem xs="3">
-                        @if (transportMode == TransportMode.Air)
-                        {
-                            <MudTextField @bind-Value="model.AddressFrom.Airport" Label="Airport" Clearable="true"></MudTextField>
-                        }
-                        @if (transportMode == TransportMode.Sea)
-                        {
-                            <MudTextField @bind-Value="model.AddressTo.Port" Label="Port" Clearable="true"></MudTextField>
-                        }
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
-</MudStack>
-
+        <AddressCard Title="From"
+                     @bind-Address="@model.AddressFrom"
+                     @bind-TransportMode="@model.TransportMode"
+                     SearchCountries="@SearchCountries" />
+        <AddressCard Title="To"
+                     @bind-Address="@model.AddressTo"
+                     @bind-TransportMode="@model.TransportMode"
+                     SearchCountries="@SearchCountries" />
+        </MudStack>
     </MudStep>
     <MudStep Title="Write the tests">If you write the tests first you will design a better API when you write the code</MudStep>
     <MudStep Title="Write the documentation" SecondaryText="... or not">Some consider writing readable code more important than writing documentation.</MudStep>
@@ -128,13 +80,7 @@
     private IEnumerable<Customer> customers = new List<Customer>();
     private IEnumerable<Country> countries = new List<Country>();
     private readonly List<TransportMode> transportModes = TransportMode.GetAll().ToList();
-
-    private TransportMode? transportMode;
-    private Incoterm? incoterm;
-    private Customer? customer;
-    private Country? country;
-    private Direction direction = Direction.Import;
-
+    
     private bool IsNew => Id == null;
 
     protected override async Task OnInitializedAsync()
@@ -147,6 +93,8 @@
             if (existing is not null)
                 model = existing;
         }
+
+        model.Direction ??= Direction.Import;
     }
 
     private async Task Save()

@@ -1,0 +1,63 @@
+<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.CompanyName" Label="Company name" Clearable="true" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.Email" Label="Email" Clearable="true" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.Phone" Label="Phone" Clearable="true" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.Attention" Label="Attention" Clearable="true" />
+            </MudItem>
+            <MudFlexBreak />
+            <MudItem xs="3">
+                <MudAutocomplete T="Country"
+                                 @bind-Value="Address.Country"
+                                 Label="Country"
+                                 Clearable="true"
+                                 MaxItems="null"
+                                 SearchFunc="SearchCountries" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.ZipCode" Label="Zip code" Clearable="true" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.City" Label="City" Clearable="true" />
+            </MudItem>
+            <MudFlexBreak />
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.AddressLine1" Label="Address line 1" Clearable="true" />
+            </MudItem>
+            <MudItem xs="3">
+                <MudTextField @bind-Value="Address.AddressLine2" Label="Address line 2" Clearable="true" />
+            </MudItem>
+            <MudFlexBreak />
+            <MudItem xs="3">
+                @if (TransportMode == TransportMode.Air)
+                {
+                    <MudTextField @bind-Value="Address.Airport" Label="Airport" Clearable="true" />
+                }
+                @if (TransportMode == TransportMode.Sea)
+                {
+                    <MudTextField @bind-Value="Address.Port" Label="Port" Clearable="true" />
+                }
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Address";
+    [Parameter] public Address Address { get; set; } = new();
+    [Parameter] public EventCallback<Address> AddressChanged { get; set; }
+    [Parameter] public TransportMode? TransportMode { get; set; }
+    [Parameter] public EventCallback<TransportMode?> TransportModeChanged { get; set; }
+    [Parameter] public Func<string, CancellationToken, Task<IEnumerable<Country>>>? SearchCountries { get; set; }
+}

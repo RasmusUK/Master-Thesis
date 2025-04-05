@@ -14,4 +14,5 @@ public class SpotQuoteBooking : Entity
     public ShippingDetails ShippingDetails { get; set; }
     public DateTime ValidUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public Customer Customer { get; set; }
 }
