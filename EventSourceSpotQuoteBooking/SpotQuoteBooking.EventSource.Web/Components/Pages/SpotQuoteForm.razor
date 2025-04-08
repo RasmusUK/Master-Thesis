@@ -106,10 +106,10 @@
                             <MudDatePicker Label="Ready to load" Editable="true" DateFormat="dd/MM/yyyy HH:mm" Clearable="true" Placeholder="dd/mm/yy hh:mm" @bind-Date="@model.ShippingDetails.ReadyToLoadDate"/>
                         </MudItem>
                         <MudItem xs="6">
-                            <MudSelect T="string" Label="Possible reference options" MultiSelection="true" ValueChanged="OnReferenceSelected" @bind-SelectedValues="@selectedReferenceOptions">
-                                @foreach (var item in possibleReferenceOptions)
+                            <MudSelect T="BookingProperty" Label="Possible reference options" MultiSelection="true" SelectedValues="@selectedBookingProperties" SelectedValuesChanged="@OnBookingPropertiesChanged">
+                                @foreach (var item in BookingProperty.GetAll())
                                 {
-                                    <MudSelectItem T="string" Value="@item">@item</MudSelectItem>
+                                    <MudSelectItem Value="@item">@item</MudSelectItem>
                                 }
                             </MudSelect>
                         </MudItem>
@@ -148,12 +148,7 @@
     private IEnumerable<Country> countries = new List<Country>();
     private readonly IEnumerable<TransportMode> transportModes = TransportMode.GetAll().ToList();
     
-    private readonly IEnumerable<string> possibleReferenceOptions = new List<string>
-    {
-        "Neutral delivery", "Non-stackable", "Export declaration"
-    };
-    
-    private IEnumerable<string> selectedReferenceOptions = new List<string>();
+    private List<BookingProperty> selectedBookingProperties = new();
     
     private bool IsNew => Id == null;
 
@@ -172,6 +167,7 @@
         }
 
         model.Direction ??= Direction.Import;
+        selectedBookingProperties = model.ShippingDetails.BookingProperties.ToList();
     }
 
     private async Task Save()
@@ -205,31 +201,25 @@
             countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
                                  || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
 
-    void AddColli() => collis.Add(new Colli {NumberOfUnits = 1});
+    private void AddColli() => collis.Add(new Colli {NumberOfUnits = 1});
     
-    void RemoveColli(Colli colli) => collis.Remove(colli);
+    private void RemoveColli(Colli colli) => collis.Remove(colli);
     
-    AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new()
+    private AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "Totals: {value}"
     };
     
-    AggregateDefinition<Colli> sumAggregrateDefinition = new()
+    private AggregateDefinition<Colli> sumAggregrateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "{value}"
     };
     
-    private void OnReferenceSelected(string value)
+    private void OnBookingPropertiesChanged(IEnumerable<BookingProperty> newValues)
     {
-        var existing = model.ShippingDetails.References?
-            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Where(x => !possibleReferenceOptions.Contains(x))
-            .ToList() ?? new List<string>();
-
-        existing.AddRange(selectedReferenceOptions);
-
-        model.ShippingDetails.References = string.Join(", ", existing.Distinct());
+        selectedBookingProperties = newValues.ToList();
+        model.ShippingDetails.BookingProperties = selectedBookingProperties;
     }
 }

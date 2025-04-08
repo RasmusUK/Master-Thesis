@@ -73,7 +73,14 @@ public class Seeder : ISeeder
             "Some description",
             DateTime.UtcNow.AddDays(2),
             "Some references"
-        );
+        )
+        {
+            BookingProperties = new List<BookingProperty>
+            {
+                BookingProperty.ExportDeclaration,
+                BookingProperty.NonStackable,
+            },
+        };
 
         for (var i = 0; i < 500; i++)
         {
