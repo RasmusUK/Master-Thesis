@@ -71,7 +71,8 @@ public class Seeder : ISeeder
         var shippingDetails = new ShippingDetails(
             new List<Colli> { new(1, ColliType.Box, 10, 20, 30, 200, 0.1) },
             "Some description",
-            DateTime.UtcNow.AddDays(2)
+            DateTime.UtcNow.AddDays(2),
+            "Some references"
         );
 
         for (var i = 0; i < 500; i++)

@@ -9,7 +9,7 @@
 @inject NavigationManager Navigation
 @inject ICountryFetcher CountryFetcher
 
-<h3>@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</h3>
+<MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
 
 <MudStepper NonLinear>
     <MudStep Title="General info">
@@ -64,34 +64,61 @@
         </MudStack>
     </MudStep>
     <MudStep Title="Shipping details">
-        <MudDataGrid T="Colli" Items="collis" ReadOnly="false" EditMode="DataGridEditMode.Cell">
-            <Columns>
-                <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
-                <PropertyColumn Property="x => x.ColliType" Title="Colli type">
-                    <EditTemplate>
-                        <MudSelect T="ColliType" @bind-Value="@context.Item.ColliType">
-                            @foreach (var item in ColliType.GetAll())
-                            {
-                                <MudSelectItem Value="@item">@item.Value</MudSelectItem>
-                            }
-                        </MudSelect>
-                    </EditTemplate>
-                </PropertyColumn>
-                <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
-                <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
-                <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
-                <PropertyColumn Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
-                <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumAggregrateDefinition"/>
-                <TemplateColumn>
-                    <HeaderTemplate>
-                        <MudIconButton OnClick="@AddColli" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
-                    </HeaderTemplate>
-                    <EditTemplate>
-                        <MudIconButton OnClick="@(() => RemoveColli(context.Item))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
-                    </EditTemplate>
-                </TemplateColumn>
-            </Columns>
-        </MudDataGrid>
+        <MudStack>
+            <MudDataGrid T="Colli" Items="collis" ReadOnly="false" EditMode="DataGridEditMode.Cell">
+                <Columns>
+                    <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
+                    <PropertyColumn Property="x => x.ColliType" Title="Colli type">
+                        <EditTemplate>
+                            <MudSelect T="ColliType" @bind-Value="@context.Item.ColliType">
+                                @foreach (var item in ColliType.GetAll())
+                                {
+                                    <MudSelectItem Value="@item">@item.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </EditTemplate>
+                    </PropertyColumn>
+                    <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
+                    <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
+                    <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
+                    <PropertyColumn Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
+                    <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumAggregrateDefinition"/>
+                    <TemplateColumn>
+                        <HeaderTemplate>
+                            <MudIconButton OnClick="@AddColli" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
+                        </HeaderTemplate>
+                        <EditTemplate>
+                            <MudIconButton OnClick="@(() => RemoveColli(context.Item))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                        </EditTemplate>
+                    </TemplateColumn>
+                </Columns>
+            </MudDataGrid>
+            <MudCard>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="6">
+                            <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@model.ShippingDetails.Description" AutoGrow Lines="5"/>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField T="string" Label="References" Variant="Variant.Outlined" @bind-Value="@model.ShippingDetails.References" AutoGrow Lines="5"/>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudDatePicker Label="Ready to load" Editable="true" DateFormat="dd/MM/yyyy HH:mm" Clearable="true" Placeholder="dd/mm/yy hh:mm" @bind-Date="@model.ShippingDetails.ReadyToLoadDate"/>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudSelect T="string" Label="Possible reference options" MultiSelection="true" ValueChanged="OnReferenceSelected" @bind-SelectedValues="@selectedReferenceOptions">
+                                @foreach (var item in possibleReferenceOptions)
+                                {
+                                    <MudSelectItem T="string" Value="@item">@item</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+           
+        </MudStack>
+        
     </MudStep>
     <MudStep Title="Buying rates">
         
@@ -119,7 +146,14 @@
     };
     private IEnumerable<Customer> customers = new List<Customer>();
     private IEnumerable<Country> countries = new List<Country>();
-    private readonly List<TransportMode> transportModes = TransportMode.GetAll().ToList();
+    private readonly IEnumerable<TransportMode> transportModes = TransportMode.GetAll().ToList();
+    
+    private readonly IEnumerable<string> possibleReferenceOptions = new List<string>
+    {
+        "Neutral delivery", "Non-stackable", "Export declaration"
+    };
+    
+    private IEnumerable<string> selectedReferenceOptions = new List<string>();
     
     private bool IsNew => Id == null;
 
@@ -175,15 +209,27 @@
     
     void RemoveColli(Colli colli) => collis.Remove(colli);
     
-    AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new AggregateDefinition<Colli>
+    AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "Totals: {value}"
     };
     
-    AggregateDefinition<Colli> sumAggregrateDefinition = new AggregateDefinition<Colli>
+    AggregateDefinition<Colli> sumAggregrateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "{value}"
     };
+    
+    private void OnReferenceSelected(string value)
+    {
+        var existing = model.ShippingDetails.References?
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Where(x => !possibleReferenceOptions.Contains(x))
+            .ToList() ?? new List<string>();
+
+        existing.AddRange(selectedReferenceOptions);
+
+        model.ShippingDetails.References = string.Join(", ", existing.Distinct());
+    }
 }
