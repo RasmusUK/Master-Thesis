@@ -14,55 +14,64 @@
 <MudStepper NonLinear>
     <MudStep Title="General info">
         <MudStack>
-        <MudCard>
-            <MudCardHeader>
-                <MudText Typo="Typo.h6">Basic info</MudText>
-            </MudCardHeader>
-            <MudCardContent>
-                <MudGrid>
-                    <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@model.TransportMode"
-                                         Label="Transport mode"
-                                         Clearable="true"
-                                         MaxItems="null"
-                                         SearchFunc="@SearchTransportModes"/>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@model.Incoterm"
-                                         Label="Incoterm"
-                                         Clearable="true"
-                                         MaxItems="null"
-                                         SearchFunc="@SearchIncoterms"/>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudAutocomplete @bind-Value="@model.Customer"
-                                         Label="Customers"
-                                         Clearable="true"
-                                         MaxItems="100"
-                                         SearchFunc="@SearchCustomers"/>
-                    </MudItem>
-                    <MudItem xs="3">
-                        <MudStack>
-                            <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@model.Direction">
-                                <MudToggleItem Value="@Direction.Import" Text="Import"/>
-                                <MudToggleItem Value="@Direction.Export" Text="Export"/>
-                            </MudToggleGroup>
-                        </MudStack>
-                    </MudItem>
-                </MudGrid>
-            </MudCardContent>
-        </MudCard>
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6">Basic info</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="3">
+                            <MudSelect @bind-Value="model.TransportMode"
+                                       Label="Transport mode"
+                                       Clearable="true"
+                                       Dense="true">
+                                @foreach (var mode in TransportMode.GetAll())
+                                {
+                                    <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudSelect @bind-Value="model.Incoterm"
+                                       Label="Incoterm"
+                                       Clearable="true"
+                                       Dense="true">
+                                @foreach (var incoterm in Incoterm.GetAll())
+                                {
+                                    <MudSelectItem Value="@incoterm">@incoterm</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudAutocomplete @bind-Value="@model.Customer"
+                                             Label="Customer"
+                                             Clearable="true"
+                                             MaxItems="100"
+                                             SearchFunc="@SearchCustomers"/>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudStack>
+                                <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@model.Direction">
+                                    <MudToggleItem Value="@Direction.Import" Text="Import"/>
+                                    <MudToggleItem Value="@Direction.Export" Text="Export"/>
+                                </MudToggleGroup>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
 
-        <AddressCard Title="From"
-                     @bind-Address="@model.AddressFrom"
-                     @bind-TransportMode="@model.TransportMode"
-                     SearchCountries="@SearchCountries" />
-        <AddressCard Title="To"
-                     @bind-Address="@model.AddressTo"
-                     @bind-TransportMode="@model.TransportMode"
-                     SearchCountries="@SearchCountries" />
+            <AddressCard Title="From"
+                         @bind-Address="@model.AddressFrom"
+                         @bind-TransportMode="@model.TransportMode"
+                         SearchCountries="@SearchCountries" />
+            <AddressCard Title="To"
+                         @bind-Address="@model.AddressTo"
+                         @bind-TransportMode="@model.TransportMode"
+                         SearchCountries="@SearchCountries" />
         </MudStack>
     </MudStep>
+    
     <MudStep Title="Shipping details">
         <MudStack>
             <MudDataGrid T="Colli" Items="collis" ReadOnly="false" EditMode="DataGridEditMode.Cell">
@@ -71,9 +80,9 @@
                     <PropertyColumn Property="x => x.ColliType" Title="Colli type">
                         <EditTemplate>
                             <MudSelect T="ColliType" @bind-Value="@context.Item.ColliType">
-                                @foreach (var item in ColliType.GetAll())
+                                @foreach (var item in ColliType.GetByTransportMode(model.TransportMode))
                                 {
-                                    <MudSelectItem Value="@item">@item.Value</MudSelectItem>
+                                    <MudSelectItem Value="@item">@item</MudSelectItem>
                                 }
                             </MudSelect>
                         </EditTemplate>
@@ -116,7 +125,6 @@
                     </MudGrid>
                 </MudCardContent>
             </MudCard>
-           
         </MudStack>
         
     </MudStep>
@@ -179,16 +187,6 @@
 
         Navigation.NavigateTo("/spot-quotes");
     }
-
-    private async Task<IEnumerable<TransportMode>> SearchTransportModes(string value, CancellationToken cancellationToken) => 
-        string.IsNullOrEmpty(value) ? 
-            transportModes : 
-            transportModes.Where(x => x.Value.Contains(value, StringComparison.InvariantCultureIgnoreCase));
-    
-    private async Task<IEnumerable<Incoterm>> SearchIncoterms(string value, CancellationToken cancellationToken) => 
-        string.IsNullOrEmpty(value) ? 
-            Incoterm.GetAll() : 
-            Incoterm.GetAll().Where(x => x.Value.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
     
     private async Task<IEnumerable<Customer>> SearchCustomers(string value, CancellationToken cancellationToken) => 
         string.IsNullOrEmpty(value) ? 
