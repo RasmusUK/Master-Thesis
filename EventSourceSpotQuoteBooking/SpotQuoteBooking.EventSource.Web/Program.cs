@@ -1,3 +1,4 @@
+using System.Globalization;
 using EventSource.Infrastructure;
 using MudBlazor.Services;
 using SpotQuoteBooking.EventSource.Web.Components;
@@ -34,5 +35,8 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
 app.Run();

@@ -3,6 +3,7 @@
 @using global::EventSource.Core.Interfaces
 @using SpotQuoteBooking.EventSource.Core
 @using Direction = SpotQuoteBooking.Shared.Direction
+@using System.Collections.ObjectModel
 @inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
 @inject IRepository<Customer> CustomerRepository
 @inject NavigationManager Navigation
@@ -62,8 +63,46 @@
                      SearchCountries="@SearchCountries" />
         </MudStack>
     </MudStep>
-    <MudStep Title="Write the tests">If you write the tests first you will design a better API when you write the code</MudStep>
-    <MudStep Title="Write the documentation" SecondaryText="... or not">Some consider writing readable code more important than writing documentation.</MudStep>
+    <MudStep Title="Shipping details">
+        <MudDataGrid T="Colli" Items="collis" ReadOnly="false" EditMode="DataGridEditMode.Cell">
+            <Columns>
+                <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
+                <PropertyColumn Property="x => x.ColliType" Title="Colli type">
+                    <EditTemplate>
+                        <MudSelect T="ColliType" @bind-Value="@context.Item.ColliType">
+                            @foreach (var item in ColliType.GetAll())
+                            {
+                                <MudSelectItem Value="@item">@item.Value</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
+                <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
+                <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
+                <PropertyColumn Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
+                <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumAggregrateDefinition"/>
+                <TemplateColumn>
+                    <HeaderTemplate>
+                        <MudIconButton OnClick="@AddColli" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
+                    </HeaderTemplate>
+                    <EditTemplate>
+                        <MudIconButton OnClick="@(() => RemoveColli(context.Item))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                    </EditTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </MudStep>
+    <MudStep Title="Buying rates">
+        
+    </MudStep>
+    <MudStep Title="Quote">
+            
+    </MudStep>
+    <MudStep Title="Validity & recipients">
+            
+    </MudStep>
+    
 </MudStepper>
 
 
@@ -71,6 +110,7 @@
 
 @code {
     [Parameter] public Guid? Id { get; set; }
+    ObservableCollection<Colli> collis = new();
 
     private SpotQuoteBooking model = new()
     {
@@ -91,7 +131,10 @@
         {
             var existing = await SpotQuoteBookingRepository.ReadByIdAsync(Id!.Value);
             if (existing is not null)
+            {
                 model = existing;
+                collis = new ObservableCollection<Colli>(model.ShippingDetails.Collis);
+            }
         }
 
         model.Direction ??= Direction.Import;
@@ -126,5 +169,21 @@
         string.IsNullOrEmpty(value) ? 
             countries : 
             countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
-                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
+                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+
+    void AddColli() => collis.Add(new Colli {NumberOfUnits = 1});
+    
+    void RemoveColli(Colli colli) => collis.Remove(colli);
+    
+    AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new AggregateDefinition<Colli>
+    {
+        Type = AggregateType.Sum,
+        DisplayFormat = "Totals: {value}"
+    };
+    
+    AggregateDefinition<Colli> sumAggregrateDefinition = new AggregateDefinition<Colli>
+    {
+        Type = AggregateType.Sum,
+        DisplayFormat = "{value}"
+    };
 }
