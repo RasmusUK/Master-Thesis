@@ -8,6 +8,8 @@ public class Quote
     public Profit Profit { get; set; } = new();
     public bool IsAllIn { get; set; }
     public ICollection<Cost> Costs { get; set; } = new List<Cost>();
+    public string CommentsExternal { get; set; } = string.Empty;
+    public string CommentsInternal { get; set; } = string.Empty;
 
     public double TotalPrice
     {
