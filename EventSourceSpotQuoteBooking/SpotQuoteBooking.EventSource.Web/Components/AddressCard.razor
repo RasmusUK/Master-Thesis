@@ -23,13 +23,14 @@
                                  Label="Country"
                                  Clearable="true"
                                  MaxItems="null"
+                                 Required="true"
                                  SearchFunc="SearchCountries" />
             </MudItem>
             <MudItem xs="3">
-                <MudTextField @bind-Value="Address.ZipCode" Label="Zip code" Clearable="true" />
+                <MudTextField @bind-Value="Address.ZipCode" Label="Zip code" Clearable="true" Required="TransportMode == TransportMode.Courier || TransportMode == TransportMode.Road" />
             </MudItem>
             <MudItem xs="3">
-                <MudTextField @bind-Value="Address.City" Label="City" Clearable="true" />
+                <MudTextField @bind-Value="Address.City" Label="City" Clearable="true" Required="TransportMode == TransportMode.Courier || TransportMode == TransportMode.Road"/>
             </MudItem>
             <MudFlexBreak />
             <MudItem xs="3">
@@ -42,11 +43,11 @@
             <MudItem xs="3">
                 @if (TransportMode == TransportMode.Air)
                 {
-                    <MudTextField @bind-Value="Address.Airport" Label="Airport" Clearable="true" />
+                    <MudTextField @bind-Value="Address.Airport" Label="Airport" Clearable="true" Required="TransportMode == TransportMode.Air" />
                 }
                 @if (TransportMode == TransportMode.Sea)
                 {
-                    <MudTextField @bind-Value="Address.Port" Label="Port" Clearable="true" />
+                    <MudTextField @bind-Value="Address.Port" Label="Port" Clearable="true" Required="TransportMode == TransportMode.Sea" />
                 }
             </MudItem>
         </MudGrid>
