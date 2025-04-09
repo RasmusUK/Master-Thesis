@@ -11,8 +11,8 @@
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
 
-<MudStepper NonLinear>
-    <MudStep Title="General info">
+<MudStepper NonLinear="true">
+    <MudStep Title="General info" HasError="generalInfoHasError">
         <MudStack>
             <MudCard>
                 <MudCardHeader>
@@ -26,7 +26,7 @@
                                        Clearable="true"
                                        Dense="true">
                                 @foreach (var mode in TransportMode.GetAll())
-                                {
+                                { 
                                     <MudSelectItem Value="@mode">@mode</MudSelectItem>
                                 }
                             </MudSelect>
@@ -72,7 +72,7 @@
         </MudStack>
     </MudStep>
     
-    <MudStep Title="Shipping details" SecondaryText="@($"{collis.Sum(x => x.NumberOfUnits)} unit(s) / {model.TotalWeight} kg / {model.TotalCbm} m3")">
+    <MudStep Title="Shipping details" HasError="shippingDetailsHasError" SecondaryText="@($"{collis.Sum(x => x.NumberOfUnits)} unit(s) / {model.TotalWeight} kg / {model.TotalCbm} m3")">
         <MudStack>
             <MudDataGrid T="Colli" Items="collis" ReadOnly="false" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CanceledEditingItem="@ShippingDetailsEdit" CommittedItemChanges="@ShippingDetailsEdit">
                 <Columns>
@@ -128,10 +128,10 @@
         </MudStack>
         
     </MudStep>
-    <MudStep Title="Buying rates">
+    <MudStep HasError="buyingRatesHasError" Title="Buying rates">
         
     </MudStep>
-<MudStep Title="Quote">
+<MudStep Title="Quote" HasError="quoteHasError" Disabled="shippingDetailsHasError">
     <MudStack>
         <MudStack Justify="Justify.FlexEnd" Row="true">
             <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@CreateQuote" Variant="Variant.Filled">
@@ -306,16 +306,35 @@
         }
     </MudStack>
 </MudStep>
-    <MudStep Title="Validity & recipients">
-            
+    <MudStep Title="Validity & recipients" HasError="validityRecipientsHasError" Disabled="generalInfoHasError || SelectedCustomer is null">
+        <MudGrid>
+            <MudItem xs="6">
+                <MudSelect Label="Mail recipients" MultiSelection="true" SelectedValues="@SelectedMailRecipients">
+                    @foreach (var item in SelectedCustomer.Users)
+                    {
+                        <MudSelectItem Value="@item">@item</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="6">
+                <MudDatePicker Label="Quote validity" Editable="true" DateFormat="dd/MM/yyyy HH:mm" Clearable="true" Placeholder="dd/mm/yy hh:mm" @bind-Date="@model.ValidUntil"/>
+            </MudItem>
+            <MudItem xs="3">
+                <MudStack>
+                    <MudCheckBox @bind-Value="model.MailOptions.SendCopyToMe" Color="Color.Primary">Send copy to me</MudCheckBox>
+                    <MudCheckBox @bind-Value="model.MailOptions.ShowCostSpec" Color="Color.Primary">Show cost specification in mail</MudCheckBox>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="9"/>
+            <MudItem xs="6">
+                <MudTextField T="string" Label="Comments for spot quote mail" Variant="Variant.Outlined" @bind-Value="model.MailOptions.Comments" AutoGrow Lines="3"/>
+            </MudItem>
+            <MudItem xs="6">
+                 <MudTextField T="string" Label="Comments for spot quote internal" Variant="Variant.Outlined" @bind-Value="model.InternalComments" AutoGrow Lines="3"/>
+            </MudItem>
+        </MudGrid>
     </MudStep>
-    
 </MudStepper>
-
-
-<MudButton OnClick="@Save">@(IsNew ? "Create" : "Update")</MudButton>
-
-
 
 @code {
     [Parameter] public Guid? Id { get; set; }
@@ -330,7 +349,13 @@
     private IEnumerable<Country> countries = new List<Country>();
     private List<BookingProperty> selectedBookingProperties = new();
     private Customer? SelectedCustomer;
+    private IEnumerable<User> SelectedMailRecipients = new List<User>();
     private bool IsNew => Id == null;
+    private bool generalInfoHasError = false;
+    private bool shippingDetailsHasError = false;
+    private bool buyingRatesHasError = false;
+    private bool quoteHasError = false;
+    private bool validityRecipientsHasError = false;
     
     protected override async Task OnInitializedAsync()
     {

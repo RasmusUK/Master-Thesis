@@ -12,10 +12,12 @@ public class SpotQuoteBooking : Entity
     public Incoterm? Incoterm { get; set; }
     public BookingStatus? Status { get; set; }
     public ShippingDetails? ShippingDetails { get; set; }
-    public DateTime ValidUntil { get; set; }
+    public DateTime? ValidUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Guid CustomerId { get; set; }
     public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
+    public MailOptions MailOptions { get; set; } = new();
+    public string InternalComments { get; set; } = string.Empty;
     public double TotalWeight
     {
         get => ShippingDetails?.Collis.Sum(c => c.Weight) ?? 0;
