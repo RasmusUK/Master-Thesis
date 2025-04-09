@@ -16,4 +16,8 @@
       </None>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\EventSource.Core\EventSource.Core.csproj" />
+    </ItemGroup>
+
 </Project>

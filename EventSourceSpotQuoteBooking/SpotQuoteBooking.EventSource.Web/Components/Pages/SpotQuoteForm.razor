@@ -43,7 +43,7 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="3">
-                            <MudAutocomplete @bind-Value="@model.Customer"
+                            <MudAutocomplete @bind-Value="@SelectedCustomer"
                                              Label="Customer"
                                              Clearable="true"
                                              MaxItems="100"
@@ -328,9 +328,8 @@
     };
     private IEnumerable<Customer> customers = new List<Customer>();
     private IEnumerable<Country> countries = new List<Country>();
-    
     private List<BookingProperty> selectedBookingProperties = new();
-    
+    private Customer? SelectedCustomer;
     private bool IsNew => Id == null;
     
     protected override async Task OnInitializedAsync()
