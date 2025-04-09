@@ -8,7 +8,7 @@ public class Colli
     public double Width { get; set; }
     public double Height { get; set; }
     public double Weight { get; set; }
-    public double Cbm { get; set; }
+    public double Cbm => Length * Weight * Height / 1000000;
 
     public Colli() { }
 
@@ -18,8 +18,7 @@ public class Colli
         double Length,
         double Width,
         double Height,
-        double Weight,
-        double Cbm
+        double Weight
     )
     {
         this.NumberOfUnits = NumberOfUnits;
@@ -28,6 +27,5 @@ public class Colli
         this.Width = Width;
         this.Height = Height;
         this.Weight = Weight;
-        this.Cbm = Cbm;
     }
 }

@@ -29,7 +29,7 @@ public class Seeder : ISeeder
     {
         if ((await customerRepository.ReadAllProjectionsAsync(x => x.Id)).Count > 0)
             return;
-        for (var i = 1; i <= 1000; i++)
+        for (var i = 1; i <= 10; i++)
         {
             var customer = new Customer($"Customer {i}");
             await customerRepository.CreateAsync(customer);
@@ -69,7 +69,7 @@ public class Seeder : ISeeder
         );
 
         var shippingDetails = new ShippingDetails(
-            new List<Colli> { new(1, ColliType.Box, 10, 20, 30, 200, 0.1) },
+            new List<Colli> { new(1, ColliType.Box, 10, 20, 30, 200) },
             "Some description",
             DateTime.UtcNow.AddDays(2),
             "Some references"
@@ -82,7 +82,7 @@ public class Seeder : ISeeder
             },
         };
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             var spotQuoteBooking = new Core.SpotQuoteBooking
             {
@@ -98,7 +98,7 @@ public class Seeder : ISeeder
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             addressFrom.Country = new Country { Code = "SE", Name = "Sweden" };
             addressTo.Country = new Country { Code = "NO", Name = "Norway" };
@@ -116,7 +116,7 @@ public class Seeder : ISeeder
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             addressFrom.Country = new Country { Code = "PL", Name = "Poland" };
             addressFrom.Airport = "Airport";
@@ -136,7 +136,7 @@ public class Seeder : ISeeder
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             var spotQuoteBooking = new Core.SpotQuoteBooking
             {
@@ -152,7 +152,7 @@ public class Seeder : ISeeder
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             addressFrom.Country = new Country { Code = "SE", Name = "Sweden" };
             addressTo.Country = new Country { Code = "NO", Name = "Norway" };
@@ -170,7 +170,7 @@ public class Seeder : ISeeder
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
 
-        for (var i = 0; i < 500; i++)
+        for (var i = 0; i < 10; i++)
         {
             addressFrom.Country = new Country { Code = "PL", Name = "Poland" };
             addressFrom.Port = "Port";

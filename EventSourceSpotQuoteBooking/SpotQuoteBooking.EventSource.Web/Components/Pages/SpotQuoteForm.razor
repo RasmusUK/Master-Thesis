@@ -90,7 +90,7 @@
                     <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
                     <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
                     <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
-                    <PropertyColumn Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
+                    <PropertyColumn Editable="false" Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
                     <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumAggregrateDefinition"/>
                     <TemplateColumn StickyRight="true">
                         <HeaderTemplate>
