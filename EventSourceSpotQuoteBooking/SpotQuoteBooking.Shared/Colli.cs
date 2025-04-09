@@ -8,7 +8,7 @@ public class Colli
     public double Width { get; set; }
     public double Height { get; set; }
     public double Weight { get; set; }
-    public double Cbm => Length * Weight * Height / 1000000;
+    public double Cbm => Length * Width * Height / 1000000;
 
     public Colli() { }
 

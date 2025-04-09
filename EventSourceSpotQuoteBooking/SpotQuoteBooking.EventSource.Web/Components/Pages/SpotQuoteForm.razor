@@ -11,7 +11,8 @@
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
 
-<MudStepper OnPreviewInteraction="OnPreviewInteraction">
+<MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
+<ChildContent>
 <MudStep Title="General info">
     <MudForm @ref=form1>
         <MudStack>
@@ -231,7 +232,7 @@
                                 }
                             </ColGroup>
                             <Columns>
-                                <PropertyColumn Property="x => x.SupplierCost.ChargeType" Title="Charge type">
+                                <PropertyColumn Property="x => x.SupplierCost.ChargeType" Title="Charge">
                                     <EditTemplate>
                                         <MudSelect T="ChargeType" @bind-Value="@context.Item.SupplierCost.ChargeType">
                                             @foreach (var item in ChargeType.GetByTransportMode(model.TransportMode))
@@ -241,7 +242,7 @@
                                         </MudSelect>
                                     </EditTemplate>
                                 </PropertyColumn>
-                                <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost type">
+                                <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost">
                                     <EditTemplate>
                                         <MudSelect T="CostType" @bind-Value="@context.Item.SupplierCost.CostType">
                                             @foreach (var item in CostType.GetAll())
@@ -252,8 +253,8 @@
                                     </EditTemplate>
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SupplierCost.Value" Title="Value"/>
-                                <PropertyColumn Property="x => x.SupplierCost.CalculatedValue" Title="Calculated value" Editable="false" Format="N2"/>
-                                <PropertyColumn Property="x => x.SellingCost.ChargeType" Title="Charge type">
+                                <PropertyColumn Property="x => x.SupplierCost.CalculatedValue" Title="Total" Editable="false" Format="N2"/>
+                                <PropertyColumn Property="x => x.SellingCost.ChargeType" Title="Charge">
                                     <EditTemplate>
                                         <MudSelect T="ChargeType" @bind-Value="@context.Item.SellingCost.ChargeType">
                                             @foreach (var item in ChargeType.GetByTransportMode(model.TransportMode))
@@ -263,7 +264,7 @@
                                         </MudSelect>
                                     </EditTemplate>
                                 </PropertyColumn>
-                                <PropertyColumn Property="x => x.SellingCost.CostType" Title="Cost type">
+                                <PropertyColumn Property="x => x.SellingCost.CostType" Title="Cost">
                                     <EditTemplate>
                                         <MudSelect T="CostType" @bind-Value="@context.Item.SellingCost.CostType">
                                             @foreach (var item in CostType.GetAll())
@@ -335,8 +336,42 @@
         <MudItem xs="6">
             <MudTextField T="string" Label="Comments for spot quote internal" Variant="Variant.Outlined" @bind-Value="model.InternalComments" AutoGrow Lines="3"/>
         </MudItem>
+        <MudItem xs="10"/>
     </MudGrid>
 </MudStep>
+</ChildContent>
+<ActionContent Context="stepper">
+    <MudGrid>
+        <MudItem xs="1">
+            <MudButton OnClick="@(() => stepper.ResetAsync())">Reset</MudButton>
+        </MudItem>
+        <MudItem xs="3"/>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => stepper.PreviousStepAsync())" Variant="Variant.Outlined" Disabled="@(index <= 0)">
+                Previous
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" EndIcon="@Icons.Material.Filled.ArrowForward" Color="Color.Primary" OnClick="@(() => stepper.NextStepAsync())" Variant="Variant.Filled">
+                @if (index == 4)
+                {
+                    <span>Save</span>
+                }
+                else
+                {
+                    <span>Next</span>
+                }
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2"/>
+        <MudItem xs="2">
+            @if (index == 4)
+            {
+                <MudButton FullWidth="true" OnClick="@(() => Save(BookingStatus.Draft))" Variant="Variant.Filled" Color="Color.Secondary">Save as draft</MudButton>
+            }
+        </MudItem>
+    </MudGrid>
+</ActionContent>
 </MudStepper>
 
 @code {
@@ -348,7 +383,8 @@
     private SpotQuoteBooking model = new()
     {
         AddressFrom = new Address(),
-        AddressTo = new Address()
+        AddressTo = new Address(),
+        ShippingDetails = new ShippingDetails()
     };
     private IEnumerable<Customer> customers = new List<Customer>();
     private IEnumerable<Country> countries = new List<Country>();
@@ -357,6 +393,7 @@
     private IEnumerable<User> SelectedMailRecipients = new List<User>();
     private bool IsNew => Id == null;
     private MudForm form1;
+    private int index;
     
     protected override async Task OnInitializedAsync()
     {
@@ -369,6 +406,7 @@
             {
                 model = existing;
                 collis = new ObservableCollection<Colli>(model.ShippingDetails.Collis);
+                SelectedCustomer = await CustomerRepository.ReadByIdAsync(model.CustomerId);
             }
         }
 
@@ -422,12 +460,12 @@
     private void OnBookingPropertiesChanged(IEnumerable<BookingProperty> newValues)
     {
         selectedBookingProperties = newValues.ToList();
-        model.ShippingDetails.BookingProperties = selectedBookingProperties;
+        model.ShippingDetails!.BookingProperties = selectedBookingProperties;
     }
 
     private void ShippingDetailsEdit(Colli colli)
     {
-        model.ShippingDetails.Collis = collis.ToList();
+        model.ShippingDetails!.Collis = collis.ToList();
         foreach (var cost in model.Quotes.SelectMany(q => q.Costs))
         {
             cost.SupplierCost.Weight = model.TotalWeight;
@@ -483,6 +521,22 @@
                     arg.Cancel = true;
                 }
                 break;
+            case 4:
+                await Save(BookingStatus.SpotQuote);
+                break;
         }
+    }
+    
+    private async Task Save(BookingStatus status)
+    {
+        model.CustomerId = SelectedCustomer!.Id;
+        model.MailOptions.Recipients = SelectedMailRecipients.Select(x => x.Email).ToList();
+        model.Status = BookingStatus.SpotQuote;
+        model.Status = status;
+        if (IsNew)
+            await SpotQuoteBookingRepository.CreateAsync(model);
+        else
+            await SpotQuoteBookingRepository.UpdateAsync(model);
+        Navigation.NavigateTo("/spot-quotes");
     }
 }

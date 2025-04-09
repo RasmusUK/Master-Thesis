@@ -2,9 +2,9 @@ namespace SpotQuoteBooking.Shared;
 
 public class ShippingDetails
 {
-    public ICollection<Colli> Collis { get; set; }
-    public string Description { get; set; }
-    public string References { get; set; }
+    public ICollection<Colli> Collis { get; set; } = new List<Colli>();
+    public string Description { get; set; } = string.Empty;
+    public string References { get; set; } = string.Empty;
     public DateTime? ReadyToLoadDate { get; set; }
     public ICollection<BookingProperty> BookingProperties { get; set; } =
         new List<BookingProperty>();
