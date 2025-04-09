@@ -15,7 +15,7 @@ public class SpotQuoteBooking : Entity
     public DateTime ValidUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public Customer? Customer { get; set; }
-    public Quote Quote { get; set; } = new();
+    public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     public double TotalWeight
     {
         get => ShippingDetails?.Collis.Sum(c => c.Weight) ?? 0;

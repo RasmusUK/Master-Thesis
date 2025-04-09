@@ -30,28 +30,6 @@ public record ChargeType(string Value) : IComparable
         throw new ArgumentException($"Object is not a {nameof(ChargeType)}");
     }
 
-    public static IReadOnlyCollection<ChargeType> GetAll() =>
-        new List<ChargeType>
-        {
-            Freight,
-            FuelSurcharge,
-            CustomsClearance,
-            DutiesAndTaxes,
-            Insurance,
-            Documentation,
-            PortHandling,
-            Inspection,
-            Demurrage,
-            Detention,
-            Storage,
-            Delivery,
-            BondFee,
-            ReeferSurcharge,
-            DangerousGoods,
-        }
-            .OrderBy(x => x.Value)
-            .ToList();
-
     public static IReadOnlyCollection<ChargeType> GetByTransportMode(TransportMode mode)
     {
         var charges = new List<ChargeType>();
@@ -65,6 +43,11 @@ public record ChargeType(string Value) : IComparable
                 Documentation,
                 Insurance,
                 DangerousGoods,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
             };
 
         if (mode == TransportMode.Sea)
@@ -79,6 +62,11 @@ public record ChargeType(string Value) : IComparable
                 Detention,
                 Insurance,
                 Documentation,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
             };
 
         if (mode == TransportMode.Road)
@@ -90,6 +78,11 @@ public record ChargeType(string Value) : IComparable
                 CustomsClearance,
                 Insurance,
                 Documentation,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
             };
 
         if (mode == TransportMode.Courier)
@@ -100,6 +93,11 @@ public record ChargeType(string Value) : IComparable
                 Delivery,
                 CustomsClearance,
                 Insurance,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
             };
 
         return charges.OrderBy(x => x.Value).ToList();

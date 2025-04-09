@@ -13,13 +13,8 @@ public record ColliType(string Value) : IComparable
     public static readonly ColliType Bale = new("Bale");
     public static readonly ColliType Barrel = new("Barrel");
     public static readonly ColliType Bundle = new("Bundle");
-    public static readonly ColliType Cage = new("Cage");
-    public static readonly ColliType Canister = new("Canister");
     public static readonly ColliType Case = new("Case");
-    public static readonly ColliType Cask = new("Cask");
-    public static readonly ColliType Reels = new("Reels");
     public static readonly ColliType Sack = new("Sack");
-    public static readonly ColliType Tub = new("Tub");
     public static readonly ColliType Tank = new("Tank");
     public static readonly ColliType Tray = new("Tray");
 
@@ -32,33 +27,6 @@ public record ColliType(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(ColliType)}");
     }
-
-    public static IReadOnlyCollection<ColliType> GetAll() =>
-        new List<ColliType>
-        {
-            Pallet,
-            Box,
-            Container,
-            Envelope,
-            Crate,
-            Drum,
-            Roll,
-            Bag,
-            Bale,
-            Barrel,
-            Bundle,
-            Cage,
-            Canister,
-            Case,
-            Cask,
-            Reels,
-            Sack,
-            Tub,
-            Tank,
-            Tray,
-        }
-            .OrderBy(x => x.Value)
-            .ToList();
 
     public static IReadOnlyCollection<ColliType> GetByTransportMode(TransportMode mode)
     {

@@ -17,7 +17,11 @@ public record CostType(string Value) : IComparable
     }
 
     public static IReadOnlyCollection<CostType> GetAll() =>
-        new List<CostType> { PerShipment, PerKg, PerCbm }
-            .OrderBy(x => x.Value)
+        typeof(CostType)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f => f.GetValue(null))
+            .OfType<CostType>()
             .ToList();
 }

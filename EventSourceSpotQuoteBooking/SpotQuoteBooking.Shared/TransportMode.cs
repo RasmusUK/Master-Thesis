@@ -18,7 +18,11 @@ public record TransportMode(string Value) : IComparable
     }
 
     public static IReadOnlyCollection<TransportMode> GetAll() =>
-        new List<TransportMode> { Air, Sea, Road, Courier }
-            .OrderBy(x => x.Value)
+        typeof(TransportMode)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f => f.GetValue(null))
+            .OfType<TransportMode>()
             .ToList();
 }

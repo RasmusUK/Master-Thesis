@@ -14,9 +14,4 @@ public record Direction(string Value) : IComparable
 
         throw new ArgumentException($"Object is not a {nameof(Direction)}");
     }
-
-    public static IReadOnlyCollection<Direction> GetAll() =>
-        new List<Direction> { Import, Export }
-            .OrderBy(x => x.Value)
-            .ToList();
 }
