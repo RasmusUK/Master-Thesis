@@ -13,14 +13,14 @@
     </MudButton>
 </MudStack>
 
-<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick" Loading="@loading">
+<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
     <Columns>
-        <PropertyColumn Property="x => x.CreatedAt" Title="Created Time"/>
-        <PropertyColumn Property="x => x.TransportMode" Title="Mode"/>
+        <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false"/>
+        <PropertyColumn Property="x => x.TransportMode" Title="Mode" Filterable="false"/>
         <PropertyColumn Property="x => x.AddressFrom.Country.Code" Title="Pickup"/>
         <PropertyColumn Property="x => x.AddressTo.Country.Code" Title="Delivery"/>
-        <PropertyColumn Property="x => x.ValidUntil" Title="Validity"/>
-        <PropertyColumn Property="x => x.Status" Title="Status"/>
+        <PropertyColumn Property="x => x.ValidUntil" Title="Validity" Filterable="false"/>
+        <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
     </Columns>
     <PagerContent>
         <MudDataGridPager T="SpotQuoteBooking"/>
@@ -33,7 +33,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        spotQuoteBookings = await SpotQuoteBookingRepository.ReadAllAsync();
+        spotQuoteBookings = (await SpotQuoteBookingRepository.ReadAllAsync()).OrderByDescending(x => x.CreatedAt);
         loading = false;
     }
     

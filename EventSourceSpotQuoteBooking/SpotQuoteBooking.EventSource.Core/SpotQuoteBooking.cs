@@ -18,12 +18,7 @@ public class SpotQuoteBooking : Entity
     public ICollection<Quote> Quotes { get; set; } = new List<Quote>();
     public MailOptions MailOptions { get; set; } = new();
     public string InternalComments { get; set; } = string.Empty;
-    public double TotalWeight
-    {
-        get => ShippingDetails?.Collis.Sum(c => c.Weight) ?? 0;
-    }
-    public double TotalCbm
-    {
-        get => ShippingDetails?.Collis.Sum(c => c.Cbm) ?? 0;
-    }
+    public double TotalWeight => ShippingDetails?.Collis.Sum(c => c.Weight) ?? 0;
+
+    public double TotalCbm => ShippingDetails?.Collis.Sum(c => c.Cbm) ?? 0;
 }
