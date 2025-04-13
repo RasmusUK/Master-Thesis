@@ -14,14 +14,14 @@ public class SpotQuoteService : ISpotQuoteService
     private readonly IRepository<SpotQuote> spotQuoteRepository;
     private readonly IAddressService addressService;
     private readonly ICustomerService customerService;
-    private readonly AbstractValidator<SpotQuote> spotQuoteValidator;
+    private readonly SpotQuoteValidator spotQuoteValidator;
     private readonly IBuyingRateService buyingRateService;
 
     public SpotQuoteService(
         IRepository<SpotQuote> spotQuoteRepository,
         IAddressService addressService,
         ICustomerService customerService,
-        AbstractValidator<SpotQuote> spotQuoteValidator,
+        SpotQuoteValidator spotQuoteValidator,
         IBuyingRateService buyingRateService
     )
     {
