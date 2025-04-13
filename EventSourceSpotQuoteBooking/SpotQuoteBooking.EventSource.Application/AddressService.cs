@@ -20,9 +20,32 @@ public class AddressService : IAddressService
 
     public async Task UpsertAddressAsync(AddressDto addressDto)
     {
+        Address? existing;
+
+        if (addressDto.Id == default)
+            existing = await addressRepository.ReadByFilterAsync(a =>
+                a.CompanyName == addressDto.CompanyName
+                && a.Email == addressDto.Email
+                && a.Phone == addressDto.Phone
+                && a.Attention == addressDto.Attention
+                && a.CountryId == addressDto.Country.Id
+                && a.ZipCode == addressDto.ZipCode
+                && a.AddressLine1 == addressDto.AddressLine1
+                && a.AddressLine2 == addressDto.AddressLine2
+                && a.City == addressDto.City
+            );
+        else
+            existing = await addressRepository.ReadByIdAsync(addressDto.Id);
+
+        if (existing is not null)
+            addressDto.Id = existing.Id;
+
+        if (addressDto.Id == default)
+            addressDto.Id = Guid.NewGuid();
+
         var addressDomain = addressDto.ToDomain();
-        var existingAddress = await addressRepository.ReadByIdAsync(addressDomain.Id);
-        if (existingAddress is null)
+
+        if (existing is null)
             await addressRepository.CreateAsync(addressDomain);
         else
             await addressRepository.UpdateAsync(addressDomain);
@@ -39,6 +62,22 @@ public class AddressService : IAddressService
             throw new NotFoundException(
                 $"Country with id '{address.CountryId}' not found for Address with id '{addressId}'."
             );
+
+        return address.ToDto(country);
+    }
+
+    public async Task<IReadOnlyCollection<AddressDto>> GetAllAddressesAsync()
+    {
+        var addresses = await addressRepository.ReadAllAsync();
+        var dtos = await Task.WhenAll(addresses.Select(FillAddressDtoAsync));
+        return dtos;
+    }
+
+    private async Task<AddressDto> FillAddressDtoAsync(Address address)
+    {
+        var country = await countryService.GetCountryByIdAsync(address.CountryId);
+        if (country is null)
+            throw new NotFoundException($"Country with id '{address.CountryId}' not found.");
 
         return address.ToDto(country);
     }

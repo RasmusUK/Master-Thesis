@@ -6,4 +6,5 @@ public interface IAddressService
 {
     Task UpsertAddressAsync(AddressDto addressDto);
     Task<AddressDto?> GetAddressByIdAsync(Guid addressId);
+    Task<IReadOnlyCollection<AddressDto>> GetAllAddressesAsync();
 }

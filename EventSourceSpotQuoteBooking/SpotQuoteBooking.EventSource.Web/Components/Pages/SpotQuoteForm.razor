@@ -10,6 +10,7 @@
 @using SpotQuoteBooking.EventSource.Web.Data
 @inject ICustomerService CustomerService
 @inject ICountryService CountryService
+@inject IAddressService AddressService
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
 
@@ -72,11 +73,13 @@
             <AddressCard Title="From"
                          @bind-Address="@model.AddressFrom"
                          @bind-TransportMode="@model.TransportMode"
-                         Countries="countries"/>
+                         Countries="countries"
+                         Addresses="addresses"/>
             <AddressCard Title="To"
                          @bind-Address="@model.AddressTo"
                          @bind-TransportMode="@model.TransportMode"
-                         Countries="countries"/>
+                         Countries="countries"
+                         Addresses="addresses"/>
         </MudStack>
     </MudForm>    
 </MudStep>
@@ -397,6 +400,7 @@
     };
     private IEnumerable<CustomerDto> customers = new List<CustomerDto>();
     private IEnumerable<CountryDto> countries = new List<CountryDto>();
+    private IEnumerable<AddressDto> addresses = new List<AddressDto>();
     private IEnumerable<BookingProperty> selectedBookingProperties = new List<BookingProperty>();
     private bool IsNew => Id == null;
     private MudForm form1;
@@ -406,6 +410,7 @@
     {
         customers = await CustomerService.GetAllCustomersAsync();
         countries = await CountryService.GetAllCountriesAsync();
+        addresses = await AddressService.GetAllAddressesAsync();
         if (!IsNew)
         {
             var existing = await SpotQuoteService.GetSpotQuoteByIdAsync(Id!.Value);
