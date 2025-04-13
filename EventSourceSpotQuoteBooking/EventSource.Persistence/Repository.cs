@@ -44,6 +44,25 @@ public class Repository<T> : IRepository<T>
         await entityStore.DeleteEntityAsync(entity);
     }
 
+    public async Task<Guid> CreateCompensationAsync(T entity)
+    {
+        await eventStore.InsertEventAsync(new CreateEvent<T>(entity) { Compensation = true });
+        await entityStore.InsertEntityAsync(entity);
+        return entity.Id;
+    }
+
+    public async Task UpdateCompensationAsync(T entity)
+    {
+        await eventStore.InsertEventAsync(new UpdateEvent<T>(entity) { Compensation = true });
+        await entityStore.UpdateEntityAsync(entity);
+    }
+
+    public async Task DeleteCompensationAsync(T entity)
+    {
+        await eventStore.InsertEventAsync(new DeleteEvent<T>(entity) { Compensation = true });
+        await entityStore.DeleteEntityAsync(entity);
+    }
+
     public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
 
     public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter) =>

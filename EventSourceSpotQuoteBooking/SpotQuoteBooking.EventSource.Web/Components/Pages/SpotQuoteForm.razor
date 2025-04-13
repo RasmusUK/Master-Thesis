@@ -7,7 +7,6 @@
 @using SpotQuoteBooking.EventSource.Application.Mappers
 @using SpotQuoteBooking.EventSource.Core.ValueObjects
 @using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums
-@using SpotQuoteBooking.EventSource.Web.Data
 @inject ICustomerService CustomerService
 @inject ICountryService CountryService
 @inject IAddressService AddressService
@@ -15,7 +14,6 @@
 @inject NavigationManager Navigation
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
-
 <MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
 <ChildContent>
 <MudStep Title="General info">
@@ -386,6 +384,11 @@
 </ActionContent>
 </MudStepper>
 
+@if (showErrorAlert)
+{
+    <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="@(() => ShowErrorAlert(false))">@errorMessage</MudAlert>
+}
+
 @code {
     [Inject] 
     IDialogService DialogService { get; set; }
@@ -405,6 +408,8 @@
     private bool IsNew => Id == null;
     private MudForm form1;
     private int index;
+    private bool showErrorAlert = false;
+    private string errorMessage = string.Empty;
     
     protected override async Task OnInitializedAsync()
     {
@@ -574,12 +579,26 @@
     
     private async Task Save(BookingStatus status)
     {
-        model.Status = BookingStatus.SpotQuote;
-        model.Status = status;
-        if (IsNew)
-            await SpotQuoteService.CreateSpotQuoteAsync(model);
-        else
-            await SpotQuoteService.UpdateSpotQuoteAsync(model);
-        Navigation.NavigateTo("/spot-quotes");
+        try
+        {
+            model.Status = BookingStatus.SpotQuote;
+            model.Status = status;
+            if (IsNew)
+                await SpotQuoteService.CreateSpotQuoteAsync(model);
+            else
+                await SpotQuoteService.UpdateSpotQuoteAsync(model);
+            Navigation.NavigateTo("/spot-quotes");
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
+    }
+    
+    private void ShowErrorAlert(bool value)
+    {
+        showErrorAlert = value;
+        StateHasChanged();
     }
 }

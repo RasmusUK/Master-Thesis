@@ -4,5 +4,5 @@ namespace SpotQuoteBooking.EventSource.Application.Interfaces;
 
 public interface IBuyingRateService
 {
-    Task CreateBuyingRatesIfNotExistsAsync(SpotQuoteDto spotQuoteDto);
+    Task UpsertBuyingRatesAsync(SpotQuoteDto spotQuoteDto);
 }

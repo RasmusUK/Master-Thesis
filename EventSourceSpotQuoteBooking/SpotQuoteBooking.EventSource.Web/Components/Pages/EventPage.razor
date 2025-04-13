@@ -14,6 +14,8 @@
                           Value="e?.EntityId" ReadOnly="true"/>
             <MudTextField T="string" Label="Type" Variant="Variant.Outlined"
                           Value="e?.Typename" ReadOnly="true"/>
+            <MudTextField T="bool?" Label="Is compensation" Variant="Variant.Outlined"
+                                      Value="e?.Compensation" ReadOnly="true"/>
             <MudDatePicker Label="Timestamp" DateFormat="dd/MM/yyyy HH:mm" Variant="Variant.Outlined"
                            Placeholder="dd/mm/yy hh:mm" Date="e?.Timestamp" ReadOnly="true"/>
         </MudStack>

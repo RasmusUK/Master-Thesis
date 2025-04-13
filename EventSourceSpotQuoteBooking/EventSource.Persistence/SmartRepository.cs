@@ -23,7 +23,7 @@ public class SmartRepository<T> : IRepository<T>
         await inner.CreateAsync(entity);
 
         if (transactionManager.IsActive)
-            transactionManager.EnlistRollback(() => inner.DeleteAsync(entity));
+            transactionManager.EnlistRollback(() => inner.DeleteCompensationAsync(entity));
 
         return entity.Id;
     }
@@ -43,7 +43,7 @@ public class SmartRepository<T> : IRepository<T>
             );
 
         await inner.UpdateAsync(entity);
-        transactionManager.EnlistRollback(() => inner.UpdateAsync(snapshot));
+        transactionManager.EnlistRollback(() => inner.UpdateCompensationAsync(snapshot));
     }
 
     public async Task DeleteAsync(T entity)
@@ -52,7 +52,7 @@ public class SmartRepository<T> : IRepository<T>
         if (!transactionManager.IsActive)
             return;
 
-        transactionManager.EnlistRollback(() => inner.CreateAsync(entity));
+        transactionManager.EnlistRollback(() => inner.CreateCompensationAsync(entity));
     }
 
     public Task<T?> ReadByIdAsync(Guid id) => inner.ReadByIdAsync(id);

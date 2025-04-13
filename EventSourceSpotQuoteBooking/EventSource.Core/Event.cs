@@ -20,6 +20,8 @@ public abstract record Event
         }
     }
 
+    public bool Compensation { get; init; } = false;
+
     public virtual string ContentString => string.Empty;
 
     protected Event() { }

@@ -7,6 +7,7 @@ using SpotQuoteBooking.EventSource.Application.Interfaces;
 using SpotQuoteBooking.EventSource.Application.Mappers;
 using SpotQuoteBooking.EventSource.Core.AggregateRoots;
 using SpotQuoteBooking.EventSource.Core.Validators;
+using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums;
 
 namespace SpotQuoteBooking.EventSource.Application;
 
@@ -69,13 +70,16 @@ public class SpotQuoteService : ISpotQuoteService
             spotQuote.AddressFrom.Id = addressFromId;
             spotQuote.AddressTo.Id = addressToId;
 
-            await buyingRateService.CreateBuyingRatesIfNotExistsAsync(spotQuote);
+            await buyingRateService.UpsertBuyingRatesAsync(spotQuote);
 
             var spotQuoteDomain = spotQuote.ToDomain();
 
-            var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
-            if (!validationResult.IsValid)
-                throw new ValidationException(validationResult.Errors);
+            if (spotQuote.Status != BookingStatus.Draft)
+            {
+                var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
+                if (!validationResult.IsValid)
+                    throw new ValidationException(validationResult.Errors);
+            }
 
             if (isUpdate)
                 await spotQuoteRepository.UpdateAsync(spotQuoteDomain);

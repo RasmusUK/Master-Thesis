@@ -21,7 +21,7 @@ public class BuyingRateService : IBuyingRateService
         this.locationService = locationService;
     }
 
-    public async Task CreateBuyingRatesIfNotExistsAsync(SpotQuoteDto spotQuoteDto)
+    public async Task UpsertBuyingRatesAsync(SpotQuoteDto spotQuoteDto)
     {
         foreach (var quoteDto in spotQuoteDto.Quotes)
         {
