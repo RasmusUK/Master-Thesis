@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EventSource.Core\EventSource.Core.csproj" />
+      <ProjectReference Include="..\EventSource.Persistence\EventSource.Persistence.csproj" />
       <ProjectReference Include="..\SpotQuoteBooking.EventSource.Core\SpotQuoteBooking.EventSource.Core.csproj" />
     </ItemGroup>
 

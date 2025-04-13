@@ -35,5 +35,7 @@ public static class DependencyInjection
             .AddSingleton<IEventStore, MongoDbEventStore>()
             .AddSingleton<IMongoDbEventStore, MongoDbEventStore>()
             .AddSingleton<IPersonalDataStore, MongoDbPersonalDataStore>()
-            .AddSingleton(typeof(IRepository<>), typeof(Repository<>));
+            .AddSingleton(typeof(Repository<>))
+            .AddScoped<ITransactionManager, TransactionManager>()
+            .AddScoped(typeof(IRepository<>), typeof(SmartRepository<>));
 }

@@ -17,15 +17,15 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddEventSourcing(builder.Configuration);
-builder.Services.AddSingleton<ICountryFetcher, CountryFetcher>();
-builder.Services.AddSingleton<ISeeder, Seeder>();
-builder.Services.AddSingleton<IAddressService, AddressService>();
-builder.Services.AddSingleton<ICustomerService, CustomerService>();
-builder.Services.AddSingleton<ICountryService, CountryService>();
-builder.Services.AddSingleton<ISpotQuoteService, SpotQuoteService>();
-builder.Services.AddSingleton<ILocationService, LocationService>();
-builder.Services.AddSingleton<IBuyingRateService, BuyingRateService>();
-builder.Services.AddSingleton<SpotQuoteValidator, SpotQuoteValidator>();
+builder.Services.AddScoped<ICountryFetcher, CountryFetcher>();
+builder.Services.AddScoped<ISeeder, Seeder>();
+builder.Services.AddScoped<IAddressService, AddressService>();
+builder.Services.AddScoped<ICustomerService, CustomerService>();
+builder.Services.AddScoped<ICountryService, CountryService>();
+builder.Services.AddScoped<ISpotQuoteService, SpotQuoteService>();
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IBuyingRateService, BuyingRateService>();
+builder.Services.AddScoped<SpotQuoteValidator, SpotQuoteValidator>();
 
 var app = builder.Build();
 

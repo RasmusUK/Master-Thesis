@@ -1,5 +1,6 @@
 using EventSource.Core.Exceptions;
 using EventSource.Core.Interfaces;
+using EventSource.Persistence.Interfaces;
 using FluentValidation;
 using SpotQuoteBooking.EventSource.Application.DTOs;
 using SpotQuoteBooking.EventSource.Application.Interfaces;
@@ -16,13 +17,15 @@ public class SpotQuoteService : ISpotQuoteService
     private readonly ICustomerService customerService;
     private readonly SpotQuoteValidator spotQuoteValidator;
     private readonly IBuyingRateService buyingRateService;
+    private readonly ITransactionManager transactionManager;
 
     public SpotQuoteService(
         IRepository<SpotQuote> spotQuoteRepository,
         IAddressService addressService,
         ICustomerService customerService,
         SpotQuoteValidator spotQuoteValidator,
-        IBuyingRateService buyingRateService
+        IBuyingRateService buyingRateService,
+        ITransactionManager transactionManager
     )
     {
         this.spotQuoteRepository = spotQuoteRepository;
@@ -30,6 +33,7 @@ public class SpotQuoteService : ISpotQuoteService
         this.customerService = customerService;
         this.spotQuoteValidator = spotQuoteValidator;
         this.buyingRateService = buyingRateService;
+        this.transactionManager = transactionManager;
     }
 
     public Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote) =>
@@ -56,23 +60,35 @@ public class SpotQuoteService : ISpotQuoteService
 
     private async Task HandleSpotQuoteUpsertAsync(SpotQuoteDto spotQuote, bool isUpdate)
     {
-        var addressFromId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressFrom);
-        var addressToId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressTo);
-        spotQuote.AddressFrom.Id = addressFromId;
-        spotQuote.AddressTo.Id = addressToId;
+        transactionManager.Begin();
 
-        await buyingRateService.CreateBuyingRatesIfNotExistsAsync(spotQuote);
+        try
+        {
+            var addressFromId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressFrom);
+            var addressToId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressTo);
+            spotQuote.AddressFrom.Id = addressFromId;
+            spotQuote.AddressTo.Id = addressToId;
 
-        var spotQuoteDomain = spotQuote.ToDomain();
+            await buyingRateService.CreateBuyingRatesIfNotExistsAsync(spotQuote);
 
-        var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
-        if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
+            var spotQuoteDomain = spotQuote.ToDomain();
 
-        if (isUpdate)
-            await spotQuoteRepository.UpdateAsync(spotQuoteDomain);
-        else
-            await spotQuoteRepository.CreateAsync(spotQuoteDomain);
+            var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
+            if (!validationResult.IsValid)
+                throw new ValidationException(validationResult.Errors);
+
+            if (isUpdate)
+                await spotQuoteRepository.UpdateAsync(spotQuoteDomain);
+            else
+                await spotQuoteRepository.CreateAsync(spotQuoteDomain);
+
+            await transactionManager.CommitAsync();
+        }
+        catch
+        {
+            await transactionManager.RollbackAsync();
+            throw;
+        }
     }
 
     private async Task<SpotQuoteDto> FillSpotQuoteDtoAsync(SpotQuote spotQuote)
