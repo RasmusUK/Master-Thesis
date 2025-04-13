@@ -8,7 +8,10 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EventSource.Application\EventSource.Application.csproj" />
-      <ProjectReference Include="..\SpotQuoteBooking.Shared\SpotQuoteBooking.Shared.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="FluentValidation" Version="11.11.0" />
     </ItemGroup>
 
 </Project>

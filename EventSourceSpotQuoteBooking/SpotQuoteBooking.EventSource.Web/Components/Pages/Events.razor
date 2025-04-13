@@ -1,0 +1,75 @@
+@page "/events"
+@using global::EventSource.Core.Interfaces
+@using global::EventSource.Core
+@inject IEventStore EventStore
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Events</MudText>
+
+<MudStack>
+    <MudGrid>
+        <MudItem xs="4">
+            <MudDateRangePicker @bind-DateRange="dateRange" DateFormat="dd/MM/yyyy HH:mm" 
+                                Placeholder="dd/mm/yy hh:mm" Variant="Variant.Outlined"/>
+        </MudItem>
+        <MudItem xs="4">
+            <MudTextField T="Guid?" Label="Entity id" Variant="Variant.Outlined" Clearable="true" 
+                          @bind-Value="entityId"/>
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Search" Color="Color.Primary" OnClick="Search" Variant="Variant.Outlined">
+                Search
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.ClearAll" Color="Color.Error" OnClick="Clear" Variant="Variant.Outlined">
+                Clear all
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+    
+    <MudDataGrid T="Event" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+        <Columns>
+            <PropertyColumn Property="x => x.Timestamp" Title="Timestamp" Filterable="false"/>
+            <PropertyColumn Property="x => x.EntityId" Title="Entity id" Filterable="false"/>
+            <PropertyColumn Property="x => x.Typename" Title="Type"/>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="Event"/>
+        </PagerContent>
+    </MudDataGrid>
+</MudStack>
+
+
+@code {
+    private IEnumerable<Event> events = new List<Event>();
+    private bool loading = true;
+    private Guid? entityId;
+    private DateRange dateRange = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+    protected override async Task OnInitializedAsync()
+    {
+        await Search();
+    }
+    
+    private void OnRowClick(DataGridRowClickEventArgs<Event> e)
+    {
+        Navigation.NavigateTo($"/events/{e.Item.Id}");
+    }
+
+    private async Task Search()
+    {
+        loading = true;
+        if (entityId is null || entityId == default)
+            events = await EventStore.GetEventsFromUntilAsync(dateRange.Start!.Value, dateRange.End!.Value);
+        else
+            events = await EventStore.GetEventsByEntityIdFromUntilAsync(entityId.Value, dateRange.Start!.Value, dateRange.End!.Value);
+        events = events.OrderByDescending(x => x.Timestamp);
+        loading = false;
+    }
+
+    private void Clear()
+    {
+        dateRange = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        entityId = null;
+    }
+}

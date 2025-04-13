@@ -1,3 +1,6 @@
+@using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums
+@using SpotQuoteBooking.EventSource.Web.Data
+@using SpotQuoteBooking.EventSource.Application.DTOs
 <MudCard>
     <MudCardHeader>
         <MudText Typo="Typo.h6">@Title</MudText>
@@ -18,13 +21,14 @@
             </MudItem>
             <MudFlexBreak />
             <MudItem xs="3">
-                <MudAutocomplete T="Country"
+                <MudAutocomplete T="CountryDto"
                                  @bind-Value="Address.Country"
                                  Label="Country"
                                  Clearable="true"
                                  MaxItems="null"
                                  Required="true"
-                                 SearchFunc="SearchCountries" />
+                                 SearchFunc="SearchCountries" 
+                                 ToStringFunc="@(c => c == null ? "" : $"{c.Code} - {c.Name}")"/>
             </MudItem>
             <MudItem xs="3">
                 <MudTextField @bind-Value="Address.ZipCode" Label="Zip code" Clearable="true" Required="TransportMode == TransportMode.Courier || TransportMode == TransportMode.Road" />
@@ -56,9 +60,15 @@
 
 @code {
     [Parameter] public string Title { get; set; } = "Address";
-    [Parameter] public Address Address { get; set; } = new();
-    [Parameter] public EventCallback<Address> AddressChanged { get; set; }
+    [Parameter] public AddressDto Address { get; set; } = new();
+    [Parameter] public EventCallback<AddressDto> AddressChanged { get; set; }
     [Parameter] public TransportMode? TransportMode { get; set; }
     [Parameter] public EventCallback<TransportMode?> TransportModeChanged { get; set; }
-    [Parameter] public Func<string, CancellationToken, Task<IEnumerable<Country>>>? SearchCountries { get; set; }
+    [Parameter] public IEnumerable<CountryDto> Countries { get; set; }
+    
+    private async Task<IEnumerable<CountryDto>> SearchCountries(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            Countries : 
+            Countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
 }

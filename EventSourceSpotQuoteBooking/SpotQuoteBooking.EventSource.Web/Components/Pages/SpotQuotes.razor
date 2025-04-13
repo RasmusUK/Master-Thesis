@@ -1,7 +1,7 @@
 @page "/spot-quotes"
-@using SpotQuoteBooking.EventSource.Core
-@using global::EventSource.Core.Interfaces
-@inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
+@using SpotQuoteBooking.EventSource.Application.DTOs
+@using SpotQuoteBooking.EventSource.Application.Interfaces
+@inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
 
 <PageTitle>Spot Quotes</PageTitle>
@@ -13,7 +13,9 @@
     </MudButton>
 </MudStack>
 
-<MudDataGrid T="SpotQuoteBooking" Items="@spotQuoteBookings" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+<MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" RowClick="OnRowClick" Loading="@loading" 
+             SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" 
+             FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
     <Columns>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false"/>
         <PropertyColumn Property="x => x.TransportMode" Title="Mode" Filterable="false"/>
@@ -23,17 +25,17 @@
         <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
     </Columns>
     <PagerContent>
-        <MudDataGridPager T="SpotQuoteBooking"/>
+        <MudDataGridPager T="SpotQuoteDto"/>
     </PagerContent>
 </MudDataGrid>
 
 @code {
-    private IEnumerable<SpotQuoteBooking> spotQuoteBookings = new List<SpotQuoteBooking>();
+    private IEnumerable<SpotQuoteDto> spotQuotes = new List<SpotQuoteDto>();
     private bool loading = true;
 
     protected override async Task OnInitializedAsync()
     {
-        spotQuoteBookings = (await SpotQuoteBookingRepository.ReadAllAsync()).OrderByDescending(x => x.CreatedAt);
+        spotQuotes = (await SpotQuoteService.GetAllSpotQuotesAsync()).OrderByDescending(s => s.CreatedAt);
         loading = false;
     }
     
@@ -42,7 +44,7 @@
         Navigation.NavigateTo("/spot-quotes/create");
     }
 
-    private void OnRowClick(DataGridRowClickEventArgs<SpotQuoteBooking> e)
+    private void OnRowClick(DataGridRowClickEventArgs<SpotQuoteDto> e)
     {
         Navigation.NavigateTo($"/spot-quotes/edit/{e.Item.Id}");
     }

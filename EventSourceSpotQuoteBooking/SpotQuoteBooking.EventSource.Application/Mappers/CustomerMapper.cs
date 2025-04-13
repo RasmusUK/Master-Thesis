@@ -1,0 +1,26 @@
+using SpotQuoteBooking.EventSource.Application.DTOs;
+using SpotQuoteBooking.EventSource.Core.AggregateRoots;
+
+namespace SpotQuoteBooking.EventSource.Application.Mappers;
+
+public static class CustomerMapper
+{
+    public static CustomerDto ToDto(this Customer customer)
+    {
+        return new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Users = customer.Users.Select(UserMapper.ToDto).ToList(),
+        };
+    }
+
+    public static Customer ToDomain(this CustomerDto customerDto)
+    {
+        return new Customer(customerDto.Name)
+        {
+            Id = customerDto.Id,
+            Users = customerDto.Users.Select(UserMapper.ToDomain).ToList(),
+        };
+    }
+}

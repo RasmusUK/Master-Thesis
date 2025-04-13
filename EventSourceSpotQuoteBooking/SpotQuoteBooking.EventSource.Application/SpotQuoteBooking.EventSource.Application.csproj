@@ -9,7 +9,6 @@
     <ItemGroup>
       <ProjectReference Include="..\EventSource.Core\EventSource.Core.csproj" />
       <ProjectReference Include="..\SpotQuoteBooking.EventSource.Core\SpotQuoteBooking.EventSource.Core.csproj" />
-      <ProjectReference Include="..\SpotQuoteBooking.Shared\SpotQuoteBooking.Shared.csproj" />
     </ItemGroup>
 
 </Project>

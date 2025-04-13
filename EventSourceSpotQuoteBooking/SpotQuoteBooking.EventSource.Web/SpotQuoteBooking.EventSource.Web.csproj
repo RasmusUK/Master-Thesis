@@ -14,11 +14,19 @@
 
   <ItemGroup>
     <ProjectReference Include="..\EventSource.Infrastructure\EventSource.Infrastructure.csproj" />
+    <ProjectReference Include="..\SpotQuoteBooking.EventSource.Application\SpotQuoteBooking.EventSource.Application.csproj" />
     <ProjectReference Include="..\SpotQuoteBooking.EventSource.Core\SpotQuoteBooking.EventSource.Core.csproj" />
   </ItemGroup>
 
 
   <ItemGroup>
     <_ContentIncludedByDefault Remove="Data\Countries.json" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="Data\Countries.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

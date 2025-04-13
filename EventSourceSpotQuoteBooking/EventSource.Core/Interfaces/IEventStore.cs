@@ -3,6 +3,7 @@ namespace EventSource.Core.Interfaces;
 public interface IEventStore
 {
     Task InsertEventAsync(Event e);
+    Task<Event?> GetEventByIdAsync(Guid id);
     Task<IReadOnlyCollection<Event>> GetEventsAsync();
     Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(DateTime until);
     Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(DateTime from, DateTime until);

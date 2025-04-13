@@ -37,6 +37,14 @@ public class MongoDbEventStore : IMongoDbEventStore
         await collection.InsertOneAsync(session, new MongoDbEvent(e));
     }
 
+    public async Task<Event?> GetEventByIdAsync(Guid id)
+    {
+        var mongoEvent = await collection.Find(e => e.Id == id).FirstOrDefaultAsync();
+        if (mongoEvent is null)
+            return null;
+        return mongoEvent.ToDomain();
+    }
+
     public async Task<IReadOnlyCollection<Event>> GetEventsAsync()
     {
         var mongoEvents = await collection.Find(_ => true).ToListAsync();

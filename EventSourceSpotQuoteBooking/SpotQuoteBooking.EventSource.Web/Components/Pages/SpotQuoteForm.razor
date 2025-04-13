@@ -1,13 +1,17 @@
 @page "/spot-quotes/create"
 @page "/spot-quotes/edit/{Id:guid}"
-@using global::EventSource.Core.Interfaces
-@using SpotQuoteBooking.EventSource.Core
-@using Direction = SpotQuoteBooking.Shared.Direction
+@using Direction = SpotQuoteBooking.EventSource.Core.ValueObjects.Enums.Direction
 @using System.Collections.ObjectModel
-@inject IRepository<SpotQuoteBooking> SpotQuoteBookingRepository
-@inject IRepository<Customer> CustomerRepository
+@using SpotQuoteBooking.EventSource.Application.DTOs
+@using SpotQuoteBooking.EventSource.Application.Interfaces
+@using SpotQuoteBooking.EventSource.Application.Mappers
+@using SpotQuoteBooking.EventSource.Core.ValueObjects
+@using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums
+@using SpotQuoteBooking.EventSource.Web.Data
+@inject ICustomerService CustomerService
+@inject ICountryService CountryService
+@inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
-@inject ICountryFetcher CountryFetcher
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
 
@@ -46,12 +50,13 @@
                             </MudSelect>
                         </MudItem>
                         <MudItem xs="3">
-                            <MudAutocomplete @bind-Value="@SelectedCustomer"
+                            <MudAutocomplete @bind-Value="model.Customer"
                                              Label="Customer"
                                              Clearable="true"
                                              MaxItems="100"
                                              Required="true"
-                                             SearchFunc="@SearchCustomers"/>
+                                             SearchFunc="@SearchCustomers" 
+                                             ToStringFunc="@(c => c?.Name ?? "")"/>
                         </MudItem>
                         <MudItem xs="3">
                             <MudStack>
@@ -67,23 +72,25 @@
             <AddressCard Title="From"
                          @bind-Address="@model.AddressFrom"
                          @bind-TransportMode="@model.TransportMode"
-                         SearchCountries="@SearchCountries"/>
+                         Countries="countries"/>
             <AddressCard Title="To"
                          @bind-Address="@model.AddressTo"
                          @bind-TransportMode="@model.TransportMode"
-                         SearchCountries="@SearchCountries"/>
+                         Countries="countries"/>
         </MudStack>
     </MudForm>    
 </MudStep>
     
 <MudStep Title="Shipping details" SecondaryText="@($"{collis.Sum(x => x.NumberOfUnits)} unit(s) / {model.TotalWeight} kg / {model.TotalCbm} m3")">
     <MudStack>
-        <MudDataGrid T="Colli" Items="collis" ReadOnly="false" Bordered="true" Dense="true" EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" CanceledEditingItem="@ShippingDetailsEdit" CommittedItemChanges="@ShippingDetailsEdit">
+        <MudDataGrid T="ColliDto" Items="collis" ReadOnly="false" Bordered="true" Dense="true" 
+                     EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" 
+                     CanceledEditingItem="@ShippingDetailsEdit" CommittedItemChanges="@ShippingDetailsEdit">
             <Columns>
                 <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
-                <PropertyColumn Property="x => x.ColliType" Title="Colli type">
+                <PropertyColumn Property="x => x.Type" Title="Colli type">
                     <EditTemplate>
-                        <MudSelect T="ColliType" @bind-Value="@context.Item.ColliType">
+                        <MudSelect T="ColliType" @bind-Value="@context.Item.Type">
                             @foreach (var item in ColliType.GetByTransportMode(model.TransportMode))
                             {
                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -94,8 +101,8 @@
                 <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
                 <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
                 <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
-                <PropertyColumn Editable="false" Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumAggregrateDefinition"/>
-                <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumAggregrateDefinition"/>
+                <PropertyColumn Editable="false" Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumCbmAggregrateDefinition" Format="N4"/>
+                <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumWeightAggregrateDefinition"/>
                 <TemplateColumn StickyRight="true">
                     <HeaderTemplate>
                         <MudIconButton OnClick="@AddColli" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
@@ -138,7 +145,7 @@
 <MudStep Title="Quote">
     <MudStack>
         <MudStack Justify="Justify.FlexEnd" Row="true">
-            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@CreateQuote" Variant="Variant.Filled">
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@AddQuote" Variant="Variant.Filled">
                 Add
             </MudButton>
         </MudStack>
@@ -148,7 +155,7 @@
                 <MudCardHeader>
                     <MudGrid>
                         <MudItem xs="3">
-                            <MudText Typo="Typo.h6">@(quote.SupplierService?.ToString() ?? quote.ForwarderService?.ToString() ?? quote.Supplier?.ToString())</MudText>
+                            <MudText Typo="Typo.h6">@(quote.SupplierService?.ToString() ?? quote.ForwarderService?.ToString() ?? quote.Supplier?.ToString() ?? "Quote")</MudText>
                         </MudItem>
                         <MudItem xs="3"/>
                         <MudItem xs="2">
@@ -220,7 +227,9 @@
                             </MudItem>
                         </MudGrid>
                         <MudDivider/>
-                        <MudDataGrid T="Cost" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell" Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.OnRowClick" CanceledEditingItem="CostEdit" CommittedItemChanges="CostEdit">
+                        <MudDataGrid T="CostDto" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell" 
+                                     Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.OnRowClick" 
+                                     CanceledEditingItem="CostEdit" CommittedItemChanges="CostEdit">
                             <ColGroup>
                                 @for (var i = 0; i < 4; i++)
                                 {
@@ -253,7 +262,7 @@
                                     </EditTemplate>
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SupplierCost.Value" Title="Value"/>
-                                <PropertyColumn Property="x => x.SupplierCost.CalculatedValue" Title="Total" Editable="false" Format="N2"/>
+                                <PropertyColumn Property="x => x.SupplierCost.Total" Title="Total" Editable="false" Format="N2"/>
                                 <PropertyColumn Property="x => x.SellingCost.ChargeType" Title="Charge">
                                     <EditTemplate>
                                         <MudSelect T="ChargeType" @bind-Value="@context.Item.SellingCost.ChargeType">
@@ -278,7 +287,7 @@
                                 <PropertyColumn Property="x => x.SellingCost.Value" Title="Value"/>
                                 <PropertyColumn Property="x => x.SellingCost.MaximumValue" Title="Max"/>
                                 <PropertyColumn Property="x => x.SellingCost.Profit" Title="Profit"/>
-                                <PropertyColumn Property="x => x.SellingCost.TotalValue" Title="Total" Editable="false" Format="N2"/>
+                                <PropertyColumn Property="x => x.SellingCost.Total" Title="Total" Editable="false" Format="N2"/>
                                 <PropertyColumn Property="x => x.SellingCost.Comment" Title="Comment"/>
                                 <TemplateColumn StickyRight="true">
                                     <HeaderTemplate>
@@ -313,8 +322,8 @@
 <MudStep Title="Validity & recipients">
     <MudGrid>
         <MudItem xs="6">
-            <MudSelect Label="Mail recipients" MultiSelection="true" SelectedValues="@SelectedMailRecipients">
-                @foreach (var item in SelectedCustomer.Users)
+            <MudSelect Label="Mail recipients" MultiSelection="true" SelectedValues="@model.MailOptions.UserRecipients">
+                @foreach (var item in model.Customer.Users)
                 {
                     <MudSelectItem Value="@item">@item</MudSelectItem>
                 }
@@ -378,130 +387,161 @@
     [Inject] 
     IDialogService DialogService { get; set; }
     [Parameter] public Guid? Id { get; set; }
-    ObservableCollection<Colli> collis = new();
+    ObservableCollection<ColliDto> collis = new();
 
-    private SpotQuoteBooking model = new()
+    private SpotQuoteDto model = new()
     {
-        AddressFrom = new Address(),
-        AddressTo = new Address(),
-        ShippingDetails = new ShippingDetails()
+        AddressFrom = new AddressDto(),
+        AddressTo = new AddressDto(),
+        ShippingDetails = new ShippingDetailsDto()
     };
-    private IEnumerable<Customer> customers = new List<Customer>();
-    private IEnumerable<Country> countries = new List<Country>();
-    private List<BookingProperty> selectedBookingProperties = new();
-    private Customer? SelectedCustomer;
-    private IEnumerable<User> SelectedMailRecipients = new List<User>();
+    private IEnumerable<CustomerDto> customers = new List<CustomerDto>();
+    private IEnumerable<CountryDto> countries = new List<CountryDto>();
+    private IEnumerable<BookingProperty> selectedBookingProperties = new List<BookingProperty>();
     private bool IsNew => Id == null;
     private MudForm form1;
     private int index;
     
     protected override async Task OnInitializedAsync()
     {
-        customers = await CustomerRepository.ReadAllAsync();
-        countries = CountryFetcher.GetCountries();
+        customers = await CustomerService.GetAllCustomersAsync();
+        countries = await CountryService.GetAllCountriesAsync();
         if (!IsNew)
         {
-            var existing = await SpotQuoteBookingRepository.ReadByIdAsync(Id!.Value);
+            var existing = await SpotQuoteService.GetSpotQuoteByIdAsync(Id!.Value);
             if (existing is not null)
             {
                 model = existing;
-                collis = new ObservableCollection<Colli>(model.ShippingDetails.Collis);
-                SelectedCustomer = await CustomerRepository.ReadByIdAsync(model.CustomerId);
+                collis = new ObservableCollection<ColliDto>(model.ShippingDetails.Collis);
             }
         }
 
         model.Direction ??= Direction.Import;
         selectedBookingProperties = model.ShippingDetails.BookingProperties.ToList();
-        if (model.Quotes.Count == 0)
-            model.Quotes.Add(new Quote());
-    }
-
-    private async Task Save()
-    {
-        if (IsNew)
-            await SpotQuoteBookingRepository.CreateAsync(model);
-        else
-            await SpotQuoteBookingRepository.UpdateAsync(model);
-
-        Navigation.NavigateTo("/spot-quotes");
     }
     
-    private async Task<IEnumerable<Customer>> SearchCustomers(string value, CancellationToken cancellationToken) => 
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string value, CancellationToken cancellationToken) => 
         string.IsNullOrEmpty(value) ? 
             customers : 
             customers.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
-    
-    private async Task<IEnumerable<Country>> SearchCountries(string value, CancellationToken cancellationToken) => 
-        string.IsNullOrEmpty(value) ? 
-            countries : 
-            countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
-                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
 
-    private void AddColli() => collis.Add(new Colli {NumberOfUnits = 1});
+    private void AddColli() => collis.Add(new ColliDto{ NumberOfUnits = 1 });
     
-    private void RemoveColli(Colli colli) => collis.Remove(colli);
+    private void RemoveColli(ColliDto colli) => collis.Remove(colli);
 
-    private void AddCost(Quote quote) => quote.Costs.Add(new Cost(model.TotalWeight, model.TotalCbm));
+    private void AddCost(QuoteDto quote) => quote.Costs.Add(new CostDto
+    {
+        SellingCost = new SellingCostDto
+        {
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        },
+        SupplierCost = new SupplierCostDto
+        {
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        }
+    });
     
-    private void RemoveCost(Cost cost, Quote quote) => quote.Costs.Remove(cost);
+    private void RemoveCost(CostDto cost, QuoteDto quote) => quote.Costs.Remove(cost);
     
-    private AggregateDefinition<Colli> nrOfCollisAggregateDefinition = new()
+    private AggregateDefinition<ColliDto> nrOfCollisAggregateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "Totals: {value}"
     };
     
-    private AggregateDefinition<Colli> sumAggregrateDefinition = new()
+    private AggregateDefinition<ColliDto> sumCbmAggregrateDefinition = new()
     {
-        Type = AggregateType.Sum,
-        DisplayFormat = "{value}"
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var totalCbm = x.Sum(c => c.Cbm * c.NumberOfUnits);
+            return $"{totalCbm}";
+        }
+    };
+    
+    private AggregateDefinition<ColliDto> sumWeightAggregrateDefinition = new()
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var totalWeight = x.Sum(c => c.Weight * c.NumberOfUnits);
+            return $"{totalWeight}";
+        }
     };
     
     private void OnBookingPropertiesChanged(IEnumerable<BookingProperty> newValues)
     {
         selectedBookingProperties = newValues.ToList();
-        model.ShippingDetails!.BookingProperties = selectedBookingProperties;
+        model.ShippingDetails!.BookingProperties = selectedBookingProperties.ToList();
     }
 
-    private void ShippingDetailsEdit(Colli colli)
+    private void ShippingDetailsEdit(ColliDto colli)
     {
-        model.ShippingDetails!.Collis = collis.ToList();
+        colli.Cbm = colli.Length * colli.Width * colli.Height / 1000000;
+        model.TotalWeight = collis.Sum(x => x.Weight * x.NumberOfUnits);
+        model.TotalCbm = collis.Sum(x => x.Cbm * x.NumberOfUnits);
+        model.ShippingDetails.Collis = collis.ToList();
         foreach (var cost in model.Quotes.SelectMany(q => q.Costs))
         {
             cost.SupplierCost.Weight = model.TotalWeight;
             cost.SupplierCost.Cbm = model.TotalCbm;
             cost.SellingCost.Weight = model.TotalWeight;
             cost.SellingCost.Cbm = model.TotalCbm;
+            UpdateCost(cost);
         }
         StateHasChanged();
     }
 
-    private void CostEdit(Cost cost)
+    private void CostEdit(CostDto cost)
     {
+        UpdateCost(cost);
         StateHasChanged();
     }
+
+    private void UpdateCost(CostDto cost)
+    {
+        cost.SupplierCost.Total = SupplierCost.CalculateTotal(cost.SupplierCost.Value, cost.SupplierCost.Weight, cost.SupplierCost.Cbm, cost.SupplierCost.CostType);
+        cost.SellingCost.Total = SellingCost.CalculateTotal(cost.SellingCost.Value, cost.SellingCost.Weight, cost.SellingCost.Cbm, cost.SellingCost.MinimumValue, cost.SellingCost.MaximumValue, cost.SellingCost.Profit, cost.SellingCost.CostType);
+        RecalcQuotes();
+    }
+
+    private void RecalcQuotes()
+    {
+        foreach (var quote in model.Quotes)
+        {
+            var (totalPrice, totalProfit) = Quote.CalculateTotal(quote.Costs.Select(c => c.ToDomain()).ToList(), quote.Profit.ToDomain());
+            quote.TotalPrice = totalPrice;
+            quote.TotalProfit = totalProfit;
+        }
+        StateHasChanged();  
+    }
     
-    private void OnSupplierChanged(Supplier newSupplier, Quote quote)
+    private void OnSupplierChanged(Supplier newSupplier, QuoteDto quote)
     {
         quote.Supplier = newSupplier;
         quote.ForwarderService = null;
         quote.SupplierService = null;
     }
 
-    private void OnForwarderServiceChanged(ForwarderService newService, Quote quote)
+    private void OnForwarderServiceChanged(ForwarderService newService, QuoteDto quote)
     {
         quote.ForwarderService = newService;
         quote.SupplierService = null;
     }
 
-    private void RemoveQuote(Quote quote)
+    private void RemoveQuote(QuoteDto quote)
     {
         model.Quotes.Remove(quote);
     }
 
-    private void CreateQuote()
+    private void AddQuote()
     {
-        model.Quotes.Add(new Quote());
+        model.Quotes.Add(new QuoteDto
+        {
+            Profit = new ProfitDto()
+        });
     }
     
     private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
@@ -529,14 +569,12 @@
     
     private async Task Save(BookingStatus status)
     {
-        model.CustomerId = SelectedCustomer!.Id;
-        model.MailOptions.Recipients = SelectedMailRecipients.Select(x => x.Email).ToList();
         model.Status = BookingStatus.SpotQuote;
         model.Status = status;
         if (IsNew)
-            await SpotQuoteBookingRepository.CreateAsync(model);
+            await SpotQuoteService.CreateSpotQuoteAsync(model);
         else
-            await SpotQuoteBookingRepository.UpdateAsync(model);
+            await SpotQuoteService.UpdateSpotQuoteAsync(model);
         Navigation.NavigateTo("/spot-quotes");
     }
 }
