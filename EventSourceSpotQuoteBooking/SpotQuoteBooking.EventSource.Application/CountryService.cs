@@ -26,4 +26,10 @@ public class CountryService : ICountryService
         var country = await countryRepository.ReadByIdAsync(countryId);
         return country?.ToDto();
     }
+
+    public async Task<CountryDto?> GetCountryByCodeAsync(string code)
+    {
+        var country = await countryRepository.ReadByFilterAsync(c => c.Code == code);
+        return country?.ToDto();
+    }
 }

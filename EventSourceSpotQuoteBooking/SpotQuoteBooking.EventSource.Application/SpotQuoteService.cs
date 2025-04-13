@@ -15,47 +15,28 @@ public class SpotQuoteService : ISpotQuoteService
     private readonly IAddressService addressService;
     private readonly ICustomerService customerService;
     private readonly AbstractValidator<SpotQuote> spotQuoteValidator;
+    private readonly IBuyingRateService buyingRateService;
 
     public SpotQuoteService(
         IRepository<SpotQuote> spotQuoteRepository,
         IAddressService addressService,
         ICustomerService customerService,
-        AbstractValidator<SpotQuote> spotQuoteValidator
+        AbstractValidator<SpotQuote> spotQuoteValidator,
+        IBuyingRateService buyingRateService
     )
     {
         this.spotQuoteRepository = spotQuoteRepository;
         this.addressService = addressService;
         this.customerService = customerService;
         this.spotQuoteValidator = spotQuoteValidator;
+        this.buyingRateService = buyingRateService;
     }
 
-    public async Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote)
-    {
-        await addressService.UpsertAddressAsync(spotQuote.AddressFrom);
-        await addressService.UpsertAddressAsync(spotQuote.AddressTo);
+    public Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote) =>
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: false);
 
-        var spotQuoteDomain = spotQuote.ToDomain();
-
-        var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
-        if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
-
-        await spotQuoteRepository.CreateAsync(spotQuoteDomain);
-    }
-
-    public async Task UpdateSpotQuoteAsync(SpotQuoteDto spotQuote)
-    {
-        await addressService.UpsertAddressAsync(spotQuote.AddressFrom);
-        await addressService.UpsertAddressAsync(spotQuote.AddressTo);
-
-        var spotQuoteDomain = spotQuote.ToDomain();
-
-        var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
-        if (!validationResult.IsValid)
-            throw new ValidationException(validationResult.Errors);
-
-        await spotQuoteRepository.UpdateAsync(spotQuoteDomain);
-    }
+    public Task UpdateSpotQuoteAsync(SpotQuoteDto spotQuote) =>
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: true);
 
     public async Task<SpotQuoteDto?> GetSpotQuoteByIdAsync(Guid id)
     {
@@ -71,6 +52,27 @@ public class SpotQuoteService : ISpotQuoteService
         var spotQuotes = await spotQuoteRepository.ReadAllAsync();
         var dtos = await Task.WhenAll(spotQuotes.Select(FillSpotQuoteDtoAsync));
         return dtos;
+    }
+
+    private async Task HandleSpotQuoteUpsertAsync(SpotQuoteDto spotQuote, bool isUpdate)
+    {
+        var addressFromId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressFrom);
+        var addressToId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressTo);
+        spotQuote.AddressFrom.Id = addressFromId;
+        spotQuote.AddressTo.Id = addressToId;
+
+        await buyingRateService.CreateBuyingRatesIfNotExistsAsync(spotQuote);
+
+        var spotQuoteDomain = spotQuote.ToDomain();
+
+        var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
+        if (!validationResult.IsValid)
+            throw new ValidationException(validationResult.Errors);
+
+        if (isUpdate)
+            await spotQuoteRepository.UpdateAsync(spotQuoteDomain);
+        else
+            await spotQuoteRepository.CreateAsync(spotQuoteDomain);
     }
 
     private async Task<SpotQuoteDto> FillSpotQuoteDtoAsync(SpotQuote spotQuote)

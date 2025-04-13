@@ -152,7 +152,7 @@ public class Seeder : ISeeder
                 locations[(i + 2) % Nr].Id,
                 DateTime.UtcNow.AddYears(-1),
                 DateTime.UtcNow.AddYears(1),
-                2000 * i
+                new SupplierCost(ChargeType.Delivery, CostType.PerKg, 100, 10, 10)
             );
 
             await buyingRateRepository.CreateAsync(buyingRate);

@@ -1,4 +1,5 @@
 using EventSource.Core;
+using SpotQuoteBooking.EventSource.Core.ValueObjects;
 using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums;
 
 namespace SpotQuoteBooking.EventSource.Core.AggregateRoots;
@@ -14,7 +15,7 @@ public class BuyingRate : Entity
         Guid destinationLocation,
         DateTime validFrom,
         DateTime validUntil,
-        double price
+        SupplierCost supplierCost
     )
     {
         TransportMode = transportMode;
@@ -25,7 +26,7 @@ public class BuyingRate : Entity
         DestinationLocationId = destinationLocation;
         ValidFrom = validFrom;
         ValidUntil = validUntil;
-        Price = price;
+        SupplierCost = supplierCost;
     }
 
     public TransportMode TransportMode { get; set; }
@@ -36,5 +37,5 @@ public class BuyingRate : Entity
     public Guid DestinationLocationId { get; set; }
     public DateTime ValidFrom { get; set; }
     public DateTime ValidUntil { get; set; }
-    public double Price { get; set; }
+    public SupplierCost SupplierCost { get; set; }
 }

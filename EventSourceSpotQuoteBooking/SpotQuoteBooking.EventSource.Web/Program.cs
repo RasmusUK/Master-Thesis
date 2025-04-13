@@ -23,6 +23,8 @@ builder.Services.AddSingleton<IAddressService, AddressService>();
 builder.Services.AddSingleton<ICustomerService, CustomerService>();
 builder.Services.AddSingleton<ICountryService, CountryService>();
 builder.Services.AddSingleton<ISpotQuoteService, SpotQuoteService>();
+builder.Services.AddSingleton<ILocationService, LocationService>();
+builder.Services.AddSingleton<IBuyingRateService, BuyingRateService>();
 builder.Services.AddSingleton<AbstractValidator<SpotQuote>, SpotQuoteValidator>();
 
 var app = builder.Build();

@@ -18,7 +18,7 @@ public class AddressService : IAddressService
         this.countryService = countryService;
     }
 
-    public async Task UpsertAddressAsync(AddressDto addressDto)
+    public async Task<Guid> CreateIfNotExistsAsync(AddressDto addressDto)
     {
         Address? existing;
 
@@ -38,17 +38,14 @@ public class AddressService : IAddressService
             existing = await addressRepository.ReadByIdAsync(addressDto.Id);
 
         if (existing is not null)
-            addressDto.Id = existing.Id;
+            return existing.Id;
 
-        if (addressDto.Id == default)
-            addressDto.Id = Guid.NewGuid();
+        addressDto.Id = addressDto.Id == default ? Guid.NewGuid() : addressDto.Id;
 
         var addressDomain = addressDto.ToDomain();
+        await addressRepository.CreateAsync(addressDomain);
 
-        if (existing is null)
-            await addressRepository.CreateAsync(addressDomain);
-        else
-            await addressRepository.UpdateAsync(addressDomain);
+        return addressDomain.Id;
     }
 
     public async Task<AddressDto?> GetAddressByIdAsync(Guid addressId)
