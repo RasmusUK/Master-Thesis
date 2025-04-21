@@ -3,10 +3,12 @@ namespace EventSource.Persistence;
 public class MongoDbOptions
 {
     public const string MongoDb = "MongoDb";
-    public EventStoreOptions EventStore { get; set; } = new();
+    public DatabaseOptions EventStore { get; set; } = new();
+    public DatabaseOptions EntityStore { get; set; } = new();
+    public DatabaseOptions PersonalDataStore { get; set; } = new();
 }
 
-public class EventStoreOptions
+public class DatabaseOptions
 {
     public string? ConnectionString { get; set; }
     public string? DatabaseName { get; set; }

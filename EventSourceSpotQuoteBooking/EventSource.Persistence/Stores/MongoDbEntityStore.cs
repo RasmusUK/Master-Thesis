@@ -115,7 +115,7 @@ public class MongoDbEntityStore : IMongoDbEntityStore
                     if (string.IsNullOrEmpty(collectionName))
                         throw new InvalidOperationException("Collection name is null.");
 
-                    return mongoDbService.GetCollection<T>(collectionName);
+                    return mongoDbService.GetEntityCollection<T>(collectionName);
                 }
             );
     }

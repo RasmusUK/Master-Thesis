@@ -10,42 +10,64 @@ namespace EventSource.Persistence;
 
 public class MongoDbService : IMongoDbService
 {
-    private readonly MongoClient mongoClient;
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
     public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
-    public IMongoDatabase database { get; init; }
+
+    private IMongoDatabase EventDatabase { get; }
+    private IMongoDatabase EntityDatabase { get; }
+    private IMongoDatabase PersonalDataDatabase { get; }
+
+    private MongoClient EventClient { get; }
+    private MongoClient EntityClient { get; }
+    private MongoClient PersonalDataClient { get; }
 
     public MongoDbService(IOptions<MongoDbOptions> mongoDbOptions)
     {
         RegisterConventions();
 
-        var eventStoreOptions = mongoDbOptions.Value.EventStore;
-        if (string.IsNullOrEmpty(eventStoreOptions.ConnectionString))
-            throw new ArgumentException("MongoDb connection string is required");
-        if (string.IsNullOrEmpty(eventStoreOptions.DatabaseName))
-            throw new ArgumentException("MongoDb database name is required");
+        var options = mongoDbOptions.Value;
 
-        var mongoUrl = MongoUrl.Create(eventStoreOptions.ConnectionString);
-        mongoClient = new MongoClient(mongoUrl);
-        database = mongoClient.GetDatabase(eventStoreOptions.DatabaseName);
+        (EventDatabase, EventClient) = CreateDatabase(options.EventStore);
+        (EntityDatabase, EntityClient) = CreateDatabase(options.EntityStore);
+        (PersonalDataDatabase, PersonalDataClient) = CreateDatabase(options.PersonalDataStore);
 
-        EventCollection = database.GetCollection<MongoDbEvent>(nameof(MongoDbEvent));
-        PersonalDataCollection = database.GetCollection<MongoDbPersonalData>(
-            nameof(MongoDbPersonalData)
+        EventCollection = EventDatabase.GetCollection<MongoDbEvent>("events");
+        PersonalDataCollection = PersonalDataDatabase.GetCollection<MongoDbPersonalData>(
+            "personalData"
         );
     }
 
-    public IMongoCollection<TEntity> GetCollection<TEntity>(string collectionName) =>
-        database.GetCollection<TEntity>(collectionName);
+    public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
+        EntityDatabase.GetCollection<TEntity>(collectionName);
 
-    public Task<IClientSessionHandle> StartSessionAsync() => mongoClient.StartSessionAsync();
+    public async Task CleanUpAsync()
+    {
+        await EventClient.DropDatabaseAsync(EventDatabase.DatabaseNamespace.DatabaseName);
+        await EntityClient.DropDatabaseAsync(EntityDatabase.DatabaseNamespace.DatabaseName);
+        await PersonalDataClient.DropDatabaseAsync(
+            PersonalDataDatabase.DatabaseNamespace.DatabaseName
+        );
+    }
+
+    private static (IMongoDatabase db, MongoClient client) CreateDatabase(DatabaseOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.ConnectionString))
+            throw new ArgumentException("MongoDB connection string is required.");
+
+        if (string.IsNullOrWhiteSpace(options.DatabaseName))
+            throw new ArgumentException("MongoDB database name is required.");
+
+        var client = new MongoClient(MongoUrl.Create(options.ConnectionString));
+        var db = client.GetDatabase(options.DatabaseName);
+        return (db, client);
+    }
 
     private static void RegisterConventions()
     {
         var conventionPack = new ConventionPack
         {
-            new GuidAsStringConvention(),
             new IgnoreExtraElementsConvention(true),
+            new GuidAsStringConvention(),
         };
 
         ConventionRegistry.Register("GlobalConventions", conventionPack, _ => true);

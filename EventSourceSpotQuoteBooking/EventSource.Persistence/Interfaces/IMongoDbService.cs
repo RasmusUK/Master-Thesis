@@ -7,7 +7,6 @@ public interface IMongoDbService
 {
     IMongoCollection<MongoDbEvent> EventCollection { get; }
     IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
-    IMongoCollection<TEntity> GetCollection<TEntity>(string collectionName);
-    public IMongoDatabase database { get; init; }
-    Task<IClientSessionHandle> StartSessionAsync();
+    IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName);
+    Task CleanUpAsync();
 }

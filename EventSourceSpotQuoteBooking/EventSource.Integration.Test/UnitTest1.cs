@@ -730,15 +730,6 @@ public class UnitTest1 : IDisposable
 
     public void Dispose()
     {
-        using var cursor = mongoDbService
-            .database.ListCollectionNamesAsync()
-            .GetAwaiter()
-            .GetResult();
-        var collections = cursor.ToList();
-
-        foreach (var collectionName in collections)
-        {
-            mongoDbService.database.DropCollectionAsync(collectionName).GetAwaiter().GetResult();
-        }
+        mongoDbService.CleanUpAsync().GetAwaiter().GetResult();
     }
 }

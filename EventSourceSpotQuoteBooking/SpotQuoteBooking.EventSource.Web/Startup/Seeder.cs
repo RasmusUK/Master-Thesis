@@ -46,7 +46,7 @@ public class Seeder : ISeeder
 
     public async Task Seed()
     {
-        DeleteAll();
+        await DeleteAll();
         await SeedCustomers();
         await SeedCountries();
         await SeedAddresses();
@@ -55,19 +55,7 @@ public class Seeder : ISeeder
         await SeedSpotQuoteBookings();
     }
 
-    private void DeleteAll()
-    {
-        using var cursor = mongoDbService
-            .database.ListCollectionNamesAsync()
-            .GetAwaiter()
-            .GetResult();
-        var collections = cursor.ToList();
-
-        foreach (var collectionName in collections)
-        {
-            mongoDbService.database.DropCollectionAsync(collectionName).GetAwaiter().GetResult();
-        }
-    }
+    private Task DeleteAll() => mongoDbService.CleanUpAsync();
 
     private async Task SeedCustomers()
     {
