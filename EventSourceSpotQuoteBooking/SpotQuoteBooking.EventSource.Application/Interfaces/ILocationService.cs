@@ -11,4 +11,10 @@ public interface ILocationService
         string countryCode,
         LocationType locationType
     );
+
+    Task<LocationDto?> SearchLocationIdAsync(
+        string code,
+        string countryCode,
+        LocationType locationType
+    );
 }

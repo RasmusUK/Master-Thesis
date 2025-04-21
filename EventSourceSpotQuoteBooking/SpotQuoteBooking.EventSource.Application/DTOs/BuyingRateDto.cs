@@ -10,9 +10,9 @@ public class BuyingRateDto
     public Supplier Supplier { get; set; }
     public SupplierService SupplierService { get; set; }
     public ForwarderService ForwarderService { get; set; }
-    public Location Origin { get; set; }
-    public Location Destination { get; set; }
+    public LocationDto Origin { get; set; }
+    public LocationDto Destination { get; set; }
     public DateTime ValidFrom { get; set; }
     public DateTime ValidUntil { get; set; }
-    public double Price { get; set; }
+    public SupplierCostDto SupplierCost { get; set; }
 }

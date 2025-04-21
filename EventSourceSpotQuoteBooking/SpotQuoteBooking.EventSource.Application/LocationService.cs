@@ -1,5 +1,7 @@
 using EventSource.Core.Interfaces;
+using SpotQuoteBooking.EventSource.Application.DTOs;
 using SpotQuoteBooking.EventSource.Application.Interfaces;
+using SpotQuoteBooking.EventSource.Application.Mappers;
 using SpotQuoteBooking.EventSource.Core.AggregateRoots;
 using SpotQuoteBooking.EventSource.Core.Exceptions;
 using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums;
@@ -38,5 +40,22 @@ public class LocationService : ILocationService
         var location = new Location(code, name, country.Id, locationType);
         await locationRepository.CreateAsync(location);
         return location.Id;
+    }
+
+    public async Task<LocationDto?> SearchLocationIdAsync(
+        string code,
+        string countryCode,
+        LocationType locationType
+    )
+    {
+        var country = await countryService.GetCountryByCodeAsync(countryCode);
+        if (country is null)
+            return null;
+
+        var location = await locationRepository.ReadByFilterAsync(l =>
+            l.Code == code && l.CountryId == country.Id && l.Type == locationType
+        );
+
+        return location?.ToDto(country);
     }
 }

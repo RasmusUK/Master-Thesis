@@ -74,6 +74,87 @@ public class BuyingRateService : IBuyingRateService
         }
     }
 
+    public async Task<IReadOnlyCollection<BuyingRateDto>> SearchBuyingRatesAsync(
+        AddressDto addressFrom,
+        AddressDto addressTo,
+        TransportMode transportMode,
+        Supplier supplier,
+        SupplierService supplierService,
+        ForwarderService forwarderService
+    )
+    {
+        LocationDto? fromLocation;
+        LocationDto? toLocation;
+
+        if (transportMode == TransportMode.Sea)
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.Port!,
+                addressFrom.Country.Code,
+                LocationType.Port
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.Port!,
+                addressTo.Country.Code,
+                LocationType.Port
+            );
+        }
+        else if (transportMode == TransportMode.Air)
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.Airport!,
+                addressFrom.Country.Code,
+                LocationType.Airport
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.Airport!,
+                addressTo.Country.Code,
+                LocationType.Airport
+            );
+        }
+        else
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.ZipCode,
+                addressFrom.Country.Code,
+                LocationType.ZipCode
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.ZipCode,
+                addressTo.Country.Code,
+                LocationType.ZipCode
+            );
+        }
+
+        if (fromLocation is null || toLocation is null)
+            return new List<BuyingRateDto>();
+
+        var buyingRates = await buyingRateRepository.ReadAllByFilterAsync(b =>
+            b.OriginLocationId == fromLocation.Id
+            && b.DestinationLocationId == toLocation.Id
+            && b.ValidUntil >= DateTime.UtcNow
+            && b.Supplier == supplier
+            && b.SupplierService == supplierService
+            && b.ForwarderService == forwarderService
+        );
+
+        return buyingRates
+            .Select(b => new BuyingRateDto
+            {
+                Id = b.Id,
+                TransportMode = b.TransportMode,
+                Supplier = b.Supplier,
+                SupplierService = b.SupplierService,
+                ForwarderService = b.ForwarderService,
+                Origin = fromLocation,
+                Destination = toLocation,
+                ValidFrom = b.ValidFrom,
+                ValidUntil = b.ValidUntil,
+                SupplierCost = b.SupplierCost.ToDto(),
+            })
+            .ToList();
+    }
+
     private Task<Guid> CreateLocationIfNotExistsAsync(
         AddressDto address,
         TransportMode transportMode

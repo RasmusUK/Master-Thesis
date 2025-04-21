@@ -12,6 +12,7 @@
 @inject IAddressService AddressService
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
+@inject IBuyingRateService BuyingRateService
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
 <MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
@@ -141,7 +142,78 @@
         
 </MudStep>
 <MudStep Title="Buying rates">
+    <MudStack>
         
+        <MudGrid>
+            <MudItem xs="3">
+                <MudSelect Value="SearchBuyingRatesSupplier"
+                           Label="Supplier"
+                           Clearable="true"
+                           Dense="true"
+                           ValueChanged="@((Supplier newValue) => OnSearchBuyringRatesSupplierChanged(newValue))">
+                    @foreach (var supplier in ForwarderService.GetSuppliersByTransportMode(model.TransportMode))
+                    {
+                        <MudSelectItem Value="@supplier">@supplier</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="3">
+                <MudSelect Value="SearchBuyingRatesForwarderService"
+                           Label="Forwarder service"
+                           Clearable="true"
+                           Dense="true"
+                           Disabled="SearchBuyingRatesSupplier == null"
+                           ValueChanged="@((ForwarderService newValue) => OnSearchBuyringRatesForwarderServiceChanged(newValue))">
+                    @foreach (var forwarderService in ForwarderService.GetBySupplier(SearchBuyingRatesSupplier))
+                    {
+                        <MudSelectItem Value="@forwarderService">@forwarderService</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="3">
+                <MudSelect @bind-Value="SearchBuyingRatesSupplierService"
+                           Label="Supplier service"
+                           Clearable="true"
+                           Dense="true"
+                           Disabled="SearchBuyingRatesForwarderService == null">
+                    @foreach (var supplierService in SupplierService.GetByForwarderService(SearchBuyingRatesForwarderService))
+                    {
+                        <MudSelectItem Value="@supplierService">@supplierService</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="1">
+                <MudButton OnClick="@(SearchBuyingRates)" Variant="Variant.Filled" 
+                           Disabled="SearchBuyingRatesSupplierService == null">
+                    Search
+                </MudButton>
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Success" 
+                           Disabled="selectedBuyingRates.Count() == 0"
+                           OnClick="@(AddBuyingRatesToQuote)">
+                    Add to quote
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+        <MudDataGrid T="BuyingRateDto" MultiSelection="true" Items="buyingRates" SelectedItemsChanged="SelectedItemsChanged">
+            <Columns>
+                <SelectColumn T="BuyingRateDto"/>
+                <PropertyColumn Property="x => x.Origin.Country.Code" Title="From country"/>
+                <PropertyColumn Property="x => x.Origin.Type" Title="From type"/>
+                <PropertyColumn Property="x => x.Origin.Code" Title="From code"/>
+                <PropertyColumn Property="x => x.Destination.Country.Code" Title="To country"/>
+                <PropertyColumn Property="x => x.Destination.Type" Title="To type"/>
+                <PropertyColumn Property="x => x.Destination.Code" Title="To code"/>
+                <PropertyColumn Property="x => x.TransportMode" Title="Transport mode"/>
+                <PropertyColumn Property="x => x.ValidFrom" Title="Valid from" Format="dd/MM/yyyy HH:mm"/>
+                <PropertyColumn Property="x => x.ValidUntil" Title="Valid to" Format="dd/MM/yyyy HH:mm"/>
+                <PropertyColumn Property="x => x.SupplierCost.ChargeType" Title="Charge type"/>
+                <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost type"/>
+                <PropertyColumn Property="x => x.SupplierCost.Value" Title="Value"/>
+            </Columns>
+        </MudDataGrid>
+    </MudStack>
 </MudStep>
 <MudStep Title="Quote">
     <MudStack>
@@ -405,11 +477,17 @@
     private IEnumerable<CountryDto> countries = new List<CountryDto>();
     private IEnumerable<AddressDto> addresses = new List<AddressDto>();
     private IEnumerable<BookingProperty> selectedBookingProperties = new List<BookingProperty>();
+    private IEnumerable<BuyingRateDto> buyingRates = new List<BuyingRateDto>();
+    private IEnumerable<BuyingRateDto> selectedBuyingRates = new List<BuyingRateDto>();
     private bool IsNew => Id == null;
     private MudForm form1;
     private int index;
     private bool showErrorAlert = false;
     private string errorMessage = string.Empty;
+
+    private SupplierService? SearchBuyingRatesSupplierService;
+    private Supplier? SearchBuyingRatesSupplier;
+    private ForwarderService? SearchBuyingRatesForwarderService;
     
     protected override async Task OnInitializedAsync()
     {
@@ -528,6 +606,19 @@
         StateHasChanged();  
     }
     
+    private void OnSearchBuyringRatesSupplierChanged(Supplier newSupplier)
+    {
+        SearchBuyingRatesSupplier = newSupplier;
+        SearchBuyingRatesForwarderService = null;
+        SearchBuyingRatesSupplierService = null;
+    }
+    
+    private void OnSearchBuyringRatesForwarderServiceChanged(ForwarderService newService)
+    {
+        SearchBuyingRatesForwarderService = newService;
+        SearchBuyingRatesSupplierService = null;
+    }
+    
     private void OnSupplierChanged(Supplier newSupplier, QuoteDto quote)
     {
         quote.Supplier = newSupplier;
@@ -600,5 +691,66 @@
     {
         showErrorAlert = value;
         StateHasChanged();
+    }
+
+    private async Task SearchBuyingRates()
+    {
+        buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo, 
+            model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!, 
+            SearchBuyingRatesForwarderService!);
+    }
+
+    private async Task AddBuyingRatesToQuote()
+    {
+        var existingQuotesWithServices = model.Quotes.Where(q => 
+            q.SupplierService == SearchBuyingRatesSupplierService && 
+            q.Supplier == SearchBuyingRatesSupplier);
+
+        var quotesWithServices = existingQuotesWithServices.ToList();
+        if (!quotesWithServices.Any())
+        {
+            var quote = new QuoteDto
+            {
+                Profit = new ProfitDto(),
+                SupplierService = SearchBuyingRatesSupplierService,
+                Supplier = SearchBuyingRatesSupplier,
+                ForwarderService = SearchBuyingRatesForwarderService,
+                Costs = selectedBuyingRates.Select(s => new CostDto
+                {
+                    SupplierCost = s.SupplierCost
+                }).ToList()
+            };
+            model.Quotes.Add(quote);
+        }
+        else
+            foreach (var quote in quotesWithServices)
+            {
+                foreach (var selectedBuyingRate in selectedBuyingRates)
+                {
+                    var cost = new CostDto
+                    {
+                        SupplierCost = new SupplierCostDto
+                        {
+                            ChargeType = selectedBuyingRate.SupplierCost.ChargeType,
+                            CostType = selectedBuyingRate.SupplierCost.CostType,
+                            Cbm = model.TotalCbm,
+                            Weight = model.TotalWeight,
+                            Value = selectedBuyingRate.SupplierCost.Value,
+                        },
+                        SellingCost = new SellingCostDto
+                        {
+                            Cbm = model.TotalCbm,
+                            Weight = model.TotalWeight,
+                        }
+                    };
+                    quote.Costs.Add(cost);
+                    CostEdit(cost);
+                }    
+            }
+    }
+
+    private void SelectedItemsChanged(HashSet<BuyingRateDto> items)
+    {
+        selectedBuyingRates = items;
     }
 }
