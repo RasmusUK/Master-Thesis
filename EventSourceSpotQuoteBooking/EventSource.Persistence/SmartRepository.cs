@@ -48,8 +48,8 @@ public class SmartRepository<T> : IRepository<T>
 
         transactionManager.TrackUpsertedEntity(entity);
         transactionManager.Enlist(
-            () => inner.UpdateAsync(snapshot, transactionManager.TransactionId),
-            () => inner.UpdateCompensationAsync(entity, transactionManager.TransactionId)
+            () => inner.UpdateAsync(entity, transactionManager.TransactionId),
+            () => inner.UpdateCompensationAsync(snapshot, transactionManager.TransactionId)
         );
     }
 

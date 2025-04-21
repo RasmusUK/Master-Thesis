@@ -17,8 +17,7 @@ public class MongoDbService : IMongoDbService
 
     public MongoDbService(IOptions<MongoDbOptions> mongoDbOptions)
     {
-        var conventionPack = new ConventionPack { new GuidAsStringConvention() };
-        ConventionRegistry.Register("GuidAsString", conventionPack, _ => true);
+        RegisterConventions();
 
         var eventStoreOptions = mongoDbOptions.Value.EventStore;
         if (string.IsNullOrEmpty(eventStoreOptions.ConnectionString))
@@ -40,19 +39,30 @@ public class MongoDbService : IMongoDbService
         database.GetCollection<TEntity>(collectionName);
 
     public Task<IClientSessionHandle> StartSessionAsync() => mongoClient.StartSessionAsync();
-}
 
-public class GuidAsStringConvention : IMemberMapConvention
-{
-    public string Name => "GuidAsString";
-
-    public void Apply(BsonMemberMap memberMap)
+    private static void RegisterConventions()
     {
-        if (memberMap.MemberType == typeof(Guid) || memberMap.MemberType == typeof(Guid?))
+        var conventionPack = new ConventionPack
         {
-            memberMap.SetSerializer(
-                new MongoDB.Bson.Serialization.Serializers.GuidSerializer(BsonType.String)
-            );
+            new GuidAsStringConvention(),
+            new IgnoreExtraElementsConvention(true),
+        };
+
+        ConventionRegistry.Register("GlobalConventions", conventionPack, _ => true);
+    }
+
+    private class GuidAsStringConvention : IMemberMapConvention
+    {
+        public string Name => "GuidAsString";
+
+        public void Apply(BsonMemberMap memberMap)
+        {
+            if (memberMap.MemberType == typeof(Guid) || memberMap.MemberType == typeof(Guid?))
+            {
+                memberMap.SetSerializer(
+                    new MongoDB.Bson.Serialization.Serializers.GuidSerializer(BsonType.String)
+                );
+            }
         }
     }
 }
