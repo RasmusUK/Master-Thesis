@@ -11,17 +11,11 @@ public class Repository<T> : IRepository<T>
 {
     private readonly IMongoDbEntityStore entityStore;
     private readonly IMongoDbEventStore eventStore;
-    private readonly IMongoDbService mongoDbService;
 
-    public Repository(
-        IMongoDbEntityStore entityStore,
-        IMongoDbEventStore eventStore,
-        IMongoDbService mongoDbService
-    )
+    public Repository(IMongoDbEntityStore entityStore, IMongoDbEventStore eventStore)
     {
         this.entityStore = entityStore;
         this.eventStore = eventStore;
-        this.mongoDbService = mongoDbService;
     }
 
     public async Task<Guid> CreateAsync(T entity)
