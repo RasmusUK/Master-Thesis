@@ -20,10 +20,13 @@ public class SmartRepository<T> : IRepository<T>
 
     public async Task<Guid> CreateAsync(T entity)
     {
-        await inner.CreateAsync(entity);
+        if (!transactionManager.IsActive)
+            return await inner.CreateAsync(entity);
 
-        if (transactionManager.IsActive)
-            transactionManager.EnlistRollback(() => inner.DeleteCompensationAsync(entity));
+        await inner.CreateAsync(entity, transactionManager.TransactionId);
+        transactionManager.EnlistRollback(
+            () => inner.DeleteCompensationAsync(entity, transactionManager.TransactionId)
+        );
 
         return entity.Id;
     }
@@ -42,17 +45,24 @@ public class SmartRepository<T> : IRepository<T>
                 $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
             );
 
-        await inner.UpdateAsync(entity);
-        transactionManager.EnlistRollback(() => inner.UpdateCompensationAsync(snapshot));
+        await inner.UpdateAsync(entity, transactionManager.TransactionId);
+        transactionManager.EnlistRollback(
+            () => inner.UpdateCompensationAsync(snapshot, transactionManager.TransactionId)
+        );
     }
 
     public async Task DeleteAsync(T entity)
     {
-        await inner.DeleteAsync(entity);
         if (!transactionManager.IsActive)
+        {
+            await inner.DeleteAsync(entity);
             return;
+        }
 
-        transactionManager.EnlistRollback(() => inner.CreateCompensationAsync(entity));
+        await inner.DeleteAsync(entity, transactionManager.TransactionId);
+        transactionManager.EnlistRollback(
+            () => inner.CreateCompensationAsync(entity, transactionManager.TransactionId)
+        );
     }
 
     public Task<T?> ReadByIdAsync(Guid id) => inner.ReadByIdAsync(id);

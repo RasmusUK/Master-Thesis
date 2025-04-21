@@ -3,7 +3,6 @@ using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Interfaces;
-using MongoDB.Driver;
 
 namespace EventSource.Persistence;
 
@@ -44,22 +43,53 @@ public class Repository<T> : IRepository<T>
         await entityStore.DeleteEntityAsync(entity);
     }
 
-    public async Task<Guid> CreateCompensationAsync(T entity)
+    public async Task<Guid> CreateAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(new CreateEvent<T>(entity) { Compensation = true });
+        await eventStore.InsertEventAsync(
+            new CreateEvent<T>(entity) { TransactionId = transactionId }
+        );
         await entityStore.InsertEntityAsync(entity);
         return entity.Id;
     }
 
-    public async Task UpdateCompensationAsync(T entity)
+    public async Task UpdateAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(new UpdateEvent<T>(entity) { Compensation = true });
+        await eventStore.InsertEventAsync(
+            new UpdateEvent<T>(entity) { TransactionId = transactionId }
+        );
         await entityStore.UpdateEntityAsync(entity);
     }
 
-    public async Task DeleteCompensationAsync(T entity)
+    public async Task DeleteAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(new DeleteEvent<T>(entity) { Compensation = true });
+        await eventStore.InsertEventAsync(
+            new DeleteEvent<T>(entity) { TransactionId = transactionId }
+        );
+        await entityStore.DeleteEntityAsync(entity);
+    }
+
+    public async Task<Guid> CreateCompensationAsync(T entity, Guid transactionId)
+    {
+        await eventStore.InsertEventAsync(
+            new CreateEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
+        );
+        await entityStore.InsertEntityAsync(entity);
+        return entity.Id;
+    }
+
+    public async Task UpdateCompensationAsync(T entity, Guid transactionId)
+    {
+        await eventStore.InsertEventAsync(
+            new UpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
+        );
+        await entityStore.UpdateEntityAsync(entity);
+    }
+
+    public async Task DeleteCompensationAsync(T entity, Guid transactionId)
+    {
+        await eventStore.InsertEventAsync(
+            new DeleteEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
+        );
         await entityStore.DeleteEntityAsync(entity);
     }
 
@@ -91,50 +121,4 @@ public class Repository<T> : IRepository<T>
         Expression<Func<T, TProjection>> projection,
         Expression<Func<T, bool>> filter
     ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
-
-    private async Task ExecuteInTransactionAsync(Func<IClientSessionHandle, Task> action)
-    {
-        using var session = await mongoDbService.StartSessionAsync();
-        session.StartTransaction();
-
-        try
-        {
-            await action(session);
-            await session.CommitTransactionAsync();
-        }
-        catch
-        {
-            await session.AbortTransactionAsync();
-            throw;
-        }
-    }
-
-    // public async Task<Guid> CreateAsync(T entity)
-    // {
-    //     await ExecuteInTransactionAsync(async session =>
-    //     {
-    //         await eventStore.InsertEventAsync(new CreateEvent<T>(entity), session);
-    //         await entityStore.InsertEntityAsync(entity, session);
-    //     });
-    //
-    //     return entity.Id;
-    // }
-    //
-    // public async Task UpdateAsync(T entity)
-    // {
-    //     await ExecuteInTransactionAsync(async session =>
-    //     {
-    //         await eventStore.InsertEventAsync(new UpdateEvent<T>(entity), session);
-    //         await entityStore.UpdateEntityAsync(entity, session);
-    //     });
-    // }
-    //
-    // public async Task DeleteAsync(T entity)
-    // {
-    //     await ExecuteInTransactionAsync(async session =>
-    //     {
-    //         await eventStore.InsertEventAsync(new DeleteEvent<T>(entity), session);
-    //         await entityStore.DeleteEntityAsync(entity, session);
-    //     });
-    // }
 }

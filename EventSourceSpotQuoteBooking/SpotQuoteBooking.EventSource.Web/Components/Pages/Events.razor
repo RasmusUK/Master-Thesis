@@ -28,11 +28,13 @@
         </MudItem>
     </MudGrid>
     
-    <MudDataGrid T="Event" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+    <MudDataGrid T="Event" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" 
+                 FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
         <Columns>
             <PropertyColumn Property="x => x.Timestamp" Title="Timestamp" Filterable="false"/>
             <PropertyColumn Property="x => x.EntityId" Title="Entity id" Filterable="false"/>
             <PropertyColumn Property="x => x.Typename" Title="Type"/>
+            <PropertyColumn Property="x => x.TransactionId" Title="Transaction id" Filterable="false"/>
             <PropertyColumn Property="x => x.Compensation" Title="Is compensation"/>
         </Columns>
         <PagerContent>

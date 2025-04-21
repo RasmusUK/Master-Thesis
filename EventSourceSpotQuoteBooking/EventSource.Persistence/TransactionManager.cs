@@ -7,6 +7,7 @@ public class TransactionManager : ITransactionManager
 {
     private Stack<Func<Task>>? rollbackActions;
     public bool IsActive => rollbackActions is not null;
+    public Guid TransactionId { get; init; } = Guid.NewGuid();
 
     public void Begin()
     {
