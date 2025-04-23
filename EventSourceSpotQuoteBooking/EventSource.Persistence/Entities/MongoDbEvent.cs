@@ -10,6 +10,9 @@ public class MongoDbEvent : MongoDbBase<Event>
     [BsonRepresentation(BsonType.String)]
     public Guid EntityId { get; set; }
 
+    [BsonElement(nameof(EventNumber))]
+    public long EventNumber { get; set; }
+
     [BsonElement(nameof(Timestamp))]
     public DateTime Timestamp { get; set; }
 
@@ -20,5 +23,6 @@ public class MongoDbEvent : MongoDbBase<Event>
             throw new ArgumentException($"Entity id cannot be empty", nameof(domainEvent.EntityId));
         EntityId = domainEvent.EntityId!.Value;
         Timestamp = domainEvent.Timestamp;
+        EventNumber = domainEvent.EventNumber;
     }
 }

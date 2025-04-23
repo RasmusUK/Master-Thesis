@@ -17,6 +17,7 @@
              SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" 
              FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
     <Columns>
+        <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
             <CellTemplate>
                 @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")

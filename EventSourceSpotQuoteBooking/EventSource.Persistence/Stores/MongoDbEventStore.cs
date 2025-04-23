@@ -11,13 +11,16 @@ public class MongoDbEventStore : IEventStore
 {
     private readonly IMongoCollection<MongoDbEvent> collection;
     private readonly IPersonalDataInterceptor personalDataInterceptor;
+    private readonly IEventSequenceGenerator sequenceGenerator;
 
     public MongoDbEventStore(
         IMongoDbService mongoDbService,
-        IPersonalDataInterceptor personalDataInterceptor
+        IPersonalDataInterceptor personalDataInterceptor,
+        IEventSequenceGenerator sequenceGenerator
     )
     {
         this.personalDataInterceptor = personalDataInterceptor;
+        this.sequenceGenerator = sequenceGenerator;
         collection = mongoDbService.EventCollection;
     }
 
@@ -25,16 +28,10 @@ public class MongoDbEventStore : IEventStore
     {
         if (await EventExistsAsync(e))
             return;
+
+        e.EventNumber = await sequenceGenerator.GetNextSequenceNumberAsync();
         e = await personalDataInterceptor.ProcessEventForStorage(e);
         await collection.InsertOneAsync(new MongoDbEvent(e));
-    }
-
-    public async Task InsertEventAsync(Event e, IClientSessionHandle session)
-    {
-        if (await EventExistsAsync(e))
-            return;
-        e = await personalDataInterceptor.ProcessEventForStorage(e);
-        await collection.InsertOneAsync(session, new MongoDbEvent(e));
     }
 
     public async Task<Event?> GetEventByIdAsync(Guid id)
@@ -100,6 +97,39 @@ public class MongoDbEventStore : IEventStore
         var mongoEvents = await collection
             .Find(e => e.EntityId == entityId && e.Timestamp >= from && e.Timestamp <= until)
             .ToListAsync();
+        return await ToDomain(mongoEvents);
+    }
+
+    public async Task<IReadOnlyCollection<Event>> GetEventsFromAsync(long fromEventNumber)
+    {
+        var mongoEvents = await collection
+            .Find(e => e.EventNumber >= fromEventNumber)
+            .SortBy(e => e.EventNumber)
+            .ToListAsync();
+
+        return await ToDomain(mongoEvents);
+    }
+
+    public async Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(long untilEventNumber)
+    {
+        var mongoEvents = await collection
+            .Find(e => e.EventNumber <= untilEventNumber)
+            .SortBy(e => e.EventNumber)
+            .ToListAsync();
+
+        return await ToDomain(mongoEvents);
+    }
+
+    public async Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(
+        long fromEventNumber,
+        long untilEventNumber
+    )
+    {
+        var mongoEvents = await collection
+            .Find(e => e.EventNumber >= fromEventNumber && e.EventNumber <= untilEventNumber)
+            .SortBy(e => e.EventNumber)
+            .ToListAsync();
+
         return await ToDomain(mongoEvents);
     }
 

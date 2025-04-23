@@ -12,11 +12,10 @@ public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<MongoDbEvent> EventCollection { get; }
     public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
-
+    public IMongoCollection<BsonDocument> CounterCollection { get; }
     private IMongoDatabase EventDatabase { get; }
     private IMongoDatabase EntityDatabase { get; }
     private IMongoDatabase PersonalDataDatabase { get; }
-
     private MongoClient EventClient { get; }
     private MongoClient EntityClient { get; }
     private MongoClient PersonalDataClient { get; }
@@ -35,6 +34,9 @@ public class MongoDbService : IMongoDbService
         PersonalDataCollection = PersonalDataDatabase.GetCollection<MongoDbPersonalData>(
             "personalData"
         );
+        CounterCollection = EventDatabase.GetCollection<BsonDocument>("counters");
+
+        EnsureEventIndexesAsync().GetAwaiter().GetResult();
     }
 
     public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
@@ -71,6 +73,22 @@ public class MongoDbService : IMongoDbService
         };
 
         ConventionRegistry.Register("GlobalConventions", conventionPack, _ => true);
+    }
+
+    private async Task EnsureEventIndexesAsync()
+    {
+        var existingIndexes = await EventCollection.Indexes.ListAsync();
+        var existingList = await existingIndexes.ToListAsync();
+
+        if (existingList.All(index => index["name"] != "EventNumber_Ascending"))
+        {
+            var indexModel = new CreateIndexModel<MongoDbEvent>(
+                Builders<MongoDbEvent>.IndexKeys.Ascending(e => e.EventNumber),
+                new CreateIndexOptions { Unique = true, Name = "EventNumber_Ascending" }
+            );
+
+            await EventCollection.Indexes.CreateOneAsync(indexModel);
+        }
     }
 
     private class GuidAsStringConvention : IMemberMapConvention

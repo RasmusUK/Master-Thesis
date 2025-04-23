@@ -22,5 +22,12 @@ public interface IReplayService
     Task ReplayEventsAsync(IReadOnlyCollection<Event> events, bool autoStop = true);
     Task ReplayEventAsync(Event e, bool autoStop = true);
     IReadOnlyCollection<Event> GetSimulatedEvents();
+    Task ReplayFromEventNumberAsync(long fromEventNumber, bool autoStop = true);
+    Task ReplayUntilEventNumberAsync(long untilEventNumber, bool autoStop = true);
+    Task ReplayFromUntilEventNumberAsync(
+        long fromEventNumber,
+        long untilEventNumber,
+        bool autoStop = true
+    );
     bool IsRunning();
 }

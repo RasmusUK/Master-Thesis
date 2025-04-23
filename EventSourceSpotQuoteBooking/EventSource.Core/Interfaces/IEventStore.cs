@@ -16,4 +16,10 @@ public interface IEventStore
         DateTime from,
         DateTime until
     );
+    Task<IReadOnlyCollection<Event>> GetEventsFromAsync(long fromEventNumber);
+    Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(long untilEventNumber);
+    Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(
+        long fromEventNumber,
+        long untilEventNumber
+    );
 }

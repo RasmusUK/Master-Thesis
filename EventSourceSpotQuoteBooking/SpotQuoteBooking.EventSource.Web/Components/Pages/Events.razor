@@ -31,6 +31,8 @@
     <MudDataGrid T="Event" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" 
                  FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
         <Columns>
+            <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
+            <PropertyColumn Property="x => x.EventNumber" Title="Number" Filterable="false"/>
             <PropertyColumn Property="x => x.Timestamp" Title="Timestamp" Filterable="false"/>
             <PropertyColumn Property="x => x.EntityId" Title="Entity id" Filterable="false"/>
             <PropertyColumn Property="x => x.Typename" Title="Type"/>
@@ -66,7 +68,7 @@
             events = await EventStore.GetEventsFromUntilAsync(dateRange.Start!.Value, dateRange.End!.Value);
         else
             events = await EventStore.GetEventsByEntityIdFromUntilAsync(entityId.Value, dateRange.Start!.Value, dateRange.End!.Value);
-        events = events.OrderByDescending(x => x.Timestamp);
+        events = events.OrderByDescending(x => x.EventNumber);
         loading = false;
     }
 

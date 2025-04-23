@@ -6,6 +6,7 @@ public abstract record Event
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
     public Guid? EntityId { get; set; }
     public Guid? TransactionId { get; init; }
+    public long EventNumber { get; set; }
     public string Typename
     {
         get

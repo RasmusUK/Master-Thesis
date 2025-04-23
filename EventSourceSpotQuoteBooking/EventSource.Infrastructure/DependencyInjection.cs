@@ -30,6 +30,7 @@ public static class DependencyInjection
     ) =>
         services
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
+            .AddSingleton<IEventSequenceGenerator, EventSequenceGenerator>()
             .AddSingleton<IMongoDbService, MongoDbService>()
             .AddSingleton<IEntityStore, MongoDbEntityStore>()
             .AddSingleton<IEventStore, MongoDbEventStore>()

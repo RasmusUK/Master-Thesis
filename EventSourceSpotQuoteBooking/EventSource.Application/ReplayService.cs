@@ -107,6 +107,37 @@ public class ReplayService : IReplayService
 
     public IReadOnlyCollection<Event> GetSimulatedEvents() => replayContext.GetEvents();
 
+    public async Task ReplayFromEventNumberAsync(long fromEventNumber, bool autoStop = true)
+    {
+        StartReplayIfNeeded();
+        var events = await eventStore.GetEventsFromAsync(fromEventNumber);
+        await ProcessReplayEventsAsync(events);
+        if (autoStop)
+            await StopReplay();
+    }
+
+    public async Task ReplayUntilEventNumberAsync(long untilEventNumber, bool autoStop = true)
+    {
+        StartReplayIfNeeded();
+        var events = await eventStore.GetEventsUntilAsync(untilEventNumber);
+        await ProcessReplayEventsAsync(events);
+        if (autoStop)
+            await StopReplay();
+    }
+
+    public async Task ReplayFromUntilEventNumberAsync(
+        long fromEventNumber,
+        long untilEventNumber,
+        bool autoStop = true
+    )
+    {
+        StartReplayIfNeeded();
+        var events = await eventStore.GetEventsFromUntilAsync(fromEventNumber, untilEventNumber);
+        await ProcessReplayEventsAsync(events);
+        if (autoStop)
+            await StopReplay();
+    }
+
     public bool IsRunning() => replayContext.IsReplaying;
 
     private void StartReplayIfNeeded()

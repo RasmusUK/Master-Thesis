@@ -14,7 +14,16 @@
 @inject NavigationManager Navigation
 @inject IBuyingRateService BuyingRateService
 
-<MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
+<MudStack Row="true">
+    <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
+    @if (!IsNew)
+    {
+        <MudSpacer/>
+        <MudText>
+            Id: @Id
+        </MudText>
+    }
+</MudStack>
 <MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
 <ChildContent>
 <MudStep Title="General info">
