@@ -30,7 +30,7 @@ public class EntityHistoryService : IEntityHistoryService
 
         foreach (var e in events)
         {
-            if (IsRepoEvent(e, typeof(T)))
+            if (IsRepoEvent(e))
             {
                 var entity = GetEntityFromRepoEvent<T>(e);
                 entitiesWithEvents.Add((entity, e));
@@ -45,13 +45,11 @@ public class EntityHistoryService : IEntityHistoryService
         return entitiesWithEvents;
     }
 
-    private static bool IsRepoEvent(Event e, Type targetEntityType)
+    private static bool IsRepoEvent(Event e)
     {
         var eventType = e.GetType();
 
-        return eventType.IsGenericType
-            && IsSubclassOfRepoEvent(eventType)
-            && eventType.GenericTypeArguments[0] == targetEntityType;
+        return eventType.IsGenericType && IsSubclassOfRepoEvent(eventType);
     }
 
     private static bool IsSubclassOfRepoEvent(Type? type)
