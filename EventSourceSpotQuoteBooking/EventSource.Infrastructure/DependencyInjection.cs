@@ -21,6 +21,7 @@ public static class DependencyInjection
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IPersonalDataInterceptor, PersonalDataInterceptor>()
             .AddSingleton<IReplayService, ReplayService>()
+            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>()
             .AddSingleton<IEventProcessor, EventProcessor>();
 
     private static IServiceCollection AddPersistence(
@@ -31,9 +32,7 @@ public static class DependencyInjection
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
             .AddSingleton<IMongoDbService, MongoDbService>()
             .AddSingleton<IEntityStore, MongoDbEntityStore>()
-            .AddSingleton<IMongoDbEntityStore, MongoDbEntityStore>()
             .AddSingleton<IEventStore, MongoDbEventStore>()
-            .AddSingleton<IMongoDbEventStore, MongoDbEventStore>()
             .AddSingleton<IPersonalDataStore, MongoDbPersonalDataStore>()
             .AddSingleton(typeof(Repository<>))
             .AddScoped<ITransactionManager, TransactionManager>()

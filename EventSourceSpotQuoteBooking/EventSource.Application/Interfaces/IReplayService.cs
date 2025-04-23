@@ -4,12 +4,23 @@ namespace EventSource.Application.Interfaces;
 
 public interface IReplayService
 {
-    Task ReplayAllEventsAsync();
-    Task ReplayAllEventsUntilAsync(DateTime until);
-    Task ReplayAllEventsFromUntilAsync(DateTime from, DateTime until);
-    Task ReplayAllEntityEventsAsync(Guid entityId);
-    Task ReplayAllEntityEventsUntilAsync(Guid entityId, DateTime until);
-    Task ReplayAllEntityEventsFromUntilAsync(Guid entityId, DateTime from, DateTime until);
-    Task ReplayEventsAsync(IReadOnlyCollection<Event> events);
-    Task ReplayEventAsync(Event e);
+    void StartReplay(ReplayMode mode = ReplayMode.Strict);
+    Task StopReplay();
+    Task ReplayAllAsync(bool autoStop = true);
+    Task ReplayUntilAsync(DateTime until, bool autoStop = true);
+    Task ReplayFromAsync(DateTime from, bool autoStop = true);
+    Task ReplayFromUntilAsync(DateTime from, DateTime until, bool autoStop = true);
+
+    Task ReplayEntityAsync(Guid entityId, bool autoStop = true);
+    Task ReplayEntityUntilAsync(Guid entityId, DateTime until, bool autoStop = true);
+    Task ReplayEntityFromUntilAsync(
+        Guid entityId,
+        DateTime from,
+        DateTime until,
+        bool autoStop = true
+    );
+    Task ReplayEventsAsync(IReadOnlyCollection<Event> events, bool autoStop = true);
+    Task ReplayEventAsync(Event e, bool autoStop = true);
+    IReadOnlyCollection<Event> GetSimulatedEvents();
+    bool IsRunning();
 }

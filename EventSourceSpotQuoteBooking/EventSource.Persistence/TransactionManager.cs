@@ -6,10 +6,10 @@ namespace EventSource.Persistence;
 
 public class TransactionManager : ITransactionManager
 {
-    private Stack<(Func<Task> commit, Func<Task> rollback)>? actions;
+    private Queue<(Func<Task> commit, Func<Task> rollback)>? actions;
     public bool IsActive => actions is not null;
     public Guid TransactionId { get; init; } = Guid.NewGuid();
-    private Stack<Func<Task>>? rollbackActions;
+    private Queue<Func<Task>>? rollbackActions;
     private Dictionary<Type, List<object>>? trackedUpsertedEntities;
     private Dictionary<Type, List<object>>? trackedDeletedEntities;
 
@@ -18,8 +18,8 @@ public class TransactionManager : ITransactionManager
         if (IsActive)
             throw new TransactionException("Transaction already started.");
 
-        actions = new Stack<(Func<Task>, Func<Task>)>();
-        rollbackActions = new Stack<Func<Task>>();
+        actions = new Queue<(Func<Task>, Func<Task>)>();
+        rollbackActions = new Queue<Func<Task>>();
         trackedUpsertedEntities = new Dictionary<Type, List<object>>();
         trackedDeletedEntities = new Dictionary<Type, List<object>>();
     }
@@ -59,7 +59,7 @@ public class TransactionManager : ITransactionManager
         if (!IsActive)
             throw new TransactionException("No active transaction.");
 
-        actions!.Push((commit, rollback));
+        actions!.Enqueue((commit, rollback));
     }
 
     public Task CommitAsync()
@@ -69,8 +69,8 @@ public class TransactionManager : ITransactionManager
 
         while (actions!.Count > 0)
         {
-            var (commit, rollback) = actions.Pop();
-            rollbackActions!.Push(rollback);
+            var (commit, rollback) = actions.Dequeue();
+            rollbackActions!.Enqueue(rollback);
             commit();
         }
 
@@ -85,7 +85,7 @@ public class TransactionManager : ITransactionManager
 
         while (rollbackActions!.Count > 0)
         {
-            var rollback = rollbackActions.Pop();
+            var rollback = rollbackActions.Dequeue();
             try
             {
                 await rollback();

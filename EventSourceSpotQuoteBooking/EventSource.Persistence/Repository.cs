@@ -1,89 +1,93 @@
 using System.Linq.Expressions;
+using EventSource.Application;
+using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
-using EventSource.Persistence.Interfaces;
 
 namespace EventSource.Persistence;
 
 public class Repository<T> : IRepository<T>
     where T : Entity
 {
-    private readonly IMongoDbEntityStore entityStore;
-    private readonly IMongoDbEventStore eventStore;
+    private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
+    private readonly IGlobalReplayContext globalReplayContext;
 
-    public Repository(IMongoDbEntityStore entityStore, IMongoDbEventStore eventStore)
+    public Repository(
+        IEntityStore entityStore,
+        IEventStore eventStore,
+        IGlobalReplayContext globalReplayContext
+    )
     {
         this.entityStore = entityStore;
         this.eventStore = eventStore;
+        this.globalReplayContext = globalReplayContext;
     }
 
     public async Task<Guid> CreateAsync(T entity)
     {
-        await eventStore.InsertEventAsync(new CreateEvent<T>(entity));
+        var e = new CreateEvent<T>(entity);
+        await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
         return entity.Id;
     }
 
     public async Task UpdateAsync(T entity)
     {
-        await eventStore.InsertEventAsync(new UpdateEvent<T>(entity));
+        var e = new UpdateEvent<T>(entity);
+        await HandleEventAsync(e);
         await entityStore.UpdateEntityAsync(entity);
     }
 
     public async Task DeleteAsync(T entity)
     {
-        await eventStore.InsertEventAsync(new DeleteEvent<T>(entity));
+        var e = new DeleteEvent<T>(entity);
+        await HandleEventAsync(e);
         await entityStore.DeleteEntityAsync(entity);
     }
 
     public async Task<Guid> CreateAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new CreateEvent<T>(entity) { TransactionId = transactionId }
-        );
+        var e = new CreateEvent<T>(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
         return entity.Id;
     }
 
     public async Task UpdateAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new UpdateEvent<T>(entity) { TransactionId = transactionId }
-        );
+        var e = new UpdateEvent<T>(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
         await entityStore.UpdateEntityAsync(entity);
     }
 
     public async Task DeleteAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new DeleteEvent<T>(entity) { TransactionId = transactionId }
-        );
+        var e = new DeleteEvent<T>(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
         await entityStore.DeleteEntityAsync(entity);
     }
 
     public async Task<Guid> CreateCompensationAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new CreateEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
-        );
+        var e = new CreateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
         return entity.Id;
     }
 
     public async Task UpdateCompensationAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new UpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
-        );
+        var e = new UpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
         await entityStore.UpdateEntityAsync(entity);
     }
 
     public async Task DeleteCompensationAsync(T entity, Guid transactionId)
     {
-        await eventStore.InsertEventAsync(
-            new DeleteEvent<T>(entity) { TransactionId = transactionId, Compensation = true }
-        );
+        var e = new DeleteEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
         await entityStore.DeleteEntityAsync(entity);
     }
 
@@ -115,4 +119,25 @@ public class Repository<T> : IRepository<T>
         Expression<Func<T, TProjection>> projection,
         Expression<Func<T, bool>> filter
     ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
+
+    private async Task HandleEventAsync(Event e)
+    {
+        if (globalReplayContext.IsReplaying)
+        {
+            switch (globalReplayContext.ReplayMode)
+            {
+                case ReplayMode.Strict:
+                    throw new InvalidOperationException(
+                        $"Cannot emit events during replay in strict mode. Event: {e.GetType().Name}"
+                    );
+                case ReplayMode.Sandbox:
+                    globalReplayContext.AddEvent(e);
+                    return;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(globalReplayContext.ReplayMode));
+            }
+        }
+
+        await eventStore.InsertEventAsync(e);
+    }
 }

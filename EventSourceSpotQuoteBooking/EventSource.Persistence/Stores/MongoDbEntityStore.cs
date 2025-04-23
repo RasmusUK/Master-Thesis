@@ -1,12 +1,13 @@
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using EventSource.Core;
+using EventSource.Core.Interfaces;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoDbEntityStore : IMongoDbEntityStore
+public class MongoDbEntityStore : IEntityStore
 {
     private readonly IMongoDbService mongoDbService;
     private readonly ConcurrentDictionary<Type, object> collectionCache = new();
@@ -35,13 +36,6 @@ public class MongoDbEntityStore : IMongoDbEntityStore
     public Task DeleteEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity => GetCollection<TEntity>().DeleteOneAsync(e => e.Id == entity.Id);
 
-    public async Task InsertEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
-        where TEntity : Entity
-    {
-        var collection = GetCollection<TEntity>();
-        await collection.InsertOneAsync(session, entity);
-    }
-
     public async Task UpdateEntityAsync<TEntity>(TEntity entity)
         where TEntity : Entity
     {
@@ -50,19 +44,6 @@ public class MongoDbEntityStore : IMongoDbEntityStore
         var updateOptions = new ReplaceOptions { IsUpsert = false };
         await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
-
-    public async Task UpdateEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
-        where TEntity : Entity
-    {
-        var collection = GetCollection<TEntity>();
-        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
-        var updateOptions = new ReplaceOptions { IsUpsert = false };
-        await collection.ReplaceOneAsync(session, filter, entity, updateOptions);
-    }
-
-    public Task DeleteEntityAsync<TEntity>(TEntity entity, IClientSessionHandle session)
-        where TEntity : Entity =>
-        GetCollection<TEntity>().DeleteOneAsync(session, e => e.Id == entity.Id);
 
     public async Task<TEntity?> GetEntityByFilterAsync<TEntity>(
         Expression<Func<TEntity, bool>> filter

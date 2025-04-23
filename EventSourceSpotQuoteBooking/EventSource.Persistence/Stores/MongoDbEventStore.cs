@@ -7,7 +7,7 @@ using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
 
-public class MongoDbEventStore : IMongoDbEventStore
+public class MongoDbEventStore : IEventStore
 {
     private readonly IMongoCollection<MongoDbEvent> collection;
     private readonly IPersonalDataInterceptor personalDataInterceptor;
@@ -54,6 +54,12 @@ public class MongoDbEventStore : IMongoDbEventStore
     public async Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(DateTime until)
     {
         var mongoEvents = await collection.Find(e => e.Timestamp <= until).ToListAsync();
+        return await ToDomain(mongoEvents);
+    }
+
+    public async Task<IReadOnlyCollection<Event>> GetEventsFromAsync(DateTime from)
+    {
+        var mongoEvents = await collection.Find(e => e.Timestamp >= from).ToListAsync();
         return await ToDomain(mongoEvents);
     }
 

@@ -6,6 +6,7 @@ public interface IEventStore
     Task<Event?> GetEventByIdAsync(Guid id);
     Task<IReadOnlyCollection<Event>> GetEventsAsync();
     Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(DateTime until);
+    Task<IReadOnlyCollection<Event>> GetEventsFromAsync(DateTime from);
     Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(DateTime from, DateTime until);
 
     Task<IReadOnlyCollection<Event>> GetEventsByEntityIdAsync(Guid entityId);

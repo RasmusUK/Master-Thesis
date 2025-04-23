@@ -105,11 +105,19 @@
 
     private async Task AddCustomer(CustomerDto customer)
     {
-        customer.Id = Guid.NewGuid();
-        customer.Users = new List<UserDto>();
-        await CustomerService.AddCustomerAsync(customer);
-        customers?.Add(customer);
-        StateHasChanged();
+        try
+        {
+            customer.Id = Guid.NewGuid();
+            customer.Users = new List<UserDto>();
+            await CustomerService.AddCustomerAsync(customer);
+            customers?.Add(customer);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
     }
 
     private async Task DeleteCustomerAsync(Guid customerId)

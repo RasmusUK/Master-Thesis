@@ -10,93 +10,140 @@ public class ReplayService : IReplayService
     private readonly IEventStore eventStore;
     private readonly IEventProcessor eventProcessor;
     private readonly IEntityStore entityStore;
+    private readonly IGlobalReplayContext replayContext;
 
     public ReplayService(
         IEventStore eventStore,
         IEventProcessor eventProcessor,
-        IEntityStore entityStore
+        IEntityStore entityStore,
+        IGlobalReplayContext replayContext
     )
     {
         this.eventStore = eventStore;
         this.eventProcessor = eventProcessor;
         this.entityStore = entityStore;
+        this.replayContext = replayContext;
     }
 
-    public async Task ReplayAllEventsAsync()
+    public void StartReplay(ReplayMode mode = ReplayMode.Strict) => replayContext.StartReplay(mode);
+
+    public async Task StopReplay()
     {
+        replayContext.StopReplay();
+        await ReplayAllAsync();
+    }
+
+    public async Task ReplayAllAsync(bool autoStop = true)
+    {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsAsync();
         await ProcessReplayEventsAsync(events);
+        if (autoStop)
+            replayContext.StopReplay();
     }
 
-    public async Task ReplayAllEventsUntilAsync(DateTime until)
+    public async Task ReplayUntilAsync(DateTime until, bool autoStop = true)
     {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsUntilAsync(until);
         await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
     }
 
-    public async Task ReplayAllEventsFromUntilAsync(DateTime from, DateTime until)
+    public async Task ReplayFromAsync(DateTime from, bool autoStop = true)
     {
+        StartReplayIfNeeded();
+        var events = await eventStore.GetEventsUntilAsync(from);
+        await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayFromUntilAsync(DateTime from, DateTime until, bool autoStop = true)
+    {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsFromUntilAsync(from, until);
         await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
     }
 
-    public async Task ReplayAllEntityEventsAsync(Guid entityId)
+    public async Task ReplayEntityAsync(Guid entityId, bool autoStop = true)
     {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsByEntityIdAsync(entityId);
         await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
     }
 
-    public async Task ReplayAllEntityEventsUntilAsync(Guid entityId, DateTime until)
+    public async Task ReplayEntityUntilAsync(Guid entityId, DateTime until, bool autoStop = true)
     {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsByEntityIdUntilAsync(entityId, until);
         await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
     }
 
-    public async Task ReplayAllEntityEventsFromUntilAsync(
+    public async Task ReplayEntityFromUntilAsync(
         Guid entityId,
         DateTime from,
-        DateTime until
+        DateTime until,
+        bool autoStop = true
     )
     {
+        StartReplayIfNeeded();
         var events = await eventStore.GetEventsByEntityIdFromUntilAsync(entityId, from, until);
         await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
     }
 
-    public Task ReplayEventsAsync(IReadOnlyCollection<Event> events) =>
-        ProcessReplayEventsAsync(events);
+    public async Task ReplayEventsAsync(IReadOnlyCollection<Event> events, bool autoStop = true)
+    {
+        StartReplayIfNeeded();
+        await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
+    }
 
-    public Task ReplayEventAsync(Event e) => ProcessReplayEventsAsync(new[] { e });
+    public Task ReplayEventAsync(Event e, bool autoStop = true) =>
+        ReplayEventsAsync(new[] { e }, autoStop);
 
-    private async Task ProcessReplayEventsAsync(IReadOnlyCollection<Event> events)
+    public IReadOnlyCollection<Event> GetSimulatedEvents() => replayContext.GetEvents();
+
+    public bool IsRunning() => replayContext.IsReplaying;
+
+    private void StartReplayIfNeeded()
+    {
+        if (!replayContext.IsReplaying)
+            replayContext.StartReplay();
+    }
+
+    private async Task StopReplayIfNeeded(bool autoStop)
+    {
+        if (autoStop)
+            await StopReplay();
+    }
+
+    private async Task ProcessReplayEventsAsync(IEnumerable<Event> events)
     {
         foreach (var e in events)
         {
-            await ProcessReplayEventAsync(e);
+            dynamic dynEvent = e;
+            if (
+                e.GetType().IsGenericType
+                && e.GetType().GetGenericTypeDefinition() == typeof(CreateEvent<>)
+            )
+                await ProcessReplayCreateEvent(dynEvent);
+            else if (
+                e.GetType().IsGenericType
+                && e.GetType().GetGenericTypeDefinition() == typeof(UpdateEvent<>)
+            )
+                await ProcessReplayUpdateEvent(dynEvent);
+            else if (
+                e.GetType().IsGenericType
+                && e.GetType().GetGenericTypeDefinition() == typeof(DeleteEvent<>)
+            )
+                await ProcessReplayDeleteEvent(dynEvent);
+            else
+                await eventProcessor.ProcessAsync(e);
         }
-    }
-
-    private Task ProcessReplayEventAsync(Event e)
-    {
-        dynamic dynEvent = e;
-        if (
-            e.GetType().IsGenericType
-            && e.GetType().GetGenericTypeDefinition() == typeof(CreateEvent<>)
-        )
-            return ProcessReplayCreateEvent(dynEvent);
-
-        if (
-            e.GetType().IsGenericType
-            && e.GetType().GetGenericTypeDefinition() == typeof(UpdateEvent<>)
-        )
-            return ProcessReplayUpdateEvent(dynEvent);
-
-        if (
-            e.GetType().IsGenericType
-            && e.GetType().GetGenericTypeDefinition() == typeof(DeleteEvent<>)
-        )
-            return ProcessReplayDeleteEvent(dynEvent);
-
-        return eventProcessor.ProcessAsync(e);
     }
 
     private Task ProcessReplayCreateEvent<T>(CreateEvent<T> e)

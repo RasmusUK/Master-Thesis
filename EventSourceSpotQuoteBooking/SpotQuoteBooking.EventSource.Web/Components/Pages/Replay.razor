@@ -1,6 +1,191 @@
-@page "/Replay"
-<h3>Replay</h3>
+@page "/replay"
+@using global::EventSource.Application
+@using global::EventSource.Application.Interfaces
+@using global::EventSource.Core
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject IReplayService ReplayService
+@inject ISnackbar Snackbar
+@inject ProtectedSessionStorage SessionStorage
+
+<MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Replay</MudText>
+
+<MudPaper Class="pa-6" Elevation="3">
+    <MudStack Spacing="3">
+        <MudText Typo="Typo.h5">Replay Options</MudText>
+
+        <MudSelect @bind-Value="mode" Label="Replay Mode">
+            <MudSelectItem Value="ReplayMode.Strict">Strict</MudSelectItem>
+            <MudSelectItem Value="ReplayMode.Sandbox">Sandbox</MudSelectItem>
+        </MudSelect>
+
+        <MudSwitch T="bool" @bind-Value="autoStop" Color="Color.Primary" Label="Auto-stop after replay" />
+
+        <MudDatePicker @bind-Date="from" Label="From (optional)"  Placeholder="dd/MM/yyyy HH:mm:ss" 
+                       DateFormat="dd/MM/yyyy HH:mm:ss" Editable="true" Clearable="true"/>
+        <MudDatePicker @bind-Date="until" Label="Until (optional)"  Placeholder="dd/MM/yyyy HH:mm:ss" 
+                       DateFormat="dd/MM/yyyy HH:mm:ss" Editable="true" Clearable="true" />
+        <MudTextField @bind-Value="entityIdInput" Label="Entity id (optional)" />
+
+        <MudDivider />
+
+        <MudStack Row="true" Spacing="2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@isRunning" OnClick="StartReplayAll">Replay All</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!until.HasValue || isRunning)" OnClick="ReplayUntil">Replay Until</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!from.HasValue || isRunning)" OnClick="ReplayFrom">Replay From</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!from.HasValue || !until.HasValue || isRunning)" OnClick="ReplayFromUntil">Replay From–Until</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!Guid.TryParse(entityIdInput, out _) || isRunning)" OnClick="ReplayEntity">Replay Entity</MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="@(!isRunning)" OnClick="StopReplay">Stop Replay</MudButton>
+        </MudStack>
+    </MudStack>
+
+    @if (mode == ReplayMode.Sandbox && simulatedEvents?.Any() == true)
+    {
+        <MudDivider Class="my-6" />
+        <MudText Typo="Typo.h6">Simulated Events</MudText>
+
+        @foreach (var e in simulatedEvents)
+        {
+            <MudPaper Class="pa-4 my-3">
+                <MudGrid>
+                    <MudItem xs="4">
+                        <MudStack Spacing="2">
+                            <MudTextField T="Guid?" Label="Id" Variant="Variant.Outlined" ReadOnly="true" Value="e.Id" />
+                            <MudTextField T="Guid?" Label="Entity id" Variant="Variant.Outlined" ReadOnly="true" Value="e.EntityId" />
+                            <MudTextField T="string" Label="Type" Variant="Variant.Outlined" ReadOnly="true" Value="e.Typename" />
+                            <MudTextField T="bool?" Label="Is compensation" Variant="Variant.Outlined" ReadOnly="true" Value="e.Compensation" />
+                            <MudDatePicker Label="Timestamp" DateFormat="dd/MM/yyyy HH:mm" Variant="Variant.Outlined" ReadOnly="true" Date="e.Timestamp" />
+                        </MudStack>
+                    </MudItem>
+                    <MudItem xs="8">
+                        <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="e.ContentString" Lines="30" ReadOnly="true" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        }
+    }
+</MudPaper>
 
 @code {
+    private ReplayMode mode = ReplayMode.Sandbox;
+    private bool autoStop = true;
+    private DateTime? from;
+    private DateTime? until;
+    private string entityIdInput = string.Empty;
+    private IReadOnlyCollection<Event>? simulatedEvents;
+    private bool isRunning;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var modeResult = await SessionStorage.GetAsync<ReplayMode>("replay-mode");
+        if (modeResult.Success)
+            mode = modeResult.Value;
+
+        var autoStopResult = await SessionStorage.GetAsync<bool>("replay-autoStop");
+        if (autoStopResult.Success)
+            autoStop = autoStopResult.Value;
+
+        var fromResult = await SessionStorage.GetAsync<DateTime?>("replay-from");
+        if (fromResult.Success)
+            from = fromResult.Value;
+
+        var untilResult = await SessionStorage.GetAsync<DateTime?>("replay-until");
+        if (untilResult.Success)
+            until = untilResult.Value;
+
+        var entityIdResult = await SessionStorage.GetAsync<string>("replay-entityIdInput");
+        if (entityIdResult.Success)
+            entityIdInput = entityIdResult.Value;
+
+        UpdateIsRunning();
+        if (ReplayService.IsRunning())
+            await FetchSimulatedEvents();
+    }
+
+
+    private async Task StartReplayAll()
+    {
+        await ExecuteReplay(() => ReplayService.ReplayAllAsync(autoStop: autoStop));
+    }
+
+    private async Task ReplayUntil()
+    {
+        if (until.HasValue)
+            await ExecuteReplay(() => ReplayService.ReplayUntilAsync(until.Value, autoStop: autoStop));
+    }
     
+    private async Task ReplayFrom()
+    {
+        if (from.HasValue)
+            await ExecuteReplay(() => ReplayService.ReplayFromAsync(from.Value, autoStop: autoStop));
+    }
+
+    private async Task ReplayFromUntil()
+    {
+        if (from.HasValue && until.HasValue)
+            await ExecuteReplay(() => ReplayService.ReplayFromUntilAsync(from.Value, until.Value, autoStop: autoStop));
+    }
+
+    private async Task ReplayEntity()
+    {
+        if (Guid.TryParse(entityIdInput, out var id))
+            await ExecuteReplay(() => ReplayService.ReplayEntityAsync(id, autoStop: autoStop));
+    }
+
+    private void UpdateIsRunning()
+    {
+        isRunning = ReplayService.IsRunning();
+    }
+
+    private async Task StopReplay()
+    {
+        try
+        {
+            await ReplayService.StopReplay();
+            UpdateIsRunning();
+            simulatedEvents = null;
+            Snackbar.Add("Replay session stopped", Severity.Warning);
+            StateHasChanged();
+            await SaveReplaySettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Stop Replay failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private async Task ExecuteReplay(Func<Task> replayAction)
+    {
+        try
+        {
+            ReplayService.StartReplay(mode);
+            UpdateIsRunning();
+            await replayAction();
+            if (ReplayService.IsRunning())
+                await FetchSimulatedEvents();
+            UpdateIsRunning();
+            Snackbar.Add("Replay complete", Severity.Success);
+            await SaveReplaySettingsAsync();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Replay failed: {ex.Message}", Severity.Error);
+        }
+    }
+
+    private Task FetchSimulatedEvents()
+    {
+        if (mode == ReplayMode.Sandbox)
+            simulatedEvents = ReplayService.GetSimulatedEvents();
+
+        return Task.CompletedTask;
+    }
+    
+    private async Task SaveReplaySettingsAsync()
+    {
+        await SessionStorage.SetAsync("replay-mode", mode);
+        await SessionStorage.SetAsync("replay-autoStop", autoStop);
+        await SessionStorage.SetAsync("replay-from", from);
+        await SessionStorage.SetAsync("replay-until", until);
+        await SessionStorage.SetAsync("replay-entityIdInput", entityIdInput);
+    }
 }
