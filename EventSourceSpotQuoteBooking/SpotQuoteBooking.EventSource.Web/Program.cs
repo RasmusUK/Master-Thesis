@@ -1,5 +1,7 @@
 using System.Globalization;
 using EventSource.Infrastructure;
+using EventSource.Persistence;
+using EventSource.Persistence.Interfaces;
 using FluentValidation;
 using MudBlazor.Services;
 using SpotQuoteBooking.EventSource.Application;
@@ -28,14 +30,19 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBuyingRateService, BuyingRateService>();
 builder.Services.AddScoped<SpotQuoteValidator, SpotQuoteValidator>();
 
+var collectionNameProvider = new EntityCollectionNameProvider();
+
 RegistrationService.RegisterEntities(
-    typeof(SpotQuote),
-    typeof(Address),
-    typeof(Customer),
-    typeof(Country),
-    typeof(Location),
-    typeof(BuyingRate)
+    collectionNameProvider,
+    (typeof(SpotQuote), "SpotQuote"),
+    (typeof(Address), "Address"),
+    (typeof(Customer), "Customer"),
+    (typeof(Country), "Country"),
+    (typeof(Location), "Location"),
+    (typeof(BuyingRate), "BuyingRate")
 );
+
+builder.Services.AddSingleton<IEntityCollectionNameProvider>(collectionNameProvider);
 
 var app = builder.Build();
 

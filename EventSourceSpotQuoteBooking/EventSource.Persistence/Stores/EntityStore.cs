@@ -10,11 +10,16 @@ namespace EventSource.Persistence.Stores;
 public class EntityStore : IEntityStore
 {
     private readonly IMongoDbService mongoDbService;
+    private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
     private readonly ConcurrentDictionary<Type, object> collectionCache = new();
 
-    public EntityStore(IMongoDbService mongoDbService)
+    public EntityStore(
+        IMongoDbService mongoDbService,
+        IEntityCollectionNameProvider entityCollectionNameProvider
+    )
     {
         this.mongoDbService = mongoDbService;
+        this.entityCollectionNameProvider = entityCollectionNameProvider;
     }
 
     public async Task InsertEntityAsync<TEntity>(TEntity entity)
@@ -87,16 +92,12 @@ public class EntityStore : IEntityStore
     private IMongoCollection<T> GetCollection<T>()
     {
         var type = typeof(T);
-
         return (IMongoCollection<T>)
             collectionCache.GetOrAdd(
                 type,
                 _ =>
                 {
-                    var collectionName = type.FullName;
-                    if (string.IsNullOrEmpty(collectionName))
-                        throw new InvalidOperationException("Collection name is null.");
-
+                    var collectionName = entityCollectionNameProvider.GetCollectionName(type);
                     return mongoDbService.GetEntityCollection<T>(collectionName);
                 }
             );

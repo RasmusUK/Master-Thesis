@@ -1,23 +1,30 @@
 using EventSource.Persistence.Events;
+using EventSource.Persistence.Interfaces;
 using MongoDB.Bson.Serialization;
 
 namespace EventSource.Infrastructure;
 
-public class RegistrationService
+public static class RegistrationService
 {
     private static bool registered;
 
-    public static void RegisterEntities(params Type[] entityTypes)
+    public static void RegisterEntities(
+        IEntityCollectionNameProvider collectionNameProvider,
+        params (Type Type, string CollectionName)[] entities
+    )
     {
         if (registered)
             return;
+
         registered = true;
 
-        foreach (var entityType in entityTypes)
+        foreach (var (entityType, collectionName) in entities)
         {
             RegisterGenericEvent(typeof(CreateEvent<>), entityType);
             RegisterGenericEvent(typeof(UpdateEvent<>), entityType);
             RegisterGenericEvent(typeof(DeleteEvent<>), entityType);
+
+            collectionNameProvider.Register(entityType, collectionName);
         }
     }
 
