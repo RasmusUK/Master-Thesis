@@ -33,6 +33,7 @@ public static class DependencyInjection
             .AddSingleton<IEntityStore, EntityStore>()
             .AddSingleton<IEventStore, EventStore>()
             .AddSingleton(typeof(Repository<>))
+            .AddSingleton<ISnapshotService, SnapshotService>()
             .AddScoped<ITransactionManager, TransactionManager>()
             .AddScoped(typeof(IRepository<>), typeof(SmartRepository<>));
 }

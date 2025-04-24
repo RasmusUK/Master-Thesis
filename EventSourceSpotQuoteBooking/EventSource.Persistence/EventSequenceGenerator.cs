@@ -27,4 +27,15 @@ public class EventSequenceGenerator : IEventSequenceGenerator
         var result = await counters.FindOneAndUpdateAsync(filter, update, options);
         return result["seq"].ToInt64();
     }
+
+    public async Task<long> GetCurrentSequenceNumberAsync()
+    {
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", "eventNumber");
+        var result = await counters.Find(filter).FirstOrDefaultAsync();
+
+        if (result == null || !result.Contains("seq"))
+            return 0;
+
+        return result["seq"].ToInt64();
+    }
 }

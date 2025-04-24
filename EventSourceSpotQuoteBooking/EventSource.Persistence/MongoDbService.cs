@@ -39,6 +39,11 @@ public class MongoDbService : IMongoDbService
     public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
         EntityDatabase.GetCollection<TEntity>(collectionName);
 
+    public IMongoCollection<T> GetCollection<T>(string collectionName) =>
+        EntityDatabase.GetCollection<T>(collectionName);
+
+    public IMongoDatabase GetEntityDatabase() => EntityDatabase;
+
     public async Task CleanUpAsync()
     {
         await EventClient.DropDatabaseAsync(EventDatabase.DatabaseNamespace.DatabaseName);
@@ -77,7 +82,11 @@ public class MongoDbService : IMongoDbService
         var existingIndexes = await EventCollection.Indexes.ListAsync();
         var existingList = await existingIndexes.ToListAsync();
 
-        if (existingList.All(index => index["name"] != "EventNumber_Ascending"))
+        var eventNumberIndexExists = existingList.Any(index =>
+            index.GetValue("name", "").AsString == "EventNumber_Ascending"
+        );
+
+        if (!eventNumberIndexExists)
         {
             var indexModel = new CreateIndexModel<EventBase>(
                 Builders<EventBase>.IndexKeys.Ascending(e => e.EventNumber),
