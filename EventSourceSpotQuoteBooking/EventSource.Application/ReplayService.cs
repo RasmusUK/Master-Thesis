@@ -8,19 +8,16 @@ namespace EventSource.Application;
 public class ReplayService : IReplayService
 {
     private readonly IEventStore eventStore;
-    private readonly IEventProcessor eventProcessor;
     private readonly IEntityStore entityStore;
     private readonly IGlobalReplayContext replayContext;
 
     public ReplayService(
         IEventStore eventStore,
-        IEventProcessor eventProcessor,
         IEntityStore entityStore,
         IGlobalReplayContext replayContext
     )
     {
         this.eventStore = eventStore;
-        this.eventProcessor = eventProcessor;
         this.entityStore = entityStore;
         this.replayContext = replayContext;
     }
@@ -173,7 +170,9 @@ public class ReplayService : IReplayService
             )
                 await ProcessReplayDeleteEvent(dynEvent);
             else
-                await eventProcessor.ProcessAsync(e);
+                throw new InvalidOperationException(
+                    $"Unknown event type: {e.GetType().Name}. Cannot process replay."
+                );
         }
     }
 

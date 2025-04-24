@@ -21,8 +21,7 @@ public static class DependencyInjection
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IPersonalDataInterceptor, PersonalDataInterceptor>()
             .AddSingleton<IReplayService, ReplayService>()
-            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>()
-            .AddSingleton<IEventProcessor, EventProcessor>();
+            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>();
 
     private static IServiceCollection AddPersistence(
         this IServiceCollection services,

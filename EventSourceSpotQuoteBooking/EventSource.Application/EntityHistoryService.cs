@@ -8,12 +8,10 @@ namespace EventSource.Application;
 public class EntityHistoryService : IEntityHistoryService
 {
     private readonly IEventStore eventStore;
-    private readonly IEventProcessor eventProcessor;
 
-    public EntityHistoryService(IEventStore eventStore, IEventProcessor eventProcessor)
+    public EntityHistoryService(IEventStore eventStore)
     {
         this.eventStore = eventStore;
-        this.eventProcessor = eventProcessor;
     }
 
     public async Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>(Guid id)
@@ -30,40 +28,11 @@ public class EntityHistoryService : IEntityHistoryService
 
         foreach (var e in events)
         {
-            if (IsRepoEvent(e))
-            {
-                var entity = GetEntityFromRepoEvent<T>(e);
-                entitiesWithEvents.Add((entity, e));
-            }
-            else
-            {
-                var entity = await eventProcessor.ProcessHistoryAsync(e);
-                entitiesWithEvents.Add(((T)entity, e));
-            }
+            var entity = GetEntityFromRepoEvent<T>(e);
+            entitiesWithEvents.Add((entity, e));
         }
 
         return entitiesWithEvents;
-    }
-
-    private static bool IsRepoEvent(Event e)
-    {
-        var eventType = e.GetType();
-
-        return eventType.IsGenericType && IsSubclassOfRepoEvent(eventType);
-    }
-
-    private static bool IsSubclassOfRepoEvent(Type? type)
-    {
-        while (type is not null && type != typeof(object))
-        {
-            var cur = type.IsGenericType ? type.GetGenericTypeDefinition() : type;
-            if (cur == typeof(RepoEvent<>))
-                return true;
-
-            type = type.BaseType;
-        }
-
-        return false;
     }
 
     private static T GetEntityFromRepoEvent<T>(Event e)
