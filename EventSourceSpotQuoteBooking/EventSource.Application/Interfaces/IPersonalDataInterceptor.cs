@@ -1,9 +1,9 @@
-using EventSource.Core;
+using EventSource.Core.Events;
 
 namespace EventSource.Application.Interfaces;
 
 public interface IPersonalDataInterceptor
 {
-    Task<Event> ProcessEventForStorage(Event e);
-    Task<Event> ProcessEventForRetrieval(Event e);
+    Task<IEvent> ProcessEventForStorage(IEvent e);
+    Task<IEvent> ProcessEventForRetrieval(IEvent e);
 }

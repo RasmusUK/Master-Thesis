@@ -1,6 +1,6 @@
 namespace EventSource.Core.Test;
 
-public class Quote : Entity
+public class Quote : IEntity
 {
     public Quote(double price, string currency, string name)
     {
@@ -12,4 +12,5 @@ public class Quote : Entity
     public double Price { get; set; }
     public string Currency { get; set; }
     public string Name { get; set; }
+    public Guid Id { get; } = Guid.NewGuid();
 }

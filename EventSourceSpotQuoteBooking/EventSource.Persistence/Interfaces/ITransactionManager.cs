@@ -12,13 +12,13 @@ public interface ITransactionManager
     Task CommitAsync();
     Task RollbackAsync();
     IEnumerable<T> GetTrackedUpsertedEntities<T>()
-        where T : Entity;
+        where T : IEntity;
 
     void TrackUpsertedEntity<T>(T entity)
-        where T : Entity;
+        where T : IEntity;
     IEnumerable<T> GetTrackedDeletedEntities<T>()
-        where T : Entity;
+        where T : IEntity;
 
     void TrackDeletedEntity<T>(T entity)
-        where T : Entity;
+        where T : IEntity;
 }

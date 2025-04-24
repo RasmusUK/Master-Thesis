@@ -1,4 +1,4 @@
-using EventSource.Core;
+using EventSource.Core.Events;
 
 namespace EventSource.Application.Interfaces;
 
@@ -19,9 +19,9 @@ public interface IReplayService
         DateTime until,
         bool autoStop = true
     );
-    Task ReplayEventsAsync(IReadOnlyCollection<Event> events, bool autoStop = true);
-    Task ReplayEventAsync(Event e, bool autoStop = true);
-    IReadOnlyCollection<Event> GetSimulatedEvents();
+    Task ReplayEventsAsync(IReadOnlyCollection<IEvent> events, bool autoStop = true);
+    Task ReplayEventAsync(IEvent e, bool autoStop = true);
+    IReadOnlyCollection<IEvent> GetSimulatedEvents();
     Task ReplayFromEventNumberAsync(long fromEventNumber, bool autoStop = true);
     Task ReplayUntilEventNumberAsync(long untilEventNumber, bool autoStop = true);
     Task ReplayFromUntilEventNumberAsync(

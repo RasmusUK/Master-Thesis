@@ -1,6 +1,6 @@
 namespace EventSource.Core.Test;
 
-public class Booking : Entity
+public class Booking : IEntity
 {
     public string CustomerName { get; set; }
     public Address From { get; set; }
@@ -8,17 +8,5 @@ public class Booking : Entity
     public Address Test { get; set; }
     public string? Name { get; set; }
 
-    private void Apply(CreateBookingEvent e)
-    {
-        From = e.From;
-        To = e.To;
-    }
-
-    private void Apply(UpdateBookingAddressEvent e)
-    {
-        From = e.From;
-        To = e.To;
-    }
-
-    private void Apply(AddCustomerToBookingEvent e) => CustomerName = e.CustomerName;
+    public Guid Id { get; } = Guid.NewGuid();
 }

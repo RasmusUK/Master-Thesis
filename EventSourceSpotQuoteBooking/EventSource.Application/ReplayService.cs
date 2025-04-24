@@ -92,17 +92,17 @@ public class ReplayService : IReplayService
         await StopReplayIfNeeded(autoStop);
     }
 
-    public async Task ReplayEventsAsync(IReadOnlyCollection<Event> events, bool autoStop = true)
+    public async Task ReplayEventsAsync(IReadOnlyCollection<IEvent> events, bool autoStop = true)
     {
         StartReplayIfNeeded();
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
     }
 
-    public Task ReplayEventAsync(Event e, bool autoStop = true) =>
+    public Task ReplayEventAsync(IEvent e, bool autoStop = true) =>
         ReplayEventsAsync(new[] { e }, autoStop);
 
-    public IReadOnlyCollection<Event> GetSimulatedEvents() => replayContext.GetEvents();
+    public IReadOnlyCollection<IEvent> GetSimulatedEvents() => replayContext.GetEvents();
 
     public async Task ReplayFromEventNumberAsync(long fromEventNumber, bool autoStop = true)
     {
@@ -149,39 +149,44 @@ public class ReplayService : IReplayService
             await StopReplay();
     }
 
-    private async Task ProcessReplayEventsAsync(IEnumerable<Event> events)
+    private async Task ProcessReplayEventsAsync(IEnumerable<IEvent> events)
     {
         foreach (var e in events)
         {
-            dynamic dynEvent = e;
-            if (
-                e.GetType().IsGenericType
-                && e.GetType().GetGenericTypeDefinition() == typeof(CreateEvent<>)
-            )
-                await ProcessReplayCreateEvent(dynEvent);
-            else if (
-                e.GetType().IsGenericType
-                && e.GetType().GetGenericTypeDefinition() == typeof(UpdateEvent<>)
-            )
-                await ProcessReplayUpdateEvent(dynEvent);
-            else if (
-                e.GetType().IsGenericType
-                && e.GetType().GetGenericTypeDefinition() == typeof(DeleteEvent<>)
-            )
-                await ProcessReplayDeleteEvent(dynEvent);
-            else
-                throw new InvalidOperationException(
-                    $"Unknown event type: {e.GetType().Name}. Cannot process replay."
-                );
+            switch (e)
+            {
+                case ICreateEvent<IEntity> create:
+                    await ProcessReplayCreateEventDynamic(create);
+                    break;
+                case IUpdateEvent<IEntity> update:
+                    await ProcessReplayUpdateEventDynamic(update);
+                    break;
+                case IDeleteEvent<IEntity> delete:
+                    await ProcessReplayDeleteEventDynamic(delete);
+                    break;
+                default:
+                    throw new InvalidOperationException(
+                        $"Unknown event type: {e.GetType().Name}. Cannot process replay."
+                    );
+            }
         }
     }
 
-    private Task ProcessReplayCreateEvent<T>(CreateEvent<T> e)
-        where T : Entity => entityStore.UpsertEntityAsync(e.Entity);
+    private Task ProcessReplayCreateEventDynamic(ICreateEvent<IEntity> e) =>
+        ProcessReplayCreateEvent((dynamic)e);
 
-    private Task ProcessReplayUpdateEvent<T>(UpdateEvent<T> e)
-        where T : Entity => entityStore.UpsertEntityAsync(e.Entity);
+    private Task ProcessReplayUpdateEventDynamic(IUpdateEvent<IEntity> e) =>
+        ProcessReplayUpdateEvent((dynamic)e);
 
-    private Task ProcessReplayDeleteEvent<T>(DeleteEvent<T> e)
-        where T : Entity => entityStore.DeleteEntityAsync(e.Entity);
+    private Task ProcessReplayDeleteEventDynamic(IDeleteEvent<IEntity> e) =>
+        ProcessReplayDeleteEvent((dynamic)e);
+
+    private Task ProcessReplayCreateEvent<T>(ICreateEvent<T> e)
+        where T : IEntity => entityStore.UpsertEntityAsync(e.Entity);
+
+    private Task ProcessReplayUpdateEvent<T>(IUpdateEvent<T> e)
+        where T : IEntity => entityStore.UpsertEntityAsync(e.Entity);
+
+    private Task ProcessReplayDeleteEvent<T>(IDeleteEvent<T> e)
+        where T : IEntity => entityStore.DeleteEntityAsync(e.Entity);
 }

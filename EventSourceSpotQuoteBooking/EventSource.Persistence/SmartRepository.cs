@@ -7,7 +7,7 @@ using EventSource.Persistence.Interfaces;
 namespace EventSource.Persistence;
 
 public class SmartRepository<T> : IRepository<T>
-    where T : Entity
+    where T : class, IEntity
 {
     private readonly Repository<T> inner;
     private readonly ITransactionManager transactionManager;

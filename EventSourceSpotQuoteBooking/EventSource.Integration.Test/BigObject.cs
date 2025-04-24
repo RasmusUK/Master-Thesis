@@ -1,6 +1,6 @@
 namespace EventSource.Core.Test;
 
-public class BigObject : Entity
+public class BigObject : IEntity
 {
     // 11 + (11 * 6) + (11 * 6 * 4) + (11 * 6 * 4 * 2) = 869 nodes
     public string Name { get; set; } = "Parent BigObject";
@@ -13,6 +13,8 @@ public class BigObject : Entity
 
     public List<Level1Node> Children { get; set; } =
         Enumerable.Range(1, 10).Select(i => new Level1Node($"Child Node {i}")).ToList();
+
+    public Guid Id { get; } = Guid.NewGuid();
 }
 
 public class Level1Node

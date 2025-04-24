@@ -1,24 +1,26 @@
+using EventSource.Core.Events;
+
 namespace EventSource.Core.Interfaces;
 
 public interface IEventStore
 {
-    Task InsertEventAsync(Event e);
-    Task<Event?> GetEventByIdAsync(Guid id);
-    Task<IReadOnlyCollection<Event>> GetEventsAsync();
-    Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(DateTime until);
-    Task<IReadOnlyCollection<Event>> GetEventsFromAsync(DateTime from);
-    Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(DateTime from, DateTime until);
+    Task InsertEventAsync(IEvent e);
+    Task<IEvent?> GetEventByIdAsync(Guid id);
+    Task<IReadOnlyCollection<IEvent>> GetEventsAsync();
+    Task<IReadOnlyCollection<IEvent>> GetEventsUntilAsync(DateTime until);
+    Task<IReadOnlyCollection<IEvent>> GetEventsFromAsync(DateTime from);
+    Task<IReadOnlyCollection<IEvent>> GetEventsFromUntilAsync(DateTime from, DateTime until);
 
-    Task<IReadOnlyCollection<Event>> GetEventsByEntityIdAsync(Guid entityId);
-    Task<IReadOnlyCollection<Event>> GetEventsByEntityIdUntilAsync(Guid entityId, DateTime until);
-    Task<IReadOnlyCollection<Event>> GetEventsByEntityIdFromUntilAsync(
+    Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdAsync(Guid entityId);
+    Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdUntilAsync(Guid entityId, DateTime until);
+    Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdFromUntilAsync(
         Guid entityId,
         DateTime from,
         DateTime until
     );
-    Task<IReadOnlyCollection<Event>> GetEventsFromAsync(long fromEventNumber);
-    Task<IReadOnlyCollection<Event>> GetEventsUntilAsync(long untilEventNumber);
-    Task<IReadOnlyCollection<Event>> GetEventsFromUntilAsync(
+    Task<IReadOnlyCollection<IEvent>> GetEventsFromAsync(long fromEventNumber);
+    Task<IReadOnlyCollection<IEvent>> GetEventsUntilAsync(long untilEventNumber);
+    Task<IReadOnlyCollection<IEvent>> GetEventsFromUntilAsync(
         long fromEventNumber,
         long untilEventNumber
     );

@@ -1,5 +1,6 @@
 using EventSource.Application.Interfaces;
 using EventSource.Core;
+using EventSource.Core.Events;
 
 namespace EventSource.Application;
 
@@ -10,7 +11,7 @@ public class GlobalReplayContext : IGlobalReplayContext
     private bool isReplaying;
     private Guid? replayId;
     private ReplayMode replayMode = ReplayMode.Strict;
-    private readonly List<Event> events = new();
+    private readonly List<IEvent> events = new();
 
     public bool IsReplaying
     {
@@ -66,7 +67,7 @@ public class GlobalReplayContext : IGlobalReplayContext
         }
     }
 
-    public IReadOnlyCollection<Event> GetEvents()
+    public IReadOnlyCollection<IEvent> GetEvents()
     {
         lock (LockObj)
         {
@@ -77,7 +78,7 @@ public class GlobalReplayContext : IGlobalReplayContext
         }
     }
 
-    public void AddEvent(Event e)
+    public void AddEvent(IEvent e)
     {
         lock (LockObj)
         {

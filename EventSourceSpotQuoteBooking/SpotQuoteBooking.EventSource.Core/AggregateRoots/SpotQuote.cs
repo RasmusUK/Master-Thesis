@@ -1,4 +1,4 @@
-﻿using EventSource.Core;
+﻿using EventSource.Persistence;
 using SpotQuoteBooking.EventSource.Core.ValueObjects;
 using SpotQuoteBooking.EventSource.Core.ValueObjects.Enums;
 

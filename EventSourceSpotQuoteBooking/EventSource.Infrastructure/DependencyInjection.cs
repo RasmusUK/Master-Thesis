@@ -19,7 +19,6 @@ public static class DependencyInjection
     private static IServiceCollection AddApplicationServices(this IServiceCollection services) =>
         services
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
-            .AddSingleton<IPersonalDataInterceptor, PersonalDataInterceptor>()
             .AddSingleton<IReplayService, ReplayService>()
             .AddSingleton<IGlobalReplayContext, GlobalReplayContext>();
 
@@ -31,9 +30,8 @@ public static class DependencyInjection
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
             .AddSingleton<IEventSequenceGenerator, EventSequenceGenerator>()
             .AddSingleton<IMongoDbService, MongoDbService>()
-            .AddSingleton<IEntityStore, MongoDbEntityStore>()
-            .AddSingleton<IEventStore, MongoDbEventStore>()
-            .AddSingleton<IPersonalDataStore, MongoDbPersonalDataStore>()
+            .AddSingleton<IEntityStore, EntityStore>()
+            .AddSingleton<IEventStore, EventStore>()
             .AddSingleton(typeof(Repository<>))
             .AddScoped<ITransactionManager, TransactionManager>()
             .AddScoped(typeof(IRepository<>), typeof(SmartRepository<>));

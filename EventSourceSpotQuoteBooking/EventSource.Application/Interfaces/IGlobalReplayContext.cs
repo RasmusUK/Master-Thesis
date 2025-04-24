@@ -1,4 +1,5 @@
 using EventSource.Core;
+using EventSource.Core.Events;
 
 namespace EventSource.Application.Interfaces;
 
@@ -9,6 +10,6 @@ public interface IGlobalReplayContext
     Guid? ReplayId { get; }
     void StartReplay(ReplayMode mode = ReplayMode.Strict);
     void StopReplay();
-    IReadOnlyCollection<Event> GetEvents();
-    void AddEvent(Event e);
+    IReadOnlyCollection<IEvent> GetEvents();
+    void AddEvent(IEvent e);
 }

@@ -25,7 +25,7 @@ public class TransactionManager : ITransactionManager
     }
 
     public void TrackUpsertedEntity<T>(T entity)
-        where T : Entity
+        where T : IEntity
     {
         if (!IsActive)
             throw new TransactionException("No active transaction.");
@@ -40,7 +40,7 @@ public class TransactionManager : ITransactionManager
     }
 
     public void TrackDeletedEntity<T>(T entity)
-        where T : Entity
+        where T : IEntity
     {
         if (!IsActive)
             throw new TransactionException("No active transaction.");
@@ -100,7 +100,7 @@ public class TransactionManager : ITransactionManager
     }
 
     public IEnumerable<T> GetTrackedUpsertedEntities<T>()
-        where T : Entity
+        where T : IEntity
     {
         if (!IsActive)
             return Enumerable.Empty<T>();
@@ -111,7 +111,7 @@ public class TransactionManager : ITransactionManager
     }
 
     public IEnumerable<T> GetTrackedDeletedEntities<T>()
-        where T : Entity
+        where T : IEntity
     {
         if (!IsActive)
             return Enumerable.Empty<T>();

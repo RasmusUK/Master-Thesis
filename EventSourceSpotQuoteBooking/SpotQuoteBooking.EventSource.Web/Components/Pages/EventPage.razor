@@ -1,6 +1,5 @@
 @page "/events/{Id:guid}"
 @using global::EventSource.Core.Interfaces
-@using global::EventSource.Core
 @inject IEventStore EventStore;
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Event</MudText>
@@ -23,14 +22,14 @@
         </MudStack>
     </MudItem>
     <MudItem xs="8">
-        <MudTextField T="string" Label="Content" Variant="Variant.Outlined" 
-                      Value="e?.ContentString" Lines="30" ReadOnly="true"/>
+        <MudTextField T="string" Label="Content" Variant="Variant.Outlined"
+                      Value="e?.ToString()" Lines="30" ReadOnly="true"/>
     </MudItem>
 </MudGrid>
 
 @code {
     [Parameter] public Guid Id { get; set; }
-    Event? e;
+    IEvent? e;
     
     protected override async Task OnInitializedAsync()
     {

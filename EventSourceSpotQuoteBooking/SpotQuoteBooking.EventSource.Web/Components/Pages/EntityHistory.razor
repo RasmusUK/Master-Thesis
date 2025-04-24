@@ -1,6 +1,6 @@
 @page "/entity-history"
-@using global::EventSource.Core
 @using global::EventSource.Application.Interfaces
+@using global::EventSource.Core
 @inject IEntityHistoryService EntityHistoryService
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Entity History</MudText>
@@ -30,7 +30,7 @@
                     <MudText Typo="Typo.subtitle2" Class="mb-2">
                         @e.Typename @e.Timestamp.ToString("dd/mm/yy hh:mm")
                     </MudText>
-                    <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="@e.ContentString" Lines="30" ReadOnly="true" />
+                    <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="@e.ToString()" Lines="30" ReadOnly="true" />
                 </MudItem>
               
             }
@@ -40,13 +40,13 @@
 
 @code {
     private Guid? entityId;
-    private IReadOnlyCollection<(Entity entity, Event e)>? history;
+    private IReadOnlyCollection<(IEntity entity, IEvent e)>? history;
 
     private async Task Search()
     {
         if (entityId.HasValue && entityId != Guid.Empty)
         {
-            history = await EntityHistoryService.GetEntityHistoryWithEventsAsync<Entity>(entityId.Value);
+            history = await EntityHistoryService.GetEntityHistoryWithEventsAsync<IEntity>(entityId.Value);
         }
     }
 

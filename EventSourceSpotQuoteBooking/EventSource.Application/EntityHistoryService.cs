@@ -15,16 +15,16 @@ public class EntityHistoryService : IEntityHistoryService
     }
 
     public async Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>(Guid id)
-        where T : Entity =>
+        where T : IEntity =>
         (await GetEntityHistoryWithEventsAsync<T>(id)).Select(e => e.entity).ToList();
 
-    public async Task<IReadOnlyCollection<(T entity, Event e)>> GetEntityHistoryWithEventsAsync<T>(
+    public async Task<IReadOnlyCollection<(T entity, IEvent e)>> GetEntityHistoryWithEventsAsync<T>(
         Guid id
     )
-        where T : Entity
+        where T : IEntity
     {
         var events = await eventStore.GetEventsByEntityIdAsync(id);
-        var entitiesWithEvents = new List<(T, Event)>();
+        var entitiesWithEvents = new List<(T, IEvent)>();
 
         foreach (var e in events)
         {
@@ -35,8 +35,8 @@ public class EntityHistoryService : IEntityHistoryService
         return entitiesWithEvents;
     }
 
-    private static T GetEntityFromRepoEvent<T>(Event e)
-        where T : Entity
+    private static T GetEntityFromRepoEvent<T>(IEvent e)
+        where T : IEntity
     {
         dynamic dynEvent = e;
         return (T)dynEvent.Entity;

@@ -9,6 +9,7 @@ using SpotQuoteBooking.EventSource.Core.Validators;
 using SpotQuoteBooking.EventSource.Web.Components;
 using SpotQuoteBooking.EventSource.Web.Data;
 using SpotQuoteBooking.EventSource.Web.Startup;
+using Country = SpotQuoteBooking.EventSource.Core.AggregateRoots.Country;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,15 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBuyingRateService, BuyingRateService>();
 builder.Services.AddScoped<SpotQuoteValidator, SpotQuoteValidator>();
 
+RegistrationService.RegisterEntities(
+    typeof(SpotQuote),
+    typeof(Address),
+    typeof(Customer),
+    typeof(Country),
+    typeof(Location),
+    typeof(BuyingRate)
+);
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -38,7 +48,7 @@ else
 {
     using var scope = app.Services.CreateScope();
     var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-    //await seeder.Seed();
+    await seeder.Seed();
 }
 
 app.UseHttpsRedirection();

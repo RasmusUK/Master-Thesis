@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 namespace EventSource.Core.Interfaces;
 
 public interface IRepository<T>
-    where T : Entity
+    where T : IEntity
 {
     Task<Guid> CreateAsync(T entity);
     Task<T?> ReadByIdAsync(Guid id);

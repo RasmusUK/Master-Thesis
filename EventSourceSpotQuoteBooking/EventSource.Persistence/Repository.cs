@@ -4,11 +4,12 @@ using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
+using EventSource.Persistence.Events;
 
 namespace EventSource.Persistence;
 
 public class Repository<T> : IRepository<T>
-    where T : Entity
+    where T : IEntity
 {
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
@@ -120,7 +121,7 @@ public class Repository<T> : IRepository<T>
         Expression<Func<T, bool>> filter
     ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
 
-    private async Task HandleEventAsync(Event e)
+    private async Task HandleEventAsync(IEvent e)
     {
         if (globalReplayContext.IsReplaying)
         {

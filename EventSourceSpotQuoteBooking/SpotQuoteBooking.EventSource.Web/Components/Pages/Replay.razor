@@ -63,7 +63,7 @@
                         </MudStack>
                     </MudItem>
                     <MudItem xs="8">
-                        <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="e.ContentString" Lines="30" ReadOnly="true" />
+                        <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="e.ToString()" Lines="30" ReadOnly="true" />
                     </MudItem>
                 </MudGrid>
             </MudPaper>
@@ -77,7 +77,7 @@
     private DateTime? from;
     private DateTime? until;
     private string entityIdInput = string.Empty;
-    private IReadOnlyCollection<Event>? simulatedEvents;
+    private IReadOnlyCollection<IEvent>? simulatedEvents;
     private bool isRunning;
     private long? eventNumberFrom;
     private long? eventNumberUntil;

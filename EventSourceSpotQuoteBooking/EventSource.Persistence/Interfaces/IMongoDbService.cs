@@ -1,4 +1,4 @@
-using EventSource.Persistence.Entities;
+using EventSource.Persistence.Events;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
@@ -6,8 +6,7 @@ namespace EventSource.Persistence.Interfaces;
 
 public interface IMongoDbService
 {
-    IMongoCollection<MongoDbEvent> EventCollection { get; }
-    IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
+    IMongoCollection<EventBase> EventCollection { get; }
     IMongoCollection<BsonDocument> CounterCollection { get; }
     IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName);
     Task CleanUpAsync();

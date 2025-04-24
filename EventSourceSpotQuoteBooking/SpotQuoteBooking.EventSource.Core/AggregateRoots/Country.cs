@@ -1,4 +1,4 @@
-using EventSource.Core;
+using EventSource.Persistence;
 
 namespace SpotQuoteBooking.EventSource.Core.AggregateRoots;
 

@@ -28,7 +28,7 @@
         </MudItem>
     </MudGrid>
     
-    <MudDataGrid T="Event" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" 
+    <MudDataGrid T="IEvent" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" 
                  FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
         <Columns>
             <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
@@ -40,14 +40,14 @@
             <PropertyColumn Property="x => x.Compensation" Title="Is compensation"/>
         </Columns>
         <PagerContent>
-            <MudDataGridPager T="Event"/>
+            <MudDataGridPager T="IEvent"/>
         </PagerContent>
     </MudDataGrid>
 </MudStack>
 
 
 @code {
-    private IEnumerable<Event> events = new List<Event>();
+    private IEnumerable<IEvent> events = new List<IEvent>();
     private bool loading = true;
     private Guid? entityId;
     private DateRange dateRange = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
@@ -56,7 +56,7 @@
         await Search();
     }
     
-    private void OnRowClick(DataGridRowClickEventArgs<Event> e)
+    private void OnRowClick(DataGridRowClickEventArgs<IEvent> e)
     {
         Navigation.NavigateTo($"/events/{e.Item.Id}");
     }

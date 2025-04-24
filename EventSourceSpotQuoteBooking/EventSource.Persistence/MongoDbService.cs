@@ -1,17 +1,17 @@
-using EventSource.Persistence.Entities;
+using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace EventSource.Persistence;
 
 public class MongoDbService : IMongoDbService
 {
-    public IMongoCollection<MongoDbEvent> EventCollection { get; }
-    public IMongoCollection<MongoDbPersonalData> PersonalDataCollection { get; }
+    public IMongoCollection<EventBase> EventCollection { get; }
     public IMongoCollection<BsonDocument> CounterCollection { get; }
     private IMongoDatabase EventDatabase { get; }
     private IMongoDatabase EntityDatabase { get; }
@@ -30,10 +30,7 @@ public class MongoDbService : IMongoDbService
         (EntityDatabase, EntityClient) = CreateDatabase(options.EntityStore);
         (PersonalDataDatabase, PersonalDataClient) = CreateDatabase(options.PersonalDataStore);
 
-        EventCollection = EventDatabase.GetCollection<MongoDbEvent>("events");
-        PersonalDataCollection = PersonalDataDatabase.GetCollection<MongoDbPersonalData>(
-            "personalData"
-        );
+        EventCollection = EventDatabase.GetCollection<EventBase>("events");
         CounterCollection = EventDatabase.GetCollection<BsonDocument>("counters");
 
         EnsureEventIndexesAsync().GetAwaiter().GetResult();
@@ -82,8 +79,8 @@ public class MongoDbService : IMongoDbService
 
         if (existingList.All(index => index["name"] != "EventNumber_Ascending"))
         {
-            var indexModel = new CreateIndexModel<MongoDbEvent>(
-                Builders<MongoDbEvent>.IndexKeys.Ascending(e => e.EventNumber),
+            var indexModel = new CreateIndexModel<EventBase>(
+                Builders<EventBase>.IndexKeys.Ascending(e => e.EventNumber),
                 new CreateIndexOptions { Unique = true, Name = "EventNumber_Ascending" }
             );
 
@@ -97,10 +94,14 @@ public class MongoDbService : IMongoDbService
 
         public void Apply(BsonMemberMap memberMap)
         {
-            if (memberMap.MemberType == typeof(Guid) || memberMap.MemberType == typeof(Guid?))
+            if (memberMap.MemberType == typeof(Guid))
+            {
+                memberMap.SetSerializer(new GuidSerializer(BsonType.String));
+            }
+            else if (memberMap.MemberType == typeof(Guid?))
             {
                 memberMap.SetSerializer(
-                    new MongoDB.Bson.Serialization.Serializers.GuidSerializer(BsonType.String)
+                    new NullableSerializer<Guid>(new GuidSerializer(BsonType.String))
                 );
             }
         }
