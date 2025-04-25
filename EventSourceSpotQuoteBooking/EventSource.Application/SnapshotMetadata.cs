@@ -1,4 +1,4 @@
-namespace EventSource.Persistence;
+namespace EventSource.Application;
 
 public class SnapshotMetadata
 {

@@ -1,7 +1,6 @@
 @page "/replay"
 @using global::EventSource.Application
 @using global::EventSource.Application.Interfaces
-@using global::EventSource.Core
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject IReplayService ReplayService
 @inject ISnackbar Snackbar
@@ -19,6 +18,7 @@
         </MudSelect>
 
         <MudSwitch T="bool" @bind-Value="autoStop" Color="Color.Primary" Label="Auto-stop after replay" />
+        <MudSwitch T="bool" @bind-Value="useSnapshot" Color="Color.Primary" Label="Use snapshots for replay" />
 
         <MudDatePicker @bind-Date="from" Label="From (optional)"  Placeholder="dd/MM/yyyy HH:mm:ss" 
                        DateFormat="dd/MM/yyyy HH:mm:ss" Editable="true" Clearable="true"/>
@@ -74,6 +74,7 @@
 @code {
     private ReplayMode mode = ReplayMode.Sandbox;
     private bool autoStop;
+    private bool useSnapshot = true;
     private DateTime? from;
     private DateTime? until;
     private string entityIdInput = string.Empty;
@@ -120,31 +121,31 @@
 
     private async Task StartReplayAll()
     {
-        await ExecuteReplay(() => ReplayService.ReplayAllAsync(autoStop: autoStop));
+        await ExecuteReplay(() => ReplayService.ReplayAllAsync(autoStop: autoStop, useSnapshot: useSnapshot));
     }
 
     private async Task ReplayUntil()
     {
         if (until.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayUntilAsync(until.Value, autoStop: autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayUntilAsync(until.Value, autoStop: autoStop, useSnapshot: useSnapshot));
     }
     
     private async Task ReplayFrom()
     {
         if (from.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayFromAsync(from.Value, autoStop: autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayFromAsync(from.Value, autoStop: autoStop, useSnapshot: useSnapshot));
     }
 
     private async Task ReplayFromUntil()
     {
         if (from.HasValue && until.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayFromUntilAsync(from.Value, until.Value, autoStop: autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayFromUntilAsync(from.Value, until.Value, autoStop: autoStop, useSnapshot: useSnapshot));
     }
 
     private async Task ReplayEntity()
     {
         if (Guid.TryParse(entityIdInput, out var id))
-            await ExecuteReplay(() => ReplayService.ReplayEntityAsync(id, autoStop: autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayEntityAsync(id, autoStop: autoStop, useSnapshot: useSnapshot));
     }
 
     private void UpdateIsRunning()
@@ -172,26 +173,26 @@
     private async Task ReplayFromEventNumber()
     {
         if (eventNumberFrom.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayFromEventNumberAsync(eventNumberFrom.Value, autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayFromEventNumberAsync(eventNumberFrom.Value, autoStop, useSnapshot));
     }
 
     private async Task ReplayUntilEventNumber()
     {
         if (eventNumberUntil.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayUntilEventNumberAsync(eventNumberUntil.Value, autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayUntilEventNumberAsync(eventNumberUntil.Value, autoStop, useSnapshot));
     }
 
     private async Task ReplayFromUntilEventNumber()
     {
         if (eventNumberFrom.HasValue && eventNumberUntil.HasValue)
-            await ExecuteReplay(() => ReplayService.ReplayFromUntilEventNumberAsync(eventNumberFrom.Value, eventNumberUntil.Value, autoStop));
+            await ExecuteReplay(() => ReplayService.ReplayFromUntilEventNumberAsync(eventNumberFrom.Value, eventNumberUntil.Value, autoStop, useSnapshot));
     }
 
     private async Task ExecuteReplay(Func<Task> replayAction)
     {
         try
         {
-            ReplayService.StartReplay(mode);
+            await ReplayService.StartReplay(mode);
             UpdateIsRunning();
             await replayAction();
             if (ReplayService.IsRunning())

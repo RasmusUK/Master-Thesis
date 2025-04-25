@@ -1,5 +1,4 @@
 using EventSource.Application.Interfaces;
-using EventSource.Core;
 using EventSource.Core.Events;
 
 namespace EventSource.Application;
@@ -9,7 +8,7 @@ public class GlobalReplayContext : IGlobalReplayContext
     private static readonly object LockObj = new();
 
     private bool isReplaying;
-    private Guid? replayId;
+    private bool isLoading;
     private ReplayMode replayMode = ReplayMode.Strict;
     private readonly List<IEvent> events = new();
 
@@ -22,12 +21,17 @@ public class GlobalReplayContext : IGlobalReplayContext
         }
     }
 
-    public Guid? ReplayId
+    public bool IsLoading
     {
         get
         {
             lock (LockObj)
-                return replayId;
+                return isLoading;
+        }
+        set
+        {
+            lock (LockObj)
+                isLoading = value;
         }
     }
 
@@ -48,7 +52,6 @@ public class GlobalReplayContext : IGlobalReplayContext
                 throw new InvalidOperationException("Replay is already in progress.");
 
             isReplaying = true;
-            replayId = Guid.NewGuid();
             replayMode = mode;
             events.Clear();
         }
@@ -62,7 +65,6 @@ public class GlobalReplayContext : IGlobalReplayContext
                 throw new InvalidOperationException("Replay is not in progress.");
 
             isReplaying = false;
-            replayId = null;
             events.Clear();
         }
     }

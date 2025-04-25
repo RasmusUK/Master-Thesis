@@ -1,4 +1,6 @@
 using System.Reflection;
+using EventSource.Application;
+using EventSource.Application.Interfaces;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -13,69 +15,155 @@ public class SnapshotService : ISnapshotService
     private readonly IMongoDatabase entityDatabase;
     private readonly IEventSequenceGenerator eventSequenceGenerator;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
+    private readonly IGlobalReplayContext globalReplayContext;
+    private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
 
     public SnapshotService(
         IMongoDbService mongoDbService,
         IEventSequenceGenerator eventSequenceGenerator,
-        IEntityCollectionNameProvider entityCollectionNameProvider
+        IEntityCollectionNameProvider entityCollectionNameProvider,
+        IGlobalReplayContext globalReplayContext
     )
     {
         this.mongoDbService = mongoDbService;
         this.eventSequenceGenerator = eventSequenceGenerator;
         this.entityCollectionNameProvider = entityCollectionNameProvider;
+        this.globalReplayContext = globalReplayContext;
         entityDatabase = mongoDbService.GetEntityDatabase();
     }
 
     public async Task<string> TakeSnapshotAsync()
     {
-        var dateTime = DateTime.UtcNow;
-        var eventNumber = await eventSequenceGenerator.GetCurrentSequenceNumberAsync();
-        var snapshotId = $"snapshot_{dateTime:yyyyMMddHHmmss}_{eventNumber}";
-
-        var registered = entityCollectionNameProvider.GetAllRegistered();
-
-        foreach (var (type, collectionName) in registered)
+        await SnapshotLock.WaitAsync();
+        try
         {
-            var method = typeof(SnapshotService).GetMethod(
-                nameof(CopyCollectionAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-            var genericMethod = method!.MakeGenericMethod(type);
-            await (Task)genericMethod.Invoke(this, new object[] { collectionName, snapshotId })!;
+            if (globalReplayContext is { IsReplaying: true, IsLoading: false })
+                throw new InvalidOperationException(
+                    "Cannot take a snapshot while in replay mode. Please stop the replay first."
+                );
+
+            var dateTime = DateTime.UtcNow;
+            var eventNumber = await eventSequenceGenerator.GetCurrentSequenceNumberAsync();
+            var snapshotId = $"snapshot_{dateTime:yyyyMMddHHmmss}_{eventNumber}";
+
+            var registered = entityCollectionNameProvider.GetAllRegistered();
+
+            foreach (var (type, collectionName) in registered)
+            {
+                var method = typeof(SnapshotService).GetMethod(
+                    nameof(CopyCollectionAsync),
+                    BindingFlags.NonPublic | BindingFlags.Instance
+                );
+                var genericMethod = method!.MakeGenericMethod(type);
+                await (Task)
+                    genericMethod.Invoke(this, new object[] { collectionName, snapshotId })!;
+            }
+
+            var snapshotMeta = new BsonDocument
+            {
+                { "SnapshotId", snapshotId },
+                { "EventNumber", eventNumber },
+                { "Timestamp", dateTime },
+            };
+
+            await entityDatabase
+                .GetCollection<BsonDocument>(SnapshotMetadataCollection)
+                .InsertOneAsync(snapshotMeta);
+
+            return snapshotId;
         }
-
-        var snapshotMeta = new BsonDocument
+        finally
         {
-            { "SnapshotId", snapshotId },
-            { "EventNumber", eventNumber },
-            { "Timestamp", dateTime },
-        };
-
-        await entityDatabase
-            .GetCollection<BsonDocument>(SnapshotMetadataCollection)
-            .InsertOneAsync(snapshotMeta);
-
-        return snapshotId;
+            SnapshotLock.Release();
+        }
     }
 
     public async Task RestoreSnapshotAsync(string snapshotId)
     {
-        var registered = entityCollectionNameProvider.GetAllRegistered();
+        if (!globalReplayContext.IsReplaying)
+            globalReplayContext.StartReplay();
 
-        foreach (var (_, name) in registered)
+        await SnapshotLock.WaitAsync();
+        try
         {
-            await entityDatabase.DropCollectionAsync(name);
+            var registered = entityCollectionNameProvider.GetAllRegistered();
+            var renamedBackups = new List<string>();
+
+            try
+            {
+                foreach (var (_, originalName) in registered)
+                {
+                    var backupName = $"{originalName}_backup";
+
+                    var collections = await (
+                        await entityDatabase.ListCollectionNamesAsync()
+                    ).ToListAsync();
+                    if (collections.Contains(backupName))
+                        await entityDatabase.DropCollectionAsync(backupName);
+
+                    await entityDatabase.RenameCollectionAsync(originalName, backupName);
+                    renamedBackups.Add(originalName);
+                }
+
+                foreach (var (type, originalName) in registered)
+                {
+                    var method = typeof(SnapshotService).GetMethod(
+                        nameof(RestoreCollectionAsync),
+                        BindingFlags.NonPublic | BindingFlags.Instance
+                    );
+
+                    var genericMethod = method!.MakeGenericMethod(type);
+                    await (Task)
+                        genericMethod.Invoke(this, new object[] { originalName, snapshotId })!;
+                }
+
+                foreach (var originalName in renamedBackups)
+                {
+                    var backupName = $"{originalName}_backup";
+                    var collections = await (
+                        await entityDatabase.ListCollectionNamesAsync()
+                    ).ToListAsync();
+                    if (collections.Contains(backupName))
+                        await entityDatabase.DropCollectionAsync(backupName);
+                }
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    foreach (var originalName in renamedBackups)
+                    {
+                        var backupName = $"{originalName}_backup";
+
+                        var collections = await (
+                            await entityDatabase.ListCollectionNamesAsync()
+                        ).ToListAsync();
+
+                        if (collections.Contains(originalName))
+                            await entityDatabase.DropCollectionAsync(originalName);
+
+                        if (collections.Contains(backupName))
+                            await entityDatabase.RenameCollectionAsync(backupName, originalName);
+                    }
+                }
+                catch (Exception rollbackEx)
+                {
+                    throw new AggregateException(
+                        "Snapshot restore failed AND rollback failed.",
+                        ex,
+                        rollbackEx
+                    );
+                }
+
+                throw new InvalidOperationException(
+                    $"Snapshot restore failed, but rollback to previous state succeeded: {ex.Message}",
+                    ex
+                );
+            }
         }
-
-        foreach (var (type, name) in registered)
+        finally
         {
-            var method = typeof(SnapshotService).GetMethod(
-                nameof(RestoreCollectionAsync),
-                BindingFlags.NonPublic | BindingFlags.Instance
-            );
-            var genericMethod = method!.MakeGenericMethod(type);
-
-            await (Task)genericMethod.Invoke(this, new object[] { name, snapshotId })!;
+            SnapshotLock.Release();
         }
     }
 
@@ -145,6 +233,13 @@ public class SnapshotService : ISnapshotService
             .ToList();
     }
 
+    public async Task<SnapshotMetadata?> GetLastSnapshotAsync() =>
+        await entityDatabase
+            .GetCollection<SnapshotMetadata>(SnapshotMetadataCollection)
+            .Find(FilterDefinition<SnapshotMetadata>.Empty)
+            .Sort(Builders<SnapshotMetadata>.Sort.Descending("Timestamp"))
+            .FirstOrDefaultAsync();
+
     public async Task DeleteSnapshotAsync(string snapshotId)
     {
         var database = mongoDbService.GetEntityDatabase();
@@ -167,8 +262,7 @@ public class SnapshotService : ISnapshotService
         var target = mongoDbService.GetCollection<T>(snapshotName);
 
         var allDocs = await source.Find(_ => true).ToListAsync();
-        if (allDocs.Any())
-            await target.InsertManyAsync(allDocs);
+        await target.InsertManyAsync(allDocs);
     }
 
     private async Task RestoreCollectionAsync<T>(string originalCollectionName, string snapshotId)
@@ -178,10 +272,7 @@ public class SnapshotService : ISnapshotService
         var target = mongoDbService.GetCollection<T>(originalCollectionName);
 
         var docs = await source.Find(_ => true).ToListAsync();
-        if (docs.Any())
-        {
-            await mongoDbService.GetEntityDatabase().DropCollectionAsync(originalCollectionName);
-            await target.InsertManyAsync(docs);
-        }
+        await mongoDbService.GetEntityDatabase().DropCollectionAsync(originalCollectionName);
+        await target.InsertManyAsync(docs);
     }
 }
