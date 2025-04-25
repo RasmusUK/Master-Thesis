@@ -17,11 +17,11 @@ public class MongoDbService : IMongoDbService
     private IMongoDatabase entityDatabase;
     private readonly IMongoDatabase eventDatabase;
     private readonly IMongoDatabase productionEntityDatabase;
-    private readonly IMongoDatabase replayEntityDatabase;
+    private readonly IMongoDatabase debugEntityDatabase;
     private readonly IMongoDatabase personalDataDatabase;
     private readonly MongoClient eventClient;
     private readonly MongoClient productionEntityClient;
-    private readonly MongoClient replayEntityClient;
+    private readonly MongoClient debugEntityClient;
     private readonly MongoClient personalDataClient;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
 
@@ -37,7 +37,7 @@ public class MongoDbService : IMongoDbService
 
         (eventDatabase, eventClient) = CreateDatabase(options.EventStore);
         (productionEntityDatabase, productionEntityClient) = CreateDatabase(options.EntityStore);
-        (replayEntityDatabase, replayEntityClient) = CreateDatabase(options.ReplayEntityStore);
+        (debugEntityDatabase, debugEntityClient) = CreateDatabase(options.DebugEntityStore);
         (personalDataDatabase, personalDataClient) = CreateDatabase(options.PersonalDataStore);
 
         EventCollection = eventDatabase.GetCollection<EventBase>("events");
@@ -51,10 +51,16 @@ public class MongoDbService : IMongoDbService
     public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
         entityDatabase.GetCollection<TEntity>(collectionName);
 
-    public IMongoCollection<T> GetCollection<T>(string collectionName) =>
-        entityDatabase.GetCollection<T>(collectionName);
+    public IMongoCollection<T> GetCollection<T>(
+        string collectionName,
+        bool alwaysProduction = false
+    ) =>
+        alwaysProduction
+            ? productionEntityDatabase.GetCollection<T>(collectionName)
+            : entityDatabase.GetCollection<T>(collectionName);
 
-    public IMongoDatabase GetEntityDatabase() => entityDatabase;
+    public IMongoDatabase GetEntityDatabase(bool alwaysProduction = false) =>
+        alwaysProduction ? productionEntityDatabase : entityDatabase;
 
     public async Task CleanUpAsync()
     {
@@ -65,22 +71,22 @@ public class MongoDbService : IMongoDbService
         await personalDataClient.DropDatabaseAsync(
             personalDataDatabase.DatabaseNamespace.DatabaseName
         );
-        await replayEntityClient.DropDatabaseAsync(
-            replayEntityDatabase.DatabaseNamespace.DatabaseName
+        await debugEntityClient.DropDatabaseAsync(
+            debugEntityDatabase.DatabaseNamespace.DatabaseName
         );
     }
 
-    public async Task UseReplayEntityDatabase()
+    public async Task UseDebugEntityDatabase()
     {
-        entityDatabase = replayEntityDatabase;
+        entityDatabase = debugEntityDatabase;
         await CloneProductionToReplayAsync();
     }
 
     public async Task UseProductionEntityDatabase()
     {
         entityDatabase = productionEntityDatabase;
-        await replayEntityClient.DropDatabaseAsync(
-            replayEntityDatabase.DatabaseNamespace.DatabaseName
+        await debugEntityClient.DropDatabaseAsync(
+            debugEntityDatabase.DatabaseNamespace.DatabaseName
         );
     }
 
@@ -102,7 +108,7 @@ public class MongoDbService : IMongoDbService
     private async Task CopyCollectionAsync<T>(string collectionName)
     {
         var source = productionEntityDatabase.GetCollection<T>(collectionName);
-        var target = replayEntityDatabase.GetCollection<T>(collectionName);
+        var target = debugEntityDatabase.GetCollection<T>(collectionName);
 
         var allDocs = await source.Find(_ => true).ToListAsync();
         await target.InsertManyAsync(allDocs);

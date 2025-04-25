@@ -4,4 +4,5 @@ public enum ReplayMode
 {
     Strict,
     Sandbox,
+    Debug,
 }

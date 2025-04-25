@@ -33,7 +33,8 @@ public class ReplayService : IReplayService
     public async Task StartReplay(ReplayMode mode = ReplayMode.Strict)
     {
         replayContext.StartReplay(mode);
-        await mongoDbService.UseReplayEntityDatabase();
+        if (mode == ReplayMode.Debug)
+            await mongoDbService.UseDebugEntityDatabase();
         replayContext.IsLoading = true;
         await snapshotService.TakeSnapshotAsync();
         replayContext.IsLoading = false;
@@ -45,7 +46,8 @@ public class ReplayService : IReplayService
         await snapshotService.RestoreSnapshotAsync(latestSnapshot!.SnapshotId);
         var events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
         await ProcessReplayEventsAsync(events);
-        await mongoDbService.UseProductionEntityDatabase();
+        if (replayContext.ReplayMode == ReplayMode.Debug)
+            await mongoDbService.UseProductionEntityDatabase();
         replayContext.StopReplay();
     }
 

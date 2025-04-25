@@ -1,8 +1,5 @@
 @page "/replay"
-@using global::EventSource.Application
-@using global::EventSource.Application.Interfaces
 @using global::EventSource.Core
-@using global::EventSource.Infrastructure
 @using global::EventSource.Infrastructure.Interfaces
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject IReplayService ReplayService
@@ -18,6 +15,7 @@
         <MudSelect @bind-Value="mode" Label="Replay Mode">
             <MudSelectItem Value="ReplayMode.Strict">Strict</MudSelectItem>
             <MudSelectItem Value="ReplayMode.Sandbox">Sandbox</MudSelectItem>
+            <MudSelectItem Value="ReplayMode.Debug">Debug</MudSelectItem>
         </MudSelect>
 
         <MudSwitch T="bool" @bind-Value="autoStop" Color="Color.Primary" Label="Auto-stop after replay" />
@@ -45,7 +43,7 @@
         </MudStack>
     </MudStack>
 
-    @if (mode == ReplayMode.Sandbox && simulatedEvents?.Any() == true)
+    @if (simulatedEvents?.Any() == true)
     {
         <MudDivider Class="my-6" />
         <MudText Typo="Typo.h6">Simulated Events</MudText>
@@ -75,7 +73,7 @@
 </MudPaper>
 
 @code {
-    private ReplayMode mode = ReplayMode.Sandbox;
+    private ReplayMode mode = ReplayMode.Debug;
     private bool autoStop;
     private bool useSnapshot = true;
     private DateTime? from;

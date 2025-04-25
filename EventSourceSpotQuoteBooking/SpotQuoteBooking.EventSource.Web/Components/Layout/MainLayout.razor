@@ -1,7 +1,8 @@
 ﻿@using global::EventSource.Application.Interfaces
-@using global::EventSource.Infrastructure.Interfaces
+@using global::EventSource.Core
+@using System.Linq.Expressions
 @inherits LayoutComponentBase
-@inject IReplayService ReplayService
+@inject IGlobalReplayContext GlobalReplayContext
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
@@ -12,9 +13,17 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Spot Quotes App</MudText>
         <MudSpacer />
-        @if (ReplayService.IsRunning())
+        @if (GlobalReplayContext.IsReplaying)
         {
-            <MudText Color="Color.Warning">Replay Mode</MudText>
+            <MudText Color="Color.Warning">
+                @(GlobalReplayContext.ReplayMode switch
+                {
+                    ReplayMode.Sandbox => "Sandbox",
+                    ReplayMode.Strict => "Strict",
+                    ReplayMode.Debug => "Debug",
+                    _ => "Unknown"})
+            </MudText>
+
         }
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">

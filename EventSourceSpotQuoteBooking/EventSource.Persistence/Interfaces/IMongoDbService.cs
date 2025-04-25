@@ -9,9 +9,9 @@ public interface IMongoDbService
     IMongoCollection<EventBase> EventCollection { get; }
     IMongoCollection<BsonDocument> CounterCollection { get; }
     IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName);
-    IMongoCollection<T> GetCollection<T>(string collectionName);
-    IMongoDatabase GetEntityDatabase();
+    IMongoCollection<T> GetCollection<T>(string collectionName, bool alwaysProduction = false);
+    IMongoDatabase GetEntityDatabase(bool alwaysProduction = false);
     Task CleanUpAsync();
-    Task UseReplayEntityDatabase();
+    Task UseDebugEntityDatabase();
     Task UseProductionEntityDatabase();
 }

@@ -14,7 +14,6 @@ public class SnapshotService : ISnapshotService
     private const string SnapshotMetadataCollection = "snapshots";
 
     private readonly IMongoDbService mongoDbService;
-    private readonly IMongoDatabase entityDatabase;
     private readonly IEventSequenceGenerator eventSequenceGenerator;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
     private readonly IGlobalReplayContext globalReplayContext;
@@ -31,7 +30,6 @@ public class SnapshotService : ISnapshotService
         this.eventSequenceGenerator = eventSequenceGenerator;
         this.entityCollectionNameProvider = entityCollectionNameProvider;
         this.globalReplayContext = globalReplayContext;
-        entityDatabase = mongoDbService.GetEntityDatabase();
     }
 
     public async Task<string> TakeSnapshotAsync()
@@ -68,7 +66,8 @@ public class SnapshotService : ISnapshotService
                 { "Timestamp", dateTime },
             };
 
-            await entityDatabase
+            await mongoDbService
+                .GetEntityDatabase(true)
                 .GetCollection<BsonDocument>(SnapshotMetadataCollection)
                 .InsertOneAsync(snapshotMeta);
 
@@ -83,7 +82,10 @@ public class SnapshotService : ISnapshotService
     public async Task RestoreSnapshotAsync(string snapshotId)
     {
         if (!globalReplayContext.IsReplaying)
-            globalReplayContext.StartReplay(ReplayMode.Sandbox);
+        {
+            globalReplayContext.StartReplay(ReplayMode.Debug);
+            await mongoDbService.UseDebugEntityDatabase();
+        }
 
         await SnapshotLock.WaitAsync();
         try
@@ -93,18 +95,25 @@ public class SnapshotService : ISnapshotService
 
             try
             {
-                foreach (var (_, originalName) in registered)
+                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
                 {
-                    var backupName = $"{originalName}_backup";
+                    foreach (var (_, originalName) in registered)
+                    {
+                        var backupName = $"{originalName}_backup";
 
-                    var collections = await (
-                        await entityDatabase.ListCollectionNamesAsync()
-                    ).ToListAsync();
-                    if (collections.Contains(backupName))
-                        await entityDatabase.DropCollectionAsync(backupName);
+                        var collections = await (
+                            await mongoDbService.GetEntityDatabase(true).ListCollectionNamesAsync()
+                        ).ToListAsync();
+                        if (collections.Contains(backupName))
+                            await mongoDbService
+                                .GetEntityDatabase(true)
+                                .DropCollectionAsync(backupName);
 
-                    await entityDatabase.RenameCollectionAsync(originalName, backupName);
-                    renamedBackups.Add(originalName);
+                        await mongoDbService
+                            .GetEntityDatabase(true)
+                            .RenameCollectionAsync(originalName, backupName);
+                        renamedBackups.Add(originalName);
+                    }
                 }
 
                 foreach (var (type, originalName) in registered)
@@ -119,48 +128,62 @@ public class SnapshotService : ISnapshotService
                         genericMethod.Invoke(this, new object[] { originalName, snapshotId })!;
                 }
 
-                foreach (var originalName in renamedBackups)
-                {
-                    var backupName = $"{originalName}_backup";
-                    var collections = await (
-                        await entityDatabase.ListCollectionNamesAsync()
-                    ).ToListAsync();
-                    if (collections.Contains(backupName))
-                        await entityDatabase.DropCollectionAsync(backupName);
-                }
-            }
-            catch (Exception ex)
-            {
-                try
+                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
                 {
                     foreach (var originalName in renamedBackups)
                     {
                         var backupName = $"{originalName}_backup";
-
                         var collections = await (
-                            await entityDatabase.ListCollectionNamesAsync()
+                            await mongoDbService.GetEntityDatabase(true).ListCollectionNamesAsync()
                         ).ToListAsync();
-
-                        if (collections.Contains(originalName))
-                            await entityDatabase.DropCollectionAsync(originalName);
-
                         if (collections.Contains(backupName))
-                            await entityDatabase.RenameCollectionAsync(backupName, originalName);
+                            await mongoDbService
+                                .GetEntityDatabase(true)
+                                .DropCollectionAsync(backupName);
                     }
                 }
-                catch (Exception rollbackEx)
+            }
+            catch (Exception ex)
+            {
+                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
                 {
-                    throw new AggregateException(
-                        "Snapshot restore failed AND rollback failed.",
-                        ex,
-                        rollbackEx
+                    try
+                    {
+                        foreach (var originalName in renamedBackups)
+                        {
+                            var backupName = $"{originalName}_backup";
+
+                            var collections = await (
+                                await mongoDbService
+                                    .GetEntityDatabase(true)
+                                    .ListCollectionNamesAsync()
+                            ).ToListAsync();
+
+                            if (collections.Contains(originalName))
+                                await mongoDbService
+                                    .GetEntityDatabase(true)
+                                    .DropCollectionAsync(originalName);
+
+                            if (collections.Contains(backupName))
+                                await mongoDbService
+                                    .GetEntityDatabase(true)
+                                    .RenameCollectionAsync(backupName, originalName);
+                        }
+                    }
+                    catch (Exception rollbackEx)
+                    {
+                        throw new AggregateException(
+                            "Snapshot restore failed AND rollback failed.",
+                            ex,
+                            rollbackEx
+                        );
+                    }
+
+                    throw new InvalidOperationException(
+                        $"Snapshot restore failed, but rollback to previous state succeeded: {ex.Message}",
+                        ex
                     );
                 }
-
-                throw new InvalidOperationException(
-                    $"Snapshot restore failed, but rollback to previous state succeeded: {ex.Message}",
-                    ex
-                );
             }
         }
         finally
@@ -171,7 +194,8 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLastSnapshotIdAsync()
     {
-        var snapshots = await entityDatabase
+        var snapshots = await mongoDbService
+            .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
             .Find(FilterDefinition<BsonDocument>.Empty)
             .Sort(Builders<BsonDocument>.Sort.Descending("Timestamp"))
@@ -182,7 +206,8 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLatestSnapshotBeforeAsync(long eventNumber)
     {
-        var snapshot = await entityDatabase
+        var snapshot = await mongoDbService
+            .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
             .Find(Builders<BsonDocument>.Filter.Lte("EventNumber", eventNumber))
             .Sort(Builders<BsonDocument>.Sort.Descending("EventNumber"))
@@ -193,7 +218,8 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLatestSnapshotBeforeAsync(DateTime timestamp)
     {
-        var snapshot = await entityDatabase
+        var snapshot = await mongoDbService
+            .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
             .Find(Builders<BsonDocument>.Filter.Lte("Timestamp", timestamp))
             .Sort(Builders<BsonDocument>.Sort.Descending("Timestamp"))
@@ -204,7 +230,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task<IReadOnlyCollection<SnapshotMetadata>> GetAllSnapshotsAsync()
     {
-        var database = mongoDbService.GetEntityDatabase();
+        var database = mongoDbService.GetEntityDatabase(true);
         var collections = await (await database.ListCollectionNamesAsync()).ToListAsync();
 
         return collections
@@ -236,7 +262,8 @@ public class SnapshotService : ISnapshotService
     }
 
     public async Task<SnapshotMetadata?> GetLastSnapshotAsync() =>
-        await entityDatabase
+        await mongoDbService
+            .GetEntityDatabase(true)
             .GetCollection<SnapshotMetadata>(SnapshotMetadataCollection)
             .Find(FilterDefinition<SnapshotMetadata>.Empty)
             .Sort(Builders<SnapshotMetadata>.Sort.Descending("Timestamp"))
@@ -244,7 +271,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task DeleteSnapshotAsync(string snapshotId)
     {
-        var database = mongoDbService.GetEntityDatabase();
+        var database = mongoDbService.GetEntityDatabase(true);
         var collections = await (await database.ListCollectionNamesAsync()).ToListAsync();
 
         foreach (
@@ -259,9 +286,9 @@ public class SnapshotService : ISnapshotService
 
     private async Task CopyCollectionAsync<T>(string originalCollectionName, string snapshotId)
     {
-        var source = mongoDbService.GetCollection<T>(originalCollectionName);
+        var source = mongoDbService.GetCollection<T>(originalCollectionName, true);
         var snapshotName = $"{originalCollectionName}_{snapshotId}";
-        var target = mongoDbService.GetCollection<T>(snapshotName);
+        var target = mongoDbService.GetCollection<T>(snapshotName, true);
 
         var allDocs = await source.Find(_ => true).ToListAsync();
         await target.InsertManyAsync(allDocs);
@@ -270,11 +297,16 @@ public class SnapshotService : ISnapshotService
     private async Task RestoreCollectionAsync<T>(string originalCollectionName, string snapshotId)
     {
         var snapshotName = $"{originalCollectionName}_{snapshotId}";
-        var source = mongoDbService.GetCollection<T>(snapshotName);
-        var target = mongoDbService.GetCollection<T>(originalCollectionName);
+        var source = mongoDbService.GetCollection<T>(snapshotName, true);
+        var target = mongoDbService.GetCollection<T>(
+            originalCollectionName,
+            globalReplayContext.ReplayMode != ReplayMode.Debug
+        );
 
         var docs = await source.Find(_ => true).ToListAsync();
-        await mongoDbService.GetEntityDatabase().DropCollectionAsync(originalCollectionName);
+        await mongoDbService
+            .GetEntityDatabase(globalReplayContext.ReplayMode != ReplayMode.Debug)
+            .DropCollectionAsync(originalCollectionName);
         await target.InsertManyAsync(docs);
     }
 }
