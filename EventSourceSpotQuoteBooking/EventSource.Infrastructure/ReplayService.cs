@@ -2,8 +2,10 @@ using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
+using EventSource.Infrastructure.Interfaces;
+using EventSource.Persistence.Interfaces;
 
-namespace EventSource.Application;
+namespace EventSource.Infrastructure;
 
 public class ReplayService : IReplayService
 {
@@ -11,23 +13,27 @@ public class ReplayService : IReplayService
     private readonly IEntityStore entityStore;
     private readonly IGlobalReplayContext replayContext;
     private readonly ISnapshotService snapshotService;
+    private readonly IMongoDbService mongoDbService;
 
     public ReplayService(
         IEventStore eventStore,
         IEntityStore entityStore,
         IGlobalReplayContext replayContext,
-        ISnapshotService snapshotService
+        ISnapshotService snapshotService,
+        IMongoDbService mongoDbService
     )
     {
         this.eventStore = eventStore;
         this.entityStore = entityStore;
         this.replayContext = replayContext;
         this.snapshotService = snapshotService;
+        this.mongoDbService = mongoDbService;
     }
 
     public async Task StartReplay(ReplayMode mode = ReplayMode.Strict)
     {
         replayContext.StartReplay(mode);
+        await mongoDbService.UseReplayEntityDatabase();
         replayContext.IsLoading = true;
         await snapshotService.TakeSnapshotAsync();
         replayContext.IsLoading = false;
@@ -39,6 +45,7 @@ public class ReplayService : IReplayService
         await snapshotService.RestoreSnapshotAsync(latestSnapshot!.SnapshotId);
         var events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
         await ProcessReplayEventsAsync(events);
+        await mongoDbService.UseProductionEntityDatabase();
         replayContext.StopReplay();
     }
 

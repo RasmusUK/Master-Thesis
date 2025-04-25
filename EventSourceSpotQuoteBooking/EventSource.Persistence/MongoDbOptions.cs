@@ -5,6 +5,7 @@ public class MongoDbOptions
     public const string MongoDb = "MongoDb";
     public DatabaseOptions EventStore { get; set; } = new();
     public DatabaseOptions EntityStore { get; set; } = new();
+    public DatabaseOptions ReplayEntityStore { get; set; } = new();
     public DatabaseOptions PersonalDataStore { get; set; } = new();
 }
 

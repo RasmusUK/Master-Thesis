@@ -1,4 +1,5 @@
 using EventSource.Application.Interfaces;
+using EventSource.Core;
 using EventSource.Core.Events;
 
 namespace EventSource.Application;

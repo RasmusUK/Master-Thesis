@@ -1,6 +1,7 @@
 using EventSource.Application;
 using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
+using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence;
 using EventSource.Persistence.Interfaces;
 using EventSource.Persistence.Stores;

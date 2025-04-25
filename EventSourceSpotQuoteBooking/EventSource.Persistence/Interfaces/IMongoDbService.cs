@@ -12,4 +12,6 @@ public interface IMongoDbService
     IMongoCollection<T> GetCollection<T>(string collectionName);
     IMongoDatabase GetEntityDatabase();
     Task CleanUpAsync();
+    Task UseReplayEntityDatabase();
+    Task UseProductionEntityDatabase();
 }

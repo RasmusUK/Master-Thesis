@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using EventSource.Core;
 using EventSource.Core.Interfaces;
@@ -11,7 +10,6 @@ public class EntityStore : IEntityStore
 {
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
-    private readonly ConcurrentDictionary<Type, object> collectionCache = new();
 
     public EntityStore(
         IMongoDbService mongoDbService,
@@ -91,15 +89,7 @@ public class EntityStore : IEntityStore
 
     private IMongoCollection<T> GetCollection<T>()
     {
-        var type = typeof(T);
-        return (IMongoCollection<T>)
-            collectionCache.GetOrAdd(
-                type,
-                _ =>
-                {
-                    var collectionName = entityCollectionNameProvider.GetCollectionName(type);
-                    return mongoDbService.GetEntityCollection<T>(collectionName);
-                }
-            );
+        var collectionName = entityCollectionNameProvider.GetCollectionName(typeof(T));
+        return mongoDbService.GetEntityCollection<T>(collectionName);
     }
 }

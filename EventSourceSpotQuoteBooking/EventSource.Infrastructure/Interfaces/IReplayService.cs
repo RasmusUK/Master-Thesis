@@ -1,6 +1,8 @@
+using EventSource.Application;
+using EventSource.Core;
 using EventSource.Core.Events;
 
-namespace EventSource.Application.Interfaces;
+namespace EventSource.Infrastructure.Interfaces;
 
 public interface IReplayService
 {

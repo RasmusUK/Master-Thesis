@@ -1,3 +1,4 @@
+using System.Reflection;
 using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
 using Microsoft.Extensions.Options;
@@ -13,44 +14,98 @@ public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<EventBase> EventCollection { get; }
     public IMongoCollection<BsonDocument> CounterCollection { get; }
-    private IMongoDatabase EventDatabase { get; }
-    private IMongoDatabase EntityDatabase { get; }
-    private IMongoDatabase PersonalDataDatabase { get; }
-    private MongoClient EventClient { get; }
-    private MongoClient EntityClient { get; }
-    private MongoClient PersonalDataClient { get; }
+    private IMongoDatabase entityDatabase;
+    private readonly IMongoDatabase eventDatabase;
+    private readonly IMongoDatabase productionEntityDatabase;
+    private readonly IMongoDatabase replayEntityDatabase;
+    private readonly IMongoDatabase personalDataDatabase;
+    private readonly MongoClient eventClient;
+    private readonly MongoClient productionEntityClient;
+    private readonly MongoClient replayEntityClient;
+    private readonly MongoClient personalDataClient;
+    private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
 
-    public MongoDbService(IOptions<MongoDbOptions> mongoDbOptions)
+    public MongoDbService(
+        IOptions<MongoDbOptions> mongoDbOptions,
+        IEntityCollectionNameProvider entityCollectionNameProvider
+    )
     {
+        this.entityCollectionNameProvider = entityCollectionNameProvider;
         RegisterConventions();
 
         var options = mongoDbOptions.Value;
 
-        (EventDatabase, EventClient) = CreateDatabase(options.EventStore);
-        (EntityDatabase, EntityClient) = CreateDatabase(options.EntityStore);
-        (PersonalDataDatabase, PersonalDataClient) = CreateDatabase(options.PersonalDataStore);
+        (eventDatabase, eventClient) = CreateDatabase(options.EventStore);
+        (productionEntityDatabase, productionEntityClient) = CreateDatabase(options.EntityStore);
+        (replayEntityDatabase, replayEntityClient) = CreateDatabase(options.ReplayEntityStore);
+        (personalDataDatabase, personalDataClient) = CreateDatabase(options.PersonalDataStore);
 
-        EventCollection = EventDatabase.GetCollection<EventBase>("events");
-        CounterCollection = EventDatabase.GetCollection<BsonDocument>("counters");
+        EventCollection = eventDatabase.GetCollection<EventBase>("events");
+        CounterCollection = eventDatabase.GetCollection<BsonDocument>("counters");
+
+        entityDatabase = productionEntityDatabase;
 
         EnsureEventIndexesAsync().GetAwaiter().GetResult();
     }
 
     public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
-        EntityDatabase.GetCollection<TEntity>(collectionName);
+        entityDatabase.GetCollection<TEntity>(collectionName);
 
     public IMongoCollection<T> GetCollection<T>(string collectionName) =>
-        EntityDatabase.GetCollection<T>(collectionName);
+        entityDatabase.GetCollection<T>(collectionName);
 
-    public IMongoDatabase GetEntityDatabase() => EntityDatabase;
+    public IMongoDatabase GetEntityDatabase() => entityDatabase;
 
     public async Task CleanUpAsync()
     {
-        await EventClient.DropDatabaseAsync(EventDatabase.DatabaseNamespace.DatabaseName);
-        await EntityClient.DropDatabaseAsync(EntityDatabase.DatabaseNamespace.DatabaseName);
-        await PersonalDataClient.DropDatabaseAsync(
-            PersonalDataDatabase.DatabaseNamespace.DatabaseName
+        await eventClient.DropDatabaseAsync(eventDatabase.DatabaseNamespace.DatabaseName);
+        await productionEntityClient.DropDatabaseAsync(
+            productionEntityDatabase.DatabaseNamespace.DatabaseName
         );
+        await personalDataClient.DropDatabaseAsync(
+            personalDataDatabase.DatabaseNamespace.DatabaseName
+        );
+        await replayEntityClient.DropDatabaseAsync(
+            replayEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+    }
+
+    public async Task UseReplayEntityDatabase()
+    {
+        entityDatabase = replayEntityDatabase;
+        await CloneProductionToReplayAsync();
+    }
+
+    public async Task UseProductionEntityDatabase()
+    {
+        entityDatabase = productionEntityDatabase;
+        await replayEntityClient.DropDatabaseAsync(
+            replayEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+    }
+
+    private async Task CloneProductionToReplayAsync()
+    {
+        var registered = entityCollectionNameProvider.GetAllRegistered();
+
+        foreach (var (type, collectionName) in registered)
+        {
+            var method = typeof(MongoDbService).GetMethod(
+                nameof(CopyCollectionAsync),
+                BindingFlags.NonPublic | BindingFlags.Instance
+            );
+            var genericMethod = method!.MakeGenericMethod(type);
+            await (Task)genericMethod.Invoke(this, new object[] { collectionName })!;
+        }
+    }
+
+    private async Task CopyCollectionAsync<T>(string collectionName)
+    {
+        var source = productionEntityDatabase.GetCollection<T>(collectionName);
+        var target = replayEntityDatabase.GetCollection<T>(collectionName);
+
+        var allDocs = await source.Find(_ => true).ToListAsync();
+        await target.InsertManyAsync(allDocs);
     }
 
     private static (IMongoDatabase db, MongoClient client) CreateDatabase(DatabaseOptions options)

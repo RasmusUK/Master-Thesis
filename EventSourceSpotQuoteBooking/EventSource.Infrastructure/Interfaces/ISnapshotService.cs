@@ -1,4 +1,6 @@
-namespace EventSource.Application.Interfaces;
+using EventSource.Application;
+
+namespace EventSource.Infrastructure.Interfaces;
 
 public interface ISnapshotService
 {

@@ -1,11 +1,13 @@
 using System.Reflection;
 using EventSource.Application;
 using EventSource.Application.Interfaces;
+using EventSource.Core;
+using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace EventSource.Persistence;
+namespace EventSource.Infrastructure;
 
 public class SnapshotService : ISnapshotService
 {
@@ -81,7 +83,7 @@ public class SnapshotService : ISnapshotService
     public async Task RestoreSnapshotAsync(string snapshotId)
     {
         if (!globalReplayContext.IsReplaying)
-            globalReplayContext.StartReplay();
+            globalReplayContext.StartReplay(ReplayMode.Sandbox);
 
         await SnapshotLock.WaitAsync();
         try

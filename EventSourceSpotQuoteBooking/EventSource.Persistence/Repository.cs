@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using EventSource.Application;
 using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;

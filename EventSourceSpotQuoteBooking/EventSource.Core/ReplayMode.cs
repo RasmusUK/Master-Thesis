@@ -1,4 +1,4 @@
-namespace EventSource.Application;
+namespace EventSource.Core;
 
 public enum ReplayMode
 {
