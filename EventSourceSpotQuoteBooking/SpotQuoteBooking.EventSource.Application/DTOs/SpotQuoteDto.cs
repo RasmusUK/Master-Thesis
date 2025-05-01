@@ -5,6 +5,7 @@ namespace SpotQuoteBooking.EventSource.Application.DTOs;
 public class SpotQuoteDto
 {
     public Guid Id { get; set; }
+    public int ConcurrencyVersion { get; set; }
     public AddressDto AddressFrom { get; set; }
     public AddressDto AddressTo { get; set; }
     public Direction Direction { get; set; }

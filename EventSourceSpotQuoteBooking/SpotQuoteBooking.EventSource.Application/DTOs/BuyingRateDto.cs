@@ -6,6 +6,7 @@ namespace SpotQuoteBooking.EventSource.Application.DTOs;
 public class BuyingRateDto
 {
     public Guid Id { get; set; }
+    public int ConcurrencyVersion { get; set; }
     public TransportMode TransportMode { get; set; }
     public Supplier Supplier { get; set; }
     public SupplierService SupplierService { get; set; }

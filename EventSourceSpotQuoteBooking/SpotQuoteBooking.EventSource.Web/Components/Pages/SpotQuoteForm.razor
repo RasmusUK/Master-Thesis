@@ -687,7 +687,7 @@
                 await SpotQuoteService.CreateSpotQuoteAsync(model);
             else
                 await SpotQuoteService.UpdateSpotQuoteAsync(model);
-            Navigation.NavigateTo("/spot-quotes");
+            Navigation.NavigateTo("/spot-quotes", forceLoad: true);
         }
         catch (Exception e)
         {

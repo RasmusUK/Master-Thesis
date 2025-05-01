@@ -3,6 +3,7 @@ namespace SpotQuoteBooking.EventSource.Application.DTOs;
 public class AddressDto
 {
     public Guid Id { get; set; }
+    public int ConcurrencyVersion { get; set; }
     public string CompanyName { get; set; }
     public CountryDto Country { get; set; }
     public string City { get; set; }

@@ -21,6 +21,7 @@ public static class AddressMapper
             Email = address.Email,
             Phone = address.Phone,
             Port = address.Port,
+            ConcurrencyVersion = address.ConcurrencyVersion,
         };
     }
 
@@ -41,6 +42,7 @@ public static class AddressMapper
         )
         {
             Id = addressDto.Id,
+            ConcurrencyVersion = addressDto.ConcurrencyVersion,
         };
     }
 }

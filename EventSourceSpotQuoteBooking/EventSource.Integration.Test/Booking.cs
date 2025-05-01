@@ -9,4 +9,5 @@ public class Booking : IEntity
     public string? Name { get; set; }
 
     public Guid Id { get; } = Guid.NewGuid();
+    public int ConcurrencyVersion { get; set; }
 }

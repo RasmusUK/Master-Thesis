@@ -5,7 +5,7 @@ namespace EventSource.Core.Interfaces;
 public interface IRepository<T>
     where T : IEntity
 {
-    Task<Guid> CreateAsync(T entity);
+    Task CreateAsync(T entity);
     Task<T?> ReadByIdAsync(Guid id);
     Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter);
     Task<TProjection?> ReadProjectionByIdAsync<TProjection>(

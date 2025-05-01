@@ -13,4 +13,5 @@ public class Quote : IEntity
     public string Currency { get; set; }
     public string Name { get; set; }
     public Guid Id { get; } = Guid.NewGuid();
+    public int ConcurrencyVersion { get; set; }
 }

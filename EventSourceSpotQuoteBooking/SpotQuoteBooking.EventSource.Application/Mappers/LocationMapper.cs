@@ -14,6 +14,7 @@ public static class LocationMapper
             Name = location.Name,
             Country = country,
             Type = location.Type,
+            ConcurrencyVersion = location.ConcurrencyVersion,
         };
     }
 }

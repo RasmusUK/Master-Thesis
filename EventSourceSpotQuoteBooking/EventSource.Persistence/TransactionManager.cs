@@ -8,7 +8,7 @@ public class TransactionManager : ITransactionManager
 {
     private Queue<(Func<Task> commit, Func<Task> rollback)>? actions;
     public bool IsActive => actions is not null;
-    public Guid TransactionId { get; init; } = Guid.NewGuid();
+    public Guid TransactionId { get; private set; } = Guid.NewGuid();
     private Queue<Func<Task>>? rollbackActions;
     private Dictionary<Type, List<object>>? trackedUpsertedEntities;
     private Dictionary<Type, List<object>>? trackedDeletedEntities;
@@ -18,6 +18,7 @@ public class TransactionManager : ITransactionManager
         if (IsActive)
             throw new TransactionException("Transaction already started.");
 
+        TransactionId = Guid.NewGuid();
         actions = new Queue<(Func<Task>, Func<Task>)>();
         rollbackActions = new Queue<Func<Task>>();
         trackedUpsertedEntities = new Dictionary<Type, List<object>>();

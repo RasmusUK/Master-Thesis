@@ -18,18 +18,19 @@ public class SmartRepository<T> : IRepository<T>
         this.transactionManager = transactionManager;
     }
 
-    public async Task<Guid> CreateAsync(T entity)
+    public async Task CreateAsync(T entity)
     {
         if (!transactionManager.IsActive)
-            return await inner.CreateAsync(entity);
+        {
+            await inner.CreateAsync(entity);
+            return;
+        }
 
         transactionManager.TrackUpsertedEntity(entity);
         transactionManager.Enlist(
             () => inner.CreateAsync(entity, transactionManager.TransactionId),
             () => inner.DeleteCompensationAsync(entity, transactionManager.TransactionId)
         );
-
-        return entity.Id;
     }
 
     public async Task UpdateAsync(T entity)

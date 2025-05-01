@@ -12,6 +12,7 @@ public static class CustomerMapper
             Id = customer.Id,
             Name = customer.Name,
             Users = customer.Users.Select(UserMapper.ToDto).ToList(),
+            ConcurrencyVersion = customer.ConcurrencyVersion,
         };
     }
 
@@ -21,6 +22,7 @@ public static class CustomerMapper
         {
             Id = customerDto.Id,
             Users = customerDto.Users.Select(UserMapper.ToDomain).ToList(),
+            ConcurrencyVersion = customerDto.ConcurrencyVersion,
         };
     }
 }

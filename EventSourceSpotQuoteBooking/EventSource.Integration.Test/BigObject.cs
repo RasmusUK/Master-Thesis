@@ -15,6 +15,7 @@ public class BigObject : IEntity
         Enumerable.Range(1, 10).Select(i => new Level1Node($"Child Node {i}")).ToList();
 
     public Guid Id { get; } = Guid.NewGuid();
+    public int ConcurrencyVersion { get; set; }
 }
 
 public class Level1Node

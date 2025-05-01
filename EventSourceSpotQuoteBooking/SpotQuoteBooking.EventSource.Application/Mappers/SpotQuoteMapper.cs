@@ -31,6 +31,7 @@ public static class SpotQuoteMapper
             InternalComments = spotQuote.InternalComments,
             TotalWeight = spotQuote.TotalWeight,
             TotalCbm = spotQuote.TotalCbm,
+            ConcurrencyVersion = spotQuote.ConcurrencyVersion,
         };
     }
 
@@ -52,6 +53,7 @@ public static class SpotQuoteMapper
         )
         {
             Id = spotQuoteDto.Id,
+            ConcurrencyVersion = spotQuoteDto.ConcurrencyVersion,
         };
     }
 }

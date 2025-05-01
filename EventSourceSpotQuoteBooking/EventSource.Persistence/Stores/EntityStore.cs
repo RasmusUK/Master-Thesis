@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using EventSource.Core;
 using EventSource.Core.Interfaces;
+using EventSource.Persistence.Exceptions;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Driver;
 
@@ -31,21 +32,70 @@ public class EntityStore : IEntityStore
         where TEntity : IEntity
     {
         var collection = GetCollection<TEntity>();
-        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
-        var updateOptions = new ReplaceOptions { IsUpsert = true };
-        await collection.ReplaceOneAsync(filter, entity, updateOptions);
+
+        var existing = await collection.Find(e => e.Id == entity.Id).FirstOrDefaultAsync();
+
+        if (existing == null)
+        {
+            entity.ConcurrencyVersion = 1;
+            await collection.InsertOneAsync(entity);
+        }
+        else
+        {
+            if (existing.ConcurrencyVersion != entity.ConcurrencyVersion)
+                throw new EntityStoreException("Upsert failed due to version mismatch.");
+
+            entity.ConcurrencyVersion++;
+
+            var filter = Builders<TEntity>.Filter.And(
+                Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id),
+                Builders<TEntity>.Filter.Eq(e => e.ConcurrencyVersion, existing.ConcurrencyVersion)
+            );
+
+            var result = await collection.ReplaceOneAsync(filter, entity);
+
+            if (result.MatchedCount == 0)
+                throw new EntityStoreException("Upsert failed due to concurrency violation.");
+        }
     }
 
-    public Task DeleteEntityAsync<TEntity>(TEntity entity)
-        where TEntity : IEntity => GetCollection<TEntity>().DeleteOneAsync(e => e.Id == entity.Id);
+    public async Task DeleteEntityAsync<TEntity>(TEntity entity)
+        where TEntity : IEntity
+    {
+        var collection = GetCollection<TEntity>();
+
+        var filter = Builders<TEntity>.Filter.And(
+            Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id),
+            Builders<TEntity>.Filter.Eq(e => e.ConcurrencyVersion, entity.ConcurrencyVersion)
+        );
+
+        var result = await collection.DeleteOneAsync(filter);
+        if (result.DeletedCount == 0)
+            throw new EntityStoreException(
+                "Delete failed due to concurrency violation or entity not existing."
+            );
+    }
 
     public async Task UpdateEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity
     {
         var collection = GetCollection<TEntity>();
-        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
+
+        var filter = Builders<TEntity>.Filter.And(
+            Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id),
+            Builders<TEntity>.Filter.Eq(e => e.ConcurrencyVersion, entity.ConcurrencyVersion)
+        );
+
+        entity.ConcurrencyVersion++;
+
         var updateOptions = new ReplaceOptions { IsUpsert = false };
-        await collection.ReplaceOneAsync(filter, entity, updateOptions);
+
+        var result = await collection.ReplaceOneAsync(filter, entity, updateOptions);
+
+        if (result.MatchedCount == 0)
+            throw new EntityStoreException(
+                "Update failed due to concurrency violation or entity not existing."
+            );
     }
 
     public async Task<TEntity?> GetEntityByFilterAsync<TEntity>(

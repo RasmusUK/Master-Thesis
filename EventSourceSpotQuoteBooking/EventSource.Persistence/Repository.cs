@@ -2,8 +2,10 @@ using System.Linq.Expressions;
 using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
+using EventSource.Core.Exceptions;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Events;
+using EventSource.Persistence.Exceptions;
 
 namespace EventSource.Persistence;
 
@@ -25,26 +27,83 @@ public class Repository<T> : IRepository<T>
         this.globalReplayContext = globalReplayContext;
     }
 
-    public async Task<Guid> CreateAsync(T entity)
+    public async Task CreateAsync(T entity)
     {
-        var e = new CreateEvent<T>(entity);
-        await HandleEventAsync(e);
-        await entityStore.InsertEntityAsync(entity);
-        return entity.Id;
+        var eventEmitted = false;
+        try
+        {
+            var e = new CreateEvent<T>(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.InsertEntityAsync(entity);
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new DeleteEvent<T>(entity);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $"Failed to emit compensation event for entity of type '{typeof(T).Name}' with id '{entity.Id}'."
+                );
+            throw;
+        }
     }
 
     public async Task UpdateAsync(T entity)
     {
-        var e = new UpdateEvent<T>(entity);
-        await HandleEventAsync(e);
-        await entityStore.UpdateEntityAsync(entity);
+        var eventEmitted = false;
+        var snapshot = await entityStore.GetEntityByIdAsync<T>(entity.Id);
+
+        if (snapshot is null)
+            throw new NotFoundException(
+                $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
+            );
+
+        try
+        {
+            var e = new UpdateEvent<T>(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.UpdateEntityAsync(entity);
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new UpdateEvent<T>(snapshot);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $"Failed to emit compensation event for entity of type '{typeof(T).Name}' with id '{entity.Id}'."
+                );
+            throw;
+        }
     }
 
     public async Task DeleteAsync(T entity)
     {
-        var e = new DeleteEvent<T>(entity);
-        await HandleEventAsync(e);
-        await entityStore.DeleteEntityAsync(entity);
+        var eventEmitted = false;
+        try
+        {
+            var e = new DeleteEvent<T>(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.DeleteEntityAsync(entity);
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new CreateEvent<T>(entity);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $"Failed to emit compensation event for entity of type '{typeof(T).Name}' with id '{entity.Id}'."
+                );
+            throw;
+        }
     }
 
     public async Task<Guid> CreateAsync(T entity, Guid transactionId)
@@ -120,24 +179,25 @@ public class Repository<T> : IRepository<T>
         Expression<Func<T, bool>> filter
     ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
 
-    private async Task HandleEventAsync(IEvent e)
+    private async Task<bool> HandleEventAsync(IEvent e)
     {
         if (globalReplayContext.IsReplaying)
         {
             switch (globalReplayContext.ReplayMode)
             {
                 case ReplayMode.Strict:
-                    throw new InvalidOperationException(
+                    throw new RepositoryException(
                         $"Cannot emit events during replay in strict mode. Event: {e.GetType().Name}"
                     );
                 case ReplayMode.Sandbox:
                     globalReplayContext.AddEvent(e);
-                    return;
+                    return true;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(globalReplayContext.ReplayMode));
             }
         }
 
         await eventStore.InsertEventAsync(e);
+        return true;
     }
 }

@@ -151,14 +151,16 @@ public class Seeder : ISeeder
     {
         var addresses = (await addressRepository.ReadAllAsync()).ToList();
         var customers = (await customerRepository.ReadAllAsync()).ToList();
+        var buyingRates = (await buyingRateRepository.ReadAllAsync()).ToList();
         for (var i = 1; i <= Nr; i++)
         {
+            var buyingRate = buyingRates[i % Nr];
             var transportMode =
                 i % 4 == 0 ? TransportMode.Air
                 : i % 4 == 1 ? TransportMode.Courier
                 : i % 4 == 2 ? TransportMode.Sea
                 : TransportMode.Road;
-            var incoterm = Incoterm.GetAll().ToList()[i % 10];
+            var incoterm = Incoterm.GetAll().ToList()[i % Nr];
             var bookingStatus =
                 i % 6 == 0 ? BookingStatus.SpotQuote
                 : i % 6 == 1 ? BookingStatus.Draft
@@ -177,12 +179,40 @@ public class Seeder : ISeeder
                     $"Description {i}",
                     $"References {i}",
                     DateTime.UtcNow.AddDays(i)
-                ),
+                )
+                {
+                    Collis = new List<Colli> { new(1, ColliType.Box, 10, 15, 20, 25) },
+                },
                 DateTime.UtcNow.AddDays(14 + i),
                 customers[i - 1].Id,
                 new MailOptions(true, false, $"Comment {i}", new List<Guid>()),
                 $"Internal comments {i}",
-                new List<Quote>()
+                new List<Quote>
+                {
+                    new Quote(
+                        buyingRate.Supplier,
+                        buyingRate.ForwarderService,
+                        buyingRate.SupplierService,
+                        new Profit(10, true),
+                        false,
+                        new List<Cost>
+                        {
+                            new(
+                                new SupplierCost(ChargeType.Freight, CostType.PerKg, 10, 25, 0),
+                                new SellingCost(
+                                    ChargeType.Freight,
+                                    CostType.PerKg,
+                                    10,
+                                    25,
+                                    0,
+                                    string.Empty
+                                )
+                            ),
+                        },
+                        "Comments external",
+                        "Comments internal"
+                    ),
+                }
             );
             await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }

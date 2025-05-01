@@ -12,11 +12,16 @@ public static class CountryMapper
             Id = country.Id,
             Name = country.Name,
             Code = country.Code,
+            ConcurrencyVersion = country.ConcurrencyVersion,
         };
     }
 
     public static Country ToDomain(this CountryDto countryDto)
     {
-        return new Country(countryDto.Name, countryDto.Code) { Id = countryDto.Id };
+        return new Country(countryDto.Name, countryDto.Code)
+        {
+            Id = countryDto.Id,
+            ConcurrencyVersion = countryDto.ConcurrencyVersion,
+        };
     }
 }
