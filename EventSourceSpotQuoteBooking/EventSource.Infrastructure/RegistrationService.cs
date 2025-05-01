@@ -32,14 +32,14 @@ public static class RegistrationService
     {
         var closedType = genericEventType.MakeGenericType(entityType);
 
-        if (!BsonClassMap.IsClassMapRegistered(closedType))
-        {
-            var classMap = new BsonClassMap(closedType);
-            classMap.AutoMap();
-            classMap.SetDiscriminator(closedType.FullName);
-            classMap.SetDiscriminatorIsRequired(true);
+        if (BsonClassMap.IsClassMapRegistered(closedType))
+            return;
 
-            BsonClassMap.RegisterClassMap(classMap);
-        }
+        var classMap = new BsonClassMap(closedType);
+        classMap.AutoMap();
+        classMap.SetDiscriminator(closedType.FullName);
+        classMap.SetDiscriminatorIsRequired(true);
+
+        BsonClassMap.RegisterClassMap(classMap);
     }
 }
