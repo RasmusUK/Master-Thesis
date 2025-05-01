@@ -32,31 +32,9 @@ public class EntityStore : IEntityStore
         where TEntity : IEntity
     {
         var collection = GetCollection<TEntity>();
-
-        var existing = await collection.Find(e => e.Id == entity.Id).FirstOrDefaultAsync();
-
-        if (existing == null)
-        {
-            entity.ConcurrencyVersion = 1;
-            await collection.InsertOneAsync(entity);
-        }
-        else
-        {
-            if (existing.ConcurrencyVersion != entity.ConcurrencyVersion)
-                throw new EntityStoreException("Upsert failed due to version mismatch.");
-
-            entity.ConcurrencyVersion++;
-
-            var filter = Builders<TEntity>.Filter.And(
-                Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id),
-                Builders<TEntity>.Filter.Eq(e => e.ConcurrencyVersion, existing.ConcurrencyVersion)
-            );
-
-            var result = await collection.ReplaceOneAsync(filter, entity);
-
-            if (result.MatchedCount == 0)
-                throw new EntityStoreException("Upsert failed due to concurrency violation.");
-        }
+        var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
+        var updateOptions = new ReplaceOptions { IsUpsert = true };
+        await collection.ReplaceOneAsync(filter, entity, updateOptions);
     }
 
     public async Task DeleteEntityAsync<TEntity>(TEntity entity)
