@@ -1,5 +1,5 @@
-using System.Transactions;
 using EventSource.Core;
+using EventSource.Persistence.Exceptions;
 using EventSource.Persistence.Interfaces;
 
 namespace EventSource.Persistence;
