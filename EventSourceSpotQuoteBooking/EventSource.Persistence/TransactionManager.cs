@@ -63,7 +63,7 @@ public class TransactionManager : ITransactionManager
         actions!.Enqueue((commit, rollback));
     }
 
-    public Task CommitAsync()
+    public async Task CommitAsync()
     {
         if (!IsActive)
             throw new TransactionException("No active transaction.");
@@ -71,12 +71,11 @@ public class TransactionManager : ITransactionManager
         while (actions!.Count > 0)
         {
             var (commit, rollback) = actions.Dequeue();
+            await commit();
             rollbackActions!.Enqueue(rollback);
-            commit();
         }
 
         Clear();
-        return Task.CompletedTask;
     }
 
     public async Task RollbackAsync()
@@ -87,14 +86,7 @@ public class TransactionManager : ITransactionManager
         while (rollbackActions!.Count > 0)
         {
             var rollback = rollbackActions.Dequeue();
-            try
-            {
-                await rollback();
-            }
-            catch
-            {
-                throw new TransactionException("Rollback failed.");
-            }
+            await rollback();
         }
 
         Clear();

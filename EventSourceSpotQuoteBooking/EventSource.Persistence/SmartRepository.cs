@@ -41,7 +41,7 @@ public class SmartRepository<T> : IRepository<T>
             return;
         }
 
-        var snapshot = await inner.ReadByIdAsync(entity.Id);
+        var snapshot = await ReadByIdAsync(entity.Id);
         if (snapshot is null)
             throw new NotFoundException(
                 $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
@@ -62,6 +62,7 @@ public class SmartRepository<T> : IRepository<T>
             return;
         }
 
+        transactionManager.TrackDeletedEntity(entity);
         transactionManager.Enlist(
             () => inner.DeleteAsync(entity, transactionManager.TransactionId),
             () => inner.CreateCompensationAsync(entity, transactionManager.TransactionId)

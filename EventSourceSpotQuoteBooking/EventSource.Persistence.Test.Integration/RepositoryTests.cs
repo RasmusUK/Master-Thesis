@@ -5,12 +5,13 @@ using EventSource.Core.Exceptions;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Events;
 using EventSource.Persistence.Exceptions;
+using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 
 namespace EventSource.Persistence.Test.Integration;
 
 [Collection("Integration")]
-public class RepositoryTests
+public class RepositoryTests : MongoIntegrationTestBase
 {
     private readonly IRepository<TestEntity> repository;
     private readonly IEventStore eventStore;
@@ -18,11 +19,13 @@ public class RepositoryTests
     private readonly IGlobalReplayContext replayContext;
 
     public RepositoryTests(
+        IMongoDbService mongoDbService,
         IRepository<TestEntity> repository,
         IEventStore eventStore,
         IEntityStore entityStore,
         IGlobalReplayContext replayContext
     )
+        : base(mongoDbService)
     {
         this.repository = repository;
         this.eventStore = eventStore;

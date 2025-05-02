@@ -1,13 +1,19 @@
-﻿namespace EventSource.Persistence.Test.Integration;
+﻿using EventSource.Persistence.Interfaces;
+using EventSource.Test.Utilities;
+
+namespace EventSource.Persistence.Test.Integration;
 
 [Collection("Integration")]
-public class EntityCollectionNameProviderTests
+public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 {
     private readonly EntityCollectionNameProvider provider = new();
 
     private class TestEntity1 { }
 
     private class TestEntity2 { }
+
+    public EntityCollectionNameProviderTests(IMongoDbService mongoDbService)
+        : base(mongoDbService) { }
 
     [Fact]
     public void Register_Then_GetCollectionName_ReturnsCorrectValue()

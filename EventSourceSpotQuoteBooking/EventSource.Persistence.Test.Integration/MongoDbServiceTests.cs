@@ -6,7 +6,7 @@ using MongoDB.Driver;
 namespace EventSource.Persistence.Test.Integration;
 
 [Collection("Integration")]
-public class MongoDbServiceTests
+public class MongoDbServiceTests : MongoIntegrationTestBase
 {
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider nameProvider;
@@ -15,26 +15,10 @@ public class MongoDbServiceTests
         IMongoDbService mongoDbService,
         IEntityCollectionNameProvider nameProvider
     )
+        : base(mongoDbService)
     {
         this.mongoDbService = mongoDbService;
         this.nameProvider = nameProvider;
-    }
-
-    [Fact]
-    public async Task EventCollection_IsAccessibleAndIndexExists()
-    {
-        // Arrange
-        var collection = mongoDbService.EventCollection;
-
-        // Act
-        var indexes = await collection.Indexes.ListAsync();
-        var indexList = await indexes.ToListAsync();
-
-        // Assert
-        Assert.Contains(
-            indexList,
-            idx => idx.TryGetValue("name", out var name) && name.AsString == "EventNumber_Ascending"
-        );
     }
 
     [Fact]

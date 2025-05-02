@@ -1,13 +1,18 @@
 using EventSource.Persistence.Interfaces;
+using EventSource.Test.Utilities;
 
 namespace EventSource.Persistence.Test.Integration;
 
 [Collection("Integration")]
-public class EventSequenceGeneratorTests
+public class EventSequenceGeneratorTests : MongoIntegrationTestBase
 {
     private readonly IEventSequenceGenerator generator;
 
-    public EventSequenceGeneratorTests(IEventSequenceGenerator generator)
+    public EventSequenceGeneratorTests(
+        IMongoDbService mongoDbService,
+        IEventSequenceGenerator generator
+    )
+        : base(mongoDbService)
     {
         this.generator = generator;
     }

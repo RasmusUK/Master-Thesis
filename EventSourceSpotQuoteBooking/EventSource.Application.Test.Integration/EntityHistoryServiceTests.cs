@@ -1,20 +1,23 @@
 ﻿using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Events;
+using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 
 namespace EventSource.Application.Integration.Test;
 
 [Collection("Integration")]
-public class EntityHistoryServiceTests
+public class EntityHistoryServiceTests : MongoIntegrationTestBase
 {
     private readonly IEntityHistoryService entityHistoryService;
     private readonly IEventStore eventStore;
 
     public EntityHistoryServiceTests(
+        IMongoDbService mongoDbService,
         IEntityHistoryService entityHistoryService,
         IEventStore eventStore
     )
+        : base(mongoDbService)
     {
         this.entityHistoryService = entityHistoryService;
         this.eventStore = eventStore;

@@ -1,12 +1,16 @@
 using EventSource.Core;
+using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 
 namespace EventSource.Application.Integration.Test;
 
 [Collection("Integration")]
-public class GlobalReplayContextTests
+public class GlobalReplayContextTests : MongoIntegrationTestBase
 {
     private readonly GlobalReplayContext context = new();
+
+    protected GlobalReplayContextTests(IMongoDbService mongoDbService)
+        : base(mongoDbService) { }
 
     [Fact]
     public void StartReplay_SetsIsReplayingAndReplayMode()

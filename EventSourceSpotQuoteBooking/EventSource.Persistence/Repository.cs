@@ -106,22 +106,21 @@ public class Repository<T> : IRepository<T>
         }
     }
 
-    public async Task<Guid> CreateAsync(T entity, Guid transactionId)
+    public virtual async Task CreateAsync(T entity, Guid transactionId)
     {
         var e = new CreateEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
-        return entity.Id;
     }
 
-    public async Task UpdateAsync(T entity, Guid transactionId)
+    public virtual async Task UpdateAsync(T entity, Guid transactionId)
     {
         var e = new UpdateEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
         await entityStore.UpdateEntityAsync(entity);
     }
 
-    public async Task DeleteAsync(T entity, Guid transactionId)
+    public virtual async Task DeleteAsync(T entity, Guid transactionId)
     {
         var e = new DeleteEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
@@ -140,7 +139,7 @@ public class Repository<T> : IRepository<T>
     {
         var e = new UpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
         await HandleEventAsync(e);
-        await entityStore.UpdateEntityAsync(entity);
+        await entityStore.UpsertEntityAsync(entity);
     }
 
     public async Task DeleteCompensationAsync(T entity, Guid transactionId)
