@@ -1,0 +1,222 @@
+using EventSource.Core.Interfaces;
+using EventSource.Persistence.Exceptions;
+using EventSource.Persistence.Interfaces;
+using EventSource.Test.Utilities;
+
+namespace EventSource.Persistence.Test.Integration;
+
+[Collection("Integration")]
+public class EntityStoreTests : MongoIntegrationTestBase
+{
+    private readonly IEntityStore store;
+
+    public EntityStoreTests(IMongoDbService mongoDbService, IEntityStore store)
+        : base(mongoDbService)
+    {
+        this.store = store;
+    }
+
+    [Fact]
+    public async Task InsertEntityAsync_PersistsEntity()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "InsertMe" };
+
+        // Act
+        await store.InsertEntityAsync(entity);
+        var loaded = await store.GetEntityByIdAsync<TestEntity>(entity.Id);
+
+        // Assert
+        Assert.NotNull(loaded);
+        Assert.Equal("InsertMe", loaded!.Name);
+    }
+
+    [Fact]
+    public async Task UpsertEntityAsync_InsertsOrUpdatesEntity()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "UpsertMe" };
+
+        // Act
+        await store.UpsertEntityAsync(entity);
+        var inserted = await store.GetEntityByIdAsync<TestEntity>(entity.Id);
+
+        entity.Name = "UpdatedName";
+        await store.UpsertEntityAsync(entity);
+        var updated = await store.GetEntityByIdAsync<TestEntity>(entity.Id);
+
+        // Assert
+        Assert.NotNull(inserted);
+        Assert.Equal("UpdatedName", updated!.Name);
+    }
+
+    [Fact]
+    public async Task UpdateEntityAsync_UsesOptimisticConcurrency()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "BeforeUpdate",
+            ConcurrencyVersion = 0,
+        };
+        await store.InsertEntityAsync(entity);
+
+        // Act
+        entity.Name = "AfterUpdate";
+        await store.UpdateEntityAsync(entity);
+        var result = await store.GetEntityByIdAsync<TestEntity>(entity.Id);
+
+        // Assert
+        Assert.Equal("AfterUpdate", result!.Name);
+        Assert.Equal(1, result.ConcurrencyVersion);
+    }
+
+    [Fact]
+    public async Task UpdateEntityAsync_ThrowsOnConcurrencyViolation()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "Conflicted",
+            ConcurrencyVersion = 0,
+        };
+        await store.InsertEntityAsync(entity);
+
+        var stale = new TestEntity
+        {
+            Id = entity.Id,
+            Name = "Stale",
+            ConcurrencyVersion = 0,
+        };
+
+        // Act & Assert
+        await store.UpdateEntityAsync(entity); // bumps version to 1
+        await Assert.ThrowsAsync<EntityStoreException>(() => store.UpdateEntityAsync(stale));
+    }
+
+    [Fact]
+    public async Task DeleteEntityAsync_DeletesCorrectly()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "DeleteMe",
+            ConcurrencyVersion = 0,
+        };
+        await store.InsertEntityAsync(entity);
+
+        // Act
+        await store.DeleteEntityAsync(entity);
+        var deleted = await store.GetEntityByIdAsync<TestEntity>(entity.Id);
+
+        // Assert
+        Assert.Null(deleted);
+    }
+
+    [Fact]
+    public async Task DeleteEntityAsync_ThrowsOnConcurrencyViolation()
+    {
+        // Arrange
+        var entity = new TestEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "DeleteFail",
+            ConcurrencyVersion = 0,
+        };
+        await store.InsertEntityAsync(entity);
+
+        // Act & Assert
+        entity.ConcurrencyVersion = 1;
+        await Assert.ThrowsAsync<EntityStoreException>(() => store.DeleteEntityAsync(entity));
+    }
+
+    [Fact]
+    public async Task GetEntityByFilterAsync_ReturnsMatching()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Filtered" };
+        await store.InsertEntityAsync(entity);
+
+        // Act
+        var result = await store.GetEntityByFilterAsync<TestEntity>(e => e.Name == "Filtered");
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(entity.Id, result!.Id);
+    }
+
+    [Fact]
+    public async Task GetProjectionByFilterAsync_ReturnsProjectedValue()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectMe" };
+        await store.InsertEntityAsync(entity);
+
+        // Act
+        var nameOnly = await store.GetProjectionByFilterAsync<TestEntity, string>(
+            e => e.Name == "ProjectMe",
+            e => e.Name
+        );
+
+        // Assert
+        Assert.Equal("ProjectMe", nameOnly);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_ReturnsAllEntities()
+    {
+        // Arrange
+        var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "A" };
+        var e2 = new TestEntity { Id = Guid.NewGuid(), Name = "B" };
+        await store.InsertEntityAsync(e1);
+        await store.InsertEntityAsync(e2);
+
+        // Act
+        var all = await store.GetAllAsync<TestEntity>();
+
+        // Assert
+        Assert.Contains(all, e => e.Id == e1.Id);
+        Assert.Contains(all, e => e.Id == e2.Id);
+    }
+
+    [Fact]
+    public async Task GetAllByFilterAsync_ReturnsFiltered()
+    {
+        // Arrange
+        var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "Match" };
+        var e2 = new TestEntity { Id = Guid.NewGuid(), Name = "Other" };
+        await store.InsertEntityAsync(e1);
+        await store.InsertEntityAsync(e2);
+
+        // Act
+        var filtered = await store.GetAllByFilterAsync<TestEntity>(e => e.Name == "Match");
+
+        // Assert
+        Assert.Single(filtered);
+        Assert.Equal("Match", filtered.First().Name);
+    }
+
+    [Fact]
+    public async Task GetAllProjectionsByFilterAsync_ReturnsProjectedFilteredValues()
+    {
+        // Arrange
+        var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "Good" };
+        var e2 = new TestEntity { Id = Guid.NewGuid(), Name = "Bad" };
+        await store.InsertEntityAsync(e1);
+        await store.InsertEntityAsync(e2);
+
+        // Act
+        var projected = await store.GetAllProjectionsByFilterAsync<TestEntity, string>(
+            e => e.Name,
+            e => e.Name == "Good"
+        );
+
+        // Assert
+        Assert.Single(projected);
+        Assert.Contains("Good", projected);
+        Assert.DoesNotContain("Bad", projected);
+    }
+}
