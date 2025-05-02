@@ -1,10 +1,8 @@
-﻿using EventSource.Core;
+﻿using EventSource.Persistence;
 
 namespace EventSource.Test.Utilities;
 
-public record TestEntity : IEntity
+public class TestEntity : Entity
 {
-    public Guid Id { get; set; }
-    public int ConcurrencyVersion { get; set; }
     public string Name { get; set; }
 }

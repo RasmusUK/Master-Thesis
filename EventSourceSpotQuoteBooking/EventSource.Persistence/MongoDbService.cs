@@ -111,7 +111,9 @@ public class MongoDbService : IMongoDbService
         var target = debugEntityDatabase.GetCollection<T>(collectionName);
 
         var allDocs = await source.Find(_ => true).ToListAsync();
-        await target.InsertManyAsync(allDocs);
+
+        if (allDocs.Any())
+            await target.InsertManyAsync(allDocs);
     }
 
     private static (IMongoDatabase db, MongoClient client) CreateDatabase(DatabaseOptions options)

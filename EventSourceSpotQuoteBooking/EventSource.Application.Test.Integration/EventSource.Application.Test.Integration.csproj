@@ -22,12 +22,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Content Update="appsettings.json">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\EventSource.Infrastructure\EventSource.Infrastructure.csproj" />
       <ProjectReference Include="..\EventSource.Test.Utilities\EventSource.Test.Utilities.csproj" />
     </ItemGroup>

@@ -1,10 +1,11 @@
 ﻿using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Events;
-using TestEntity = EventSource.Test.Utilities.TestEntity;
+using EventSource.Test.Utilities;
 
 namespace EventSource.Application.Integration.Test;
 
+[Collection("Integration")]
 public class EntityHistoryServiceTests
 {
     private readonly IEntityHistoryService entityHistoryService;

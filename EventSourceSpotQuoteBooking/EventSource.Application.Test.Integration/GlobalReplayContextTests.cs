@@ -1,8 +1,9 @@
 using EventSource.Core;
 using EventSource.Test.Utilities;
 
-namespace EventSource.Application.Test;
+namespace EventSource.Application.Integration.Test;
 
+[Collection("Integration")]
 public class GlobalReplayContextTests
 {
     private readonly GlobalReplayContext context = new();

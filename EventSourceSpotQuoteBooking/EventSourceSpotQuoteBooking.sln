@@ -21,11 +21,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteBooking.EventSourc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteBooking.EventSource.Web", "SpotQuoteBooking.EventSource.Web\SpotQuoteBooking.EventSource.Web.csproj", "{0E13B03D-691C-435B-BC0C-DC431FF8D3EB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Application.Test.Unit", "EventSource.Application.Test.Unit\EventSource.Application.Test.Unit.csproj", "{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Test.Utilities", "EventSource.Test.Utilities\EventSource.Test.Utilities.csproj", "{633AB25F-9D84-4BFB-B821-779A6CB031E0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Application.Test.Integration", "EventSource.Application.Test.Integration\EventSource.Application.Test.Integration.csproj", "{D25A2C3C-396E-4840-AA7E-44066B65454E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Persistence.Test.Integration", "EventSource.Persistence.Test.Integration\EventSource.Persistence.Test.Integration.csproj", "{44664B0C-C1A5-49C2-83B8-B54797ECE2DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -61,10 +61,6 @@ Global
 		{0E13B03D-691C-435B-BC0C-DC431FF8D3EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E13B03D-691C-435B-BC0C-DC431FF8D3EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0E13B03D-691C-435B-BC0C-DC431FF8D3EB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{633AB25F-9D84-4BFB-B821-779A6CB031E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{633AB25F-9D84-4BFB-B821-779A6CB031E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{633AB25F-9D84-4BFB-B821-779A6CB031E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -73,6 +69,10 @@ Global
 		{D25A2C3C-396E-4840-AA7E-44066B65454E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D25A2C3C-396E-4840-AA7E-44066B65454E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D25A2C3C-396E-4840-AA7E-44066B65454E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -82,8 +82,8 @@ Global
 		{A83950E7-5E6F-41A3-B9CC-3953F5A44ADA} = {C622496A-484C-4EBC-9A5C-7A006FB70263}
 		{484E8FDB-4966-4057-8ADA-664107FF722E} = {C622496A-484C-4EBC-9A5C-7A006FB70263}
 		{21E4673A-C897-4C91-8E3B-4D23734F240B} = {C622496A-484C-4EBC-9A5C-7A006FB70263}
-		{0EFCFE75-8FC9-4F2D-B3DF-9C3B5A11F36B} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 		{633AB25F-9D84-4BFB-B821-779A6CB031E0} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 		{D25A2C3C-396E-4840-AA7E-44066B65454E} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
+		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 	EndGlobalSection
 EndGlobal
