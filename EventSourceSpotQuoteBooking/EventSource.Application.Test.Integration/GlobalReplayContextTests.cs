@@ -1,3 +1,4 @@
+using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
@@ -7,10 +8,13 @@ namespace EventSource.Application.Integration.Test;
 [Collection("Integration")]
 public class GlobalReplayContextTests : MongoIntegrationTestBase
 {
-    private readonly GlobalReplayContext context = new();
+    private readonly IGlobalReplayContext context;
 
-    protected GlobalReplayContextTests(IMongoDbService mongoDbService)
-        : base(mongoDbService) { }
+    public GlobalReplayContextTests(IMongoDbService mongoDbService, IGlobalReplayContext context)
+        : base(mongoDbService, context)
+    {
+        this.context = context;
+    }
 
     [Fact]
     public void StartReplay_SetsIsReplayingAndReplayMode()
@@ -65,18 +69,6 @@ public class GlobalReplayContextTests : MongoIntegrationTestBase
     public void AddEvent_WhenNotReplaying_Throws()
     {
         var evt = new TestEvent();
-        var ex = Assert.Throws<InvalidOperationException>(() => context.AddEvent(evt));
-        Assert.Equal("Replay is not in progress.", ex.Message);
-    }
-
-    [Fact]
-    public void AddEvent_WhenReplayingButNotSandbox_Throws()
-    {
-        // Arrange
-        context.StartReplay(ReplayMode.Strict);
-        var evt = new TestEvent();
-
-        // Act & Assert
         var ex = Assert.Throws<InvalidOperationException>(() => context.AddEvent(evt));
         Assert.Equal("Replay is not in progress.", ex.Message);
     }

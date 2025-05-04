@@ -1,3 +1,4 @@
+using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
 using EventSource.Persistence.Exceptions;
 using EventSource.Persistence.Interfaces;
@@ -10,8 +11,12 @@ public class EntityStoreTests : MongoIntegrationTestBase
 {
     private readonly IEntityStore store;
 
-    public EntityStoreTests(IMongoDbService mongoDbService, IEntityStore store)
-        : base(mongoDbService)
+    public EntityStoreTests(
+        IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
+        IEntityStore store
+    )
+        : base(mongoDbService, replayContext)
     {
         this.store = store;
     }

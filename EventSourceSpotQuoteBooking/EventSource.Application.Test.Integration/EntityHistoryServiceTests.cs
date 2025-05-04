@@ -14,10 +14,11 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
 
     public EntityHistoryServiceTests(
         IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
         IEntityHistoryService entityHistoryService,
         IEventStore eventStore
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.entityHistoryService = entityHistoryService;
         this.eventStore = eventStore;

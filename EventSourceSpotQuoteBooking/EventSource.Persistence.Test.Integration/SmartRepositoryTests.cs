@@ -16,11 +16,12 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
     public SmartRepositoryTests(
         IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
         Repository<TestEntity> baseRepository,
         IEventStore eventStore,
         IEntityStore entityStore
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.baseRepository = baseRepository;
         this.eventStore = eventStore;

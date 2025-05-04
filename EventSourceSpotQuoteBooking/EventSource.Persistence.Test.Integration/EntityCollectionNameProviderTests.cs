@@ -1,4 +1,5 @@
-﻿using EventSource.Persistence.Interfaces;
+﻿using EventSource.Application.Interfaces;
+using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 
 namespace EventSource.Persistence.Test.Integration;
@@ -12,8 +13,11 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 
     private class TestEntity2 { }
 
-    public EntityCollectionNameProviderTests(IMongoDbService mongoDbService)
-        : base(mongoDbService) { }
+    public EntityCollectionNameProviderTests(
+        IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext
+    )
+        : base(mongoDbService, replayContext) { }
 
     [Fact]
     public void Register_Then_GetCollectionName_ReturnsCorrectValue()

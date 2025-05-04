@@ -18,20 +18,20 @@ public class ReplayServiceTests : MongoIntegrationTestBase
 
     public ReplayServiceTests(
         IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
         IReplayService replayService,
         IEventStore eventStore,
         IEntityStore entityStore,
         IRepository<TestEntity> repository,
         ISnapshotService snapshotService
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.replayService = replayService;
         this.eventStore = eventStore;
         this.entityStore = entityStore;
         this.repository = repository;
         this.snapshotService = snapshotService;
-        replayService.StopReplay();
     }
 
     [Theory]

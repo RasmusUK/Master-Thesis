@@ -1,3 +1,4 @@
+using EventSource.Application.Interfaces;
 using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 
@@ -10,9 +11,10 @@ public class EventSequenceGeneratorTests : MongoIntegrationTestBase
 
     public EventSequenceGeneratorTests(
         IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
         IEventSequenceGenerator generator
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.generator = generator;
     }

@@ -66,6 +66,7 @@ public class GlobalReplayContext : IGlobalReplayContext
                 throw new InvalidOperationException("Replay is not in progress.");
 
             isReplaying = false;
+            replayMode = ReplayMode.Strict;
             events.Clear();
         }
     }

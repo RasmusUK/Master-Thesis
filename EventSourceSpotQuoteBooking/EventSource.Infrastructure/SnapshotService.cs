@@ -5,6 +5,7 @@ using EventSource.Core;
 using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence.Interfaces;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
 namespace EventSource.Infrastructure;
@@ -48,6 +49,8 @@ public class SnapshotService : ISnapshotService
 
             var registered = entityCollectionNameProvider.GetAllRegistered();
 
+            var copiedAny = false;
+
             foreach (var (type, collectionName) in registered)
             {
                 var method = typeof(SnapshotService).GetMethod(
@@ -55,9 +58,13 @@ public class SnapshotService : ISnapshotService
                     BindingFlags.NonPublic | BindingFlags.Instance
                 );
                 var genericMethod = method!.MakeGenericMethod(type);
-                await (Task)
+                var result = await (Task<bool>)
                     genericMethod.Invoke(this, new object[] { collectionName, snapshotId })!;
+                copiedAny |= result;
             }
+
+            if (!copiedAny)
+                return snapshotId;
 
             var snapshotMeta = new BsonDocument
             {
@@ -233,35 +240,18 @@ public class SnapshotService : ISnapshotService
 
     public async Task<IReadOnlyCollection<SnapshotMetadata>> GetAllSnapshotsAsync()
     {
-        var database = mongoDbService.GetEntityDatabase(true);
-        var collections = await (await database.ListCollectionNamesAsync()).ToListAsync();
+        var documents = await mongoDbService
+            .GetEntityDatabase(true)
+            .GetCollection<BsonDocument>(SnapshotMetadataCollection)
+            .Find(_ => true)
+            .Sort(Builders<BsonDocument>.Sort.Descending("Timestamp"))
+            .ToListAsync();
 
-        return collections
-            .Where(c => c.Contains("_snapshot_"))
-            .Select(c =>
-            {
-                var parts = c.Split('_');
-                var eventNumber = long.TryParse(parts.ElementAtOrDefault(3), out var ev) ? ev : 0;
-                var timestamp = DateTime.TryParseExact(
-                    parts.ElementAtOrDefault(2),
-                    "yyyyMMddHHmmss",
-                    null,
-                    System.Globalization.DateTimeStyles.None,
-                    out var dt
-                )
-                    ? dt
-                    : DateTime.MinValue;
-                return new SnapshotMetadata
-                {
-                    SnapshotId = string.Join("_", parts.TakeLast(3)),
-                    EventNumber = eventNumber,
-                    Timestamp = timestamp,
-                };
-            })
-            .GroupBy(s => s.SnapshotId)
-            .Select(g => g.First())
-            .OrderByDescending(x => x.Timestamp)
+        var snapshots = documents
+            .Select(doc => BsonSerializer.Deserialize<SnapshotMetadata>(doc))
             .ToList();
+
+        return snapshots;
     }
 
     public async Task<SnapshotMetadata?> GetLastSnapshotAsync() =>
@@ -287,7 +277,10 @@ public class SnapshotService : ISnapshotService
         }
     }
 
-    private async Task CopyCollectionAsync<T>(string originalCollectionName, string snapshotId)
+    private async Task<bool> CopyCollectionAsync<T>(
+        string originalCollectionName,
+        string snapshotId
+    )
     {
         var source = mongoDbService.GetCollection<T>(originalCollectionName, true);
         var snapshotName = $"{originalCollectionName}_{snapshotId}";
@@ -295,8 +288,10 @@ public class SnapshotService : ISnapshotService
 
         var allDocs = await source.Find(_ => true).ToListAsync();
         if (allDocs.Count == 0)
-            return;
+            return false;
+
         await target.InsertManyAsync(allDocs);
+        return true;
     }
 
     private async Task RestoreCollectionAsync<T>(string originalCollectionName, string snapshotId)

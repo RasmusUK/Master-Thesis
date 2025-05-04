@@ -1,3 +1,4 @@
+using EventSource.Application.Interfaces;
 using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
 using MongoDB.Bson;
@@ -13,9 +14,10 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
 
     public MongoDbServiceTests(
         IMongoDbService mongoDbService,
+        IGlobalReplayContext replayContext,
         IEntityCollectionNameProvider nameProvider
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.mongoDbService = mongoDbService;
         this.nameProvider = nameProvider;

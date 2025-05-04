@@ -25,7 +25,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         IEntityStore entityStore,
         IGlobalReplayContext replayContext
     )
-        : base(mongoDbService)
+        : base(mongoDbService, replayContext)
     {
         this.repository = repository;
         this.eventStore = eventStore;
