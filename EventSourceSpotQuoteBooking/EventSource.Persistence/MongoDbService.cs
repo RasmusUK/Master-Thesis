@@ -131,11 +131,7 @@ public class MongoDbService : IMongoDbService
 
     private static void RegisterConventions()
     {
-        var conventionPack = new ConventionPack
-        {
-            new IgnoreExtraElementsConvention(true),
-            new GuidAsStringConvention(),
-        };
+        var conventionPack = new ConventionPack { new IgnoreExtraElementsConvention(true) };
 
         ConventionRegistry.Register("GlobalConventions", conventionPack, _ => true);
     }
@@ -157,25 +153,6 @@ public class MongoDbService : IMongoDbService
             );
 
             await EventCollection.Indexes.CreateOneAsync(indexModel);
-        }
-    }
-
-    private class GuidAsStringConvention : IMemberMapConvention
-    {
-        public string Name => "GuidAsString";
-
-        public void Apply(BsonMemberMap memberMap)
-        {
-            if (memberMap.MemberType == typeof(Guid))
-            {
-                memberMap.SetSerializer(new GuidSerializer(BsonType.String));
-            }
-            else if (memberMap.MemberType == typeof(Guid?))
-            {
-                memberMap.SetSerializer(
-                    new NullableSerializer<Guid>(new GuidSerializer(BsonType.String))
-                );
-            }
         }
     }
 }

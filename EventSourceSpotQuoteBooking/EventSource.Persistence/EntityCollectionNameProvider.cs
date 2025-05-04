@@ -5,6 +5,12 @@ namespace EventSource.Persistence;
 public class EntityCollectionNameProvider : IEntityCollectionNameProvider
 {
     private readonly Dictionary<Type, string> collectionNames = new();
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
+
+    public EntityCollectionNameProvider(IMigrationTypeRegistry migrationTypeRegistry)
+    {
+        this.migrationTypeRegistry = migrationTypeRegistry;
+    }
 
     public void Register(Type type, string collectionName)
     {
@@ -22,8 +28,12 @@ public class EntityCollectionNameProvider : IEntityCollectionNameProvider
 
     public string GetCollectionName(Type type)
     {
-        if (type == null)
-            throw new ArgumentNullException(nameof(type));
+        if (!collectionNames.ContainsKey(type))
+            type =
+                migrationTypeRegistry.GetBaseType(type)
+                ?? throw new InvalidOperationException(
+                    $"No base type registered for '{type.FullName}'"
+                );
 
         if (!collectionNames.TryGetValue(type, out var name))
             throw new InvalidOperationException(

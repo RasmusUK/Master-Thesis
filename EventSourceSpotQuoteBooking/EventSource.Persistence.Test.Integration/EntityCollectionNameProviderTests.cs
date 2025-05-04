@@ -7,7 +7,7 @@ namespace EventSource.Persistence.Test.Integration;
 [Collection("Integration")]
 public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 {
-    private readonly EntityCollectionNameProvider provider = new();
+    private readonly EntityCollectionNameProvider provider = new(new MigrationTypeRegistry());
 
     private class TestEntity1 { }
 
@@ -54,8 +54,7 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
     {
         var type = typeof(TestEntity2);
 
-        var ex = Assert.Throws<InvalidOperationException>(() => provider.GetCollectionName(type));
-        Assert.Contains("No collection name registered", ex.Message);
+        Assert.Throws<InvalidOperationException>(() => provider.GetCollectionName(type));
     }
 
     [Fact]

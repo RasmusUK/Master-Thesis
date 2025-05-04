@@ -7,6 +7,9 @@ using EventSource.Persistence.Interfaces;
 using EventSource.Persistence.Stores;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 
 namespace EventSource.Infrastructure;
 
@@ -15,13 +18,19 @@ public static class DependencyInjection
     public static IServiceCollection AddEventSourcing(
         this IServiceCollection services,
         IConfiguration configuration
-    ) => services.AddApplicationServices().AddPersistence(configuration);
+    )
+    {
+        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        return services.AddApplicationServices().AddPersistence(configuration);
+    }
 
     private static IServiceCollection AddApplicationServices(this IServiceCollection services) =>
         services
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IReplayService, ReplayService>()
-            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>();
+            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>()
+            .AddSingleton<IMigrationTypeRegistry, MigrationTypeRegistry>()
+            .AddSingleton<IEntityMigrator, EntityMigrator>();
 
     private static IServiceCollection AddPersistence(
         this IServiceCollection services,
@@ -29,6 +38,7 @@ public static class DependencyInjection
     ) =>
         services
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
+            .AddSingleton<IEntityUpgradeService, EntityUpgradeService>()
             .AddSingleton<IEventSequenceGenerator, EventSequenceGenerator>()
             .AddSingleton<IMongoDbService, MongoDbService>()
             .AddSingleton<IEntityStore, EntityStore>()

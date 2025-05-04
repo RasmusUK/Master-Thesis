@@ -3,6 +3,7 @@ using EventSource.Core.Interfaces;
 using EventSource.Persistence.Exceptions;
 using EventSource.Persistence.Interfaces;
 using EventSource.Test.Utilities;
+using MongoDB.Bson;
 
 namespace EventSource.Persistence.Test.Integration;
 
@@ -10,15 +11,20 @@ namespace EventSource.Persistence.Test.Integration;
 public class EntityStoreTests : MongoIntegrationTestBase
 {
     private readonly IEntityStore store;
+    private readonly IMongoDbService mongoDbService;
+    private readonly IEntityCollectionNameProvider nameProvider;
 
     public EntityStoreTests(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext,
-        IEntityStore store
+        IEntityStore store,
+        IEntityCollectionNameProvider nameProvider
     )
         : base(mongoDbService, replayContext)
     {
         this.store = store;
+        this.nameProvider = nameProvider;
+        this.mongoDbService = mongoDbService;
     }
 
     [Fact]
@@ -223,5 +229,111 @@ public class EntityStoreTests : MongoIntegrationTestBase
         Assert.Single(projected);
         Assert.Contains("Good", projected);
         Assert.DoesNotContain("Bad", projected);
+    }
+
+    [Fact]
+    public async Task GetEntityByIdAsync_DeserializesOldVersion_AndMigrates()
+    {
+        // Arrange
+        var old = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Jane",
+            LastName = "Doe",
+        };
+        var doc = old.ToBsonDocument();
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+        await collection.InsertOneAsync(doc);
+
+        // Act
+        var migrated = await store.GetEntityByIdAsync<TestEntity>(old.Id);
+
+        // Assert
+        Assert.NotNull(migrated);
+        Assert.Equal("Jane - Doe", migrated.Name);
+        Assert.Equal(3, migrated.SchemaVersion);
+    }
+
+    [Fact]
+    public async Task GetEntityByFilterAsync_MigratesEntityBeforeFilter()
+    {
+        // Arrange
+        var old = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Filter",
+            LastName = "Check",
+        };
+        var doc = old.ToBsonDocument();
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+        await collection.InsertOneAsync(doc);
+
+        // Act
+        var found = await store.GetEntityByFilterAsync<TestEntity>(x => x.Name.Contains("Check"));
+
+        // Assert
+        Assert.NotNull(found);
+        Assert.Equal(old.Id, found!.Id);
+    }
+
+    [Fact]
+    public async Task GetAllAsync_MigratesAllEntities()
+    {
+        // Arrange
+        var e1 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "All",
+            LastName = "Old",
+        };
+        var e2 = new TestEntity { Id = Guid.NewGuid(), Name = "All New" };
+
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+
+        await collection.InsertOneAsync(e1.ToBsonDocument());
+        await collection.InsertOneAsync(e2.ToBsonDocument());
+
+        // Act
+        var all = await store.GetAllAsync<TestEntity>();
+
+        // Assert
+        Assert.Contains(all, e => e.Id == e1.Id && e.Name == "All - Old");
+        Assert.Contains(all, e => e.Id == e2.Id && e.Name == "All New");
+    }
+
+    [Fact]
+    public async Task GetAllByFilterAsync_FiltersMigratedEntities()
+    {
+        // Arrange
+        var v1 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Filter",
+            LastName = "Match",
+        };
+        var v2 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Filter",
+            LastName = "Ignore",
+        };
+
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+        await collection.InsertManyAsync(new[] { v1.ToBsonDocument(), v2.ToBsonDocument() });
+
+        // Act
+        var results = await store.GetAllByFilterAsync<TestEntity>(e => e.Name == "Filter - Match");
+
+        // Assert
+        Assert.Single(results);
+        Assert.Equal("Filter - Match", results.First().Name);
     }
 }
