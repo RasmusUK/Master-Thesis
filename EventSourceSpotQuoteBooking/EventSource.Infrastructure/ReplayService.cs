@@ -30,7 +30,7 @@ public class ReplayService : IReplayService
         this.mongoDbService = mongoDbService;
     }
 
-    public async Task StartReplay(ReplayMode mode = ReplayMode.Strict)
+    public async Task StartReplay(ReplayMode mode = ReplayMode.Replay)
     {
         replayContext.StartReplay(mode);
         if (mode == ReplayMode.Debug)
@@ -42,9 +42,18 @@ public class ReplayService : IReplayService
 
     public async Task StopReplay()
     {
+        IReadOnlyCollection<IEvent> events;
         var latestSnapshot = await snapshotService.GetLastSnapshotAsync();
-        await snapshotService.RestoreSnapshotAsync(latestSnapshot!.SnapshotId);
-        var events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
+        if (latestSnapshot is not null)
+        {
+            await snapshotService.RestoreSnapshotAsync(latestSnapshot!.SnapshotId);
+            events = await eventStore.GetEventsFromAsync(latestSnapshot!.EventNumber);
+        }
+        else
+        {
+            events = await eventStore.GetEventsAsync();
+        }
+
         await ProcessReplayEventsAsync(events);
         if (replayContext.ReplayMode == ReplayMode.Debug)
             await mongoDbService.UseProductionEntityDatabase();
@@ -53,13 +62,16 @@ public class ReplayService : IReplayService
 
     public async Task ReplayAllAsync(bool autoStop = true, bool useSnapshot = true)
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot);
         IReadOnlyCollection<IEvent> events;
         if (useSnapshot)
         {
             var latestSnapshot = await snapshotService.GetLastSnapshotAsync();
-            events = await eventStore.GetEventsFromAsync(latestSnapshot!.EventNumber);
+            if (latestSnapshot is null)
+                events = await eventStore.GetEventsAsync();
+            else
+                events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
         }
         else
         {
@@ -75,7 +87,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, until: until);
         var events = await eventStore.GetEventsUntilAsync(until);
         await ProcessReplayEventsAsync(events);
@@ -84,7 +96,7 @@ public class ReplayService : IReplayService
 
     public async Task ReplayFromAsync(DateTime from, bool autoStop = true, bool useSnapshot = true)
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, from: from);
         var events = await eventStore.GetEventsFromAsync(from);
         await ProcessReplayEventsAsync(events);
@@ -98,7 +110,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, from: from);
         var events = await eventStore.GetEventsFromUntilAsync(from, until);
         await ProcessReplayEventsAsync(events);
@@ -111,7 +123,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         var events = await eventStore.GetEventsByEntityIdAsync(entityId);
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
@@ -124,7 +136,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         var events = await eventStore.GetEventsByEntityIdUntilAsync(entityId, until);
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
@@ -138,7 +150,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         var events = await eventStore.GetEventsByEntityIdFromUntilAsync(entityId, from, until);
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
@@ -146,7 +158,7 @@ public class ReplayService : IReplayService
 
     public async Task ReplayEventsAsync(IReadOnlyCollection<IEvent> events, bool autoStop = true)
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await ProcessReplayEventsAsync(events);
     }
 
@@ -161,7 +173,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
         var events = await eventStore.GetEventsFromAsync(fromEventNumber);
         await ProcessReplayEventsAsync(events);
@@ -174,7 +186,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, untilNumber: untilEventNumber);
         var events = await eventStore.GetEventsUntilAsync(untilEventNumber);
         await ProcessReplayEventsAsync(events);
@@ -188,7 +200,7 @@ public class ReplayService : IReplayService
         bool useSnapshot = true
     )
     {
-        await StartReplayIfNeeded();
+        await StartReplayIfNeeded(ReplayMode.Sandbox);
         await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
         var events = await eventStore.GetEventsFromUntilAsync(fromEventNumber, untilEventNumber);
         await ProcessReplayEventsAsync(events);
@@ -197,10 +209,10 @@ public class ReplayService : IReplayService
 
     public bool IsRunning() => replayContext.IsReplaying;
 
-    private async Task StartReplayIfNeeded()
+    private async Task StartReplayIfNeeded(ReplayMode replayMode = ReplayMode.Strict)
     {
         if (!replayContext.IsReplaying)
-            await StartReplay();
+            await StartReplay(replayMode);
     }
 
     private async Task StopReplayIfNeeded(bool autoStop)

@@ -85,7 +85,7 @@ public class GlobalReplayContext : IGlobalReplayContext
     {
         lock (LockObj)
         {
-            if (!isReplaying || ReplayMode != ReplayMode.Sandbox)
+            if (!isReplaying)
                 throw new InvalidOperationException("Replay is not in progress.");
 
             events.Add(e);

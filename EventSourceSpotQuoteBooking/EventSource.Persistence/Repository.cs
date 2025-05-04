@@ -189,10 +189,11 @@ public class Repository<T> : IRepository<T>
                         $"Cannot emit events during replay in strict mode. Event: {e.GetType().Name}"
                     );
                 case ReplayMode.Sandbox:
+                case ReplayMode.Debug:
+                case ReplayMode.Replay:
+                default:
                     globalReplayContext.AddEvent(e);
                     return true;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(globalReplayContext.ReplayMode));
             }
         }
 

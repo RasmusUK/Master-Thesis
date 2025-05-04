@@ -109,6 +109,9 @@ public class SnapshotService : ISnapshotService
                                 .GetEntityDatabase(true)
                                 .DropCollectionAsync(backupName);
 
+                        if (!collections.Contains(originalName))
+                            continue;
+
                         await mongoDbService
                             .GetEntityDatabase(true)
                             .RenameCollectionAsync(originalName, backupName);
@@ -291,6 +294,8 @@ public class SnapshotService : ISnapshotService
         var target = mongoDbService.GetCollection<T>(snapshotName, true);
 
         var allDocs = await source.Find(_ => true).ToListAsync();
+        if (allDocs.Count == 0)
+            return;
         await target.InsertManyAsync(allDocs);
     }
 
@@ -307,6 +312,9 @@ public class SnapshotService : ISnapshotService
         await mongoDbService
             .GetEntityDatabase(globalReplayContext.ReplayMode != ReplayMode.Debug)
             .DropCollectionAsync(originalCollectionName);
+
+        if (docs.Count == 0)
+            return;
         await target.InsertManyAsync(docs);
     }
 }

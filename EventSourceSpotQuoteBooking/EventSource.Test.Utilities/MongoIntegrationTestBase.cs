@@ -4,7 +4,7 @@ namespace EventSource.Test.Utilities;
 
 public class MongoIntegrationTestBase : IAsyncLifetime
 {
-    protected readonly IMongoDbService mongoDbService;
+    private readonly IMongoDbService mongoDbService;
 
     protected MongoIntegrationTestBase(IMongoDbService mongoDbService)
     {
