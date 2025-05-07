@@ -102,19 +102,10 @@ public class EntityStore : IEntityStore
     )
         where TEntity : IEntity
     {
-        var targetType = typeof(TEntity);
-        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
-        var collection = GetBsonCollection(targetType);
-
-        var versionFilter =
-            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
-            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
-
-        var outdated = await collection.Find(versionFilter).AnyAsync();
-
-        if (!outdated)
+        if (await UseMongoQuery<TEntity>())
             return await GetCollection<TEntity>().Find(predicate).FirstOrDefaultAsync();
 
+        var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiled = predicate.Compile();
 
@@ -134,21 +125,11 @@ public class EntityStore : IEntityStore
     )
         where TEntity : IEntity
     {
-        var targetType = typeof(TEntity);
-        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
-        var collection = GetBsonCollection(targetType);
-
-        var versionFilter =
-            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
-            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
-
-        var outdated = await collection.Find(versionFilter).AnyAsync();
-
-        if (!outdated)
+        if (await UseMongoQuery<TEntity>())
             return await GetCollection<TEntity>().Find(predicate).ToListAsync();
 
+        var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
-
         var compiled = predicate.Compile();
 
         return docs.Select(MigrateEntity<TEntity>).Where(compiled).ToList();
@@ -160,22 +141,13 @@ public class EntityStore : IEntityStore
     )
         where TEntity : IEntity
     {
-        var targetType = typeof(TEntity);
-        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
-        var collection = GetBsonCollection(targetType);
-
-        var versionFilter =
-            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
-            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
-
-        var outdated = await collection.Find(versionFilter).AnyAsync();
-
-        if (!outdated)
+        if (await UseMongoQuery<TEntity>())
             return await GetCollection<TEntity>()
                 .Find(filter)
                 .Project(projection)
                 .FirstOrDefaultAsync();
 
+        var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiledFilter = filter.Compile();
         var compiledProjection = projection.Compile();
@@ -192,19 +164,10 @@ public class EntityStore : IEntityStore
     >(Expression<Func<TEntity, TProjection>> projection)
         where TEntity : IEntity
     {
-        var targetType = typeof(TEntity);
-        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
-        var collection = GetBsonCollection(targetType);
-
-        var versionFilter =
-            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
-            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
-
-        var outdated = await collection.Find(versionFilter).AnyAsync();
-
-        if (!outdated)
+        if (await UseMongoQuery<TEntity>())
             return await GetCollection<TEntity>().Find(_ => true).Project(projection).ToListAsync();
 
+        var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiledProjection = projection.Compile();
 
@@ -217,19 +180,10 @@ public class EntityStore : IEntityStore
     >(Expression<Func<TEntity, TProjection>> projection, Expression<Func<TEntity, bool>> filter)
         where TEntity : IEntity
     {
-        var targetType = typeof(TEntity);
-        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
-        var collection = GetBsonCollection(targetType);
-
-        var versionFilter =
-            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
-            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
-
-        var outdated = await collection.Find(versionFilter).AnyAsync();
-
-        if (!outdated)
+        if (await UseMongoQuery<TEntity>())
             return await GetCollection<TEntity>().Find(filter).Project(projection).ToListAsync();
 
+        var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiledFilter = filter.Compile();
         var compiledProjection = projection.Compile();
@@ -277,5 +231,19 @@ public class EntityStore : IEntityStore
     {
         var collectionName = entityCollectionNameProvider.GetCollectionName(type);
         return mongoDbService.GetEntityCollection<BsonDocument>(collectionName);
+    }
+
+    private async Task<bool> UseMongoQuery<TEntity>()
+        where TEntity : IEntity
+    {
+        var targetType = typeof(TEntity);
+        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
+        var collection = GetBsonCollection(targetType);
+
+        var versionFilter =
+            Builders<BsonDocument>.Filter.Exists("SchemaVersion", false)
+            | Builders<BsonDocument>.Filter.Lt("SchemaVersion", currentVersion);
+
+        return !await collection.Find(versionFilter).AnyAsync();
     }
 }
