@@ -1,10 +1,9 @@
-using EventSource.Application;
-
-namespace EventSource.Infrastructure.Interfaces;
+namespace EventSource.Persistence.Snapshot;
 
 public interface ISnapshotService
 {
     Task<string> TakeSnapshotAsync();
+    Task TakeSnapshotIfNeededAsync(long currentEventNumber);
     Task RestoreSnapshotAsync(string snapshotId);
     Task<string?> GetLastSnapshotIdAsync();
     Task<string?> GetLatestSnapshotBeforeAsync(long eventNumber);

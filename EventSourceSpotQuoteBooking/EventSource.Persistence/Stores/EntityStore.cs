@@ -1,8 +1,11 @@
 using System.Linq.Expressions;
 using EventSource.Core;
 using EventSource.Core.Interfaces;
+using EventSource.Core.Options;
 using EventSource.Persistence.Exceptions;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -16,13 +19,15 @@ public class EntityStore : IEntityStore
     private readonly ISchemaVersionRegistry schemaVersionRegistry;
     private readonly IEntityMigrator entityMigrator;
     private readonly IMigrationTypeRegistry migrationTypeRegistry;
+    private readonly EventSourcingOptions eventSourcingOptions;
 
     public EntityStore(
         IMongoDbService mongoDbService,
         IEntityCollectionNameProvider entityCollectionNameProvider,
         IEntityMigrator entityMigrator,
         ISchemaVersionRegistry schemaVersionRegistry,
-        IMigrationTypeRegistry migrationTypeRegistry
+        IMigrationTypeRegistry migrationTypeRegistry,
+        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.mongoDbService = mongoDbService;
@@ -30,11 +35,15 @@ public class EntityStore : IEntityStore
         this.entityMigrator = entityMigrator;
         this.schemaVersionRegistry = schemaVersionRegistry;
         this.migrationTypeRegistry = migrationTypeRegistry;
+        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
     }
 
     public async Task InsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity
     {
+        if (!eventSourcingOptions.EnableEntityStore)
+            return;
+
         var collection = GetCollection<TEntity>();
         await collection.InsertOneAsync(entity);
     }
@@ -42,6 +51,9 @@ public class EntityStore : IEntityStore
     public async Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity
     {
+        if (!eventSourcingOptions.EnableEntityStore)
+            return;
+
         var collection = GetCollection<TEntity>();
         var filter = Builders<TEntity>.Filter.Eq(e => e.Id, entity.Id);
         var updateOptions = new ReplaceOptions { IsUpsert = true };
@@ -51,6 +63,9 @@ public class EntityStore : IEntityStore
     public async Task DeleteEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity
     {
+        if (!eventSourcingOptions.EnableEntityStore)
+            return;
+
         var collection = GetCollection<TEntity>();
 
         var filter = Builders<TEntity>.Filter.And(
@@ -68,6 +83,9 @@ public class EntityStore : IEntityStore
     public async Task UpdateEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity
     {
+        if (!eventSourcingOptions.EnableEntityStore)
+            return;
+
         var collection = GetCollection<TEntity>();
 
         var filter = Builders<TEntity>.Filter.And(

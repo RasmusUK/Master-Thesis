@@ -2,8 +2,12 @@ using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
+using EventSource.Core.Options;
 using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
+using EventSource.Persistence.Snapshot;
+using Microsoft.Extensions.Options;
 
 namespace EventSource.Infrastructure;
 
@@ -14,13 +18,15 @@ public class ReplayService : IReplayService
     private readonly IGlobalReplayContext replayContext;
     private readonly ISnapshotService snapshotService;
     private readonly IMongoDbService mongoDbService;
+    private readonly SnapshotOptions snapshotOptions;
 
     public ReplayService(
         IEventStore eventStore,
         IEntityStore entityStore,
         IGlobalReplayContext replayContext,
         ISnapshotService snapshotService,
-        IMongoDbService mongoDbService
+        IMongoDbService mongoDbService,
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.eventStore = eventStore;
@@ -28,6 +34,7 @@ public class ReplayService : IReplayService
         this.replayContext = replayContext;
         this.snapshotService = snapshotService;
         this.mongoDbService = mongoDbService;
+        snapshotOptions = eventSourcingOptions.Value.Snapshot;
     }
 
     public async Task StartReplay(ReplayMode mode = ReplayMode.Replay)
@@ -36,18 +43,18 @@ public class ReplayService : IReplayService
         if (mode == ReplayMode.Debug)
             await mongoDbService.UseDebugEntityDatabase();
         replayContext.IsLoading = true;
-        await snapshotService.TakeSnapshotAsync();
+        await TryTakeSnapshotAsync();
         replayContext.IsLoading = false;
     }
 
     public async Task StopReplay()
     {
         IReadOnlyCollection<IEvent> events;
-        var latestSnapshot = await snapshotService.GetLastSnapshotAsync();
+        var latestSnapshot = await TryGetLastSnapshotAsync();
         if (latestSnapshot is not null)
         {
-            await snapshotService.RestoreSnapshotAsync(latestSnapshot!.SnapshotId);
-            events = await eventStore.GetEventsFromAsync(latestSnapshot!.EventNumber);
+            await TryRestoreSnapshotAsync(latestSnapshot.SnapshotId);
+            events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
         }
         else
         {
@@ -67,7 +74,7 @@ public class ReplayService : IReplayService
         IReadOnlyCollection<IEvent> events;
         if (useSnapshot)
         {
-            var latestSnapshot = await snapshotService.GetLastSnapshotAsync();
+            var latestSnapshot = await TryGetLastSnapshotAsync();
             if (latestSnapshot is null)
                 events = await eventStore.GetEventsAsync();
             else
@@ -229,7 +236,7 @@ public class ReplayService : IReplayService
         long? untilNumber = null
     )
     {
-        if (!useSnapshot)
+        if (!useSnapshot || !snapshotOptions.Enabled)
             return;
 
         string? snapshotId = null;
@@ -247,6 +254,27 @@ public class ReplayService : IReplayService
 
         if (snapshotId is not null)
             await snapshotService.RestoreSnapshotAsync(snapshotId);
+    }
+
+    private async Task<SnapshotMetadata?> TryGetLastSnapshotAsync()
+    {
+        if (!snapshotOptions.Enabled)
+            return null;
+        return await snapshotService.GetLastSnapshotAsync();
+    }
+
+    private async Task TryRestoreSnapshotAsync(string snapshotId)
+    {
+        if (!snapshotOptions.Enabled)
+            return;
+        await snapshotService.RestoreSnapshotAsync(snapshotId);
+    }
+
+    private async Task TryTakeSnapshotAsync()
+    {
+        if (!snapshotOptions.Enabled)
+            return;
+        await snapshotService.TakeSnapshotAsync();
     }
 
     private async Task ProcessReplayEventsAsync(IEnumerable<IEvent> events)

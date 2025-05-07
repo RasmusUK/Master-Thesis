@@ -1,14 +1,15 @@
 using System.Reflection;
-using EventSource.Application;
 using EventSource.Application.Interfaces;
 using EventSource.Core;
-using EventSource.Infrastructure.Interfaces;
+using EventSource.Core.Options;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace EventSource.Infrastructure;
+namespace EventSource.Persistence.Snapshot;
 
 public class SnapshotService : ISnapshotService
 {
@@ -18,23 +19,87 @@ public class SnapshotService : ISnapshotService
     private readonly IEventSequenceGenerator eventSequenceGenerator;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
     private readonly IGlobalReplayContext globalReplayContext;
+    private readonly SnapshotOptions snapshotOptions;
     private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
+    private SnapshotMetadata? lastSnapshotCached;
+    private readonly object snapshotCacheLock = new();
 
     public SnapshotService(
         IMongoDbService mongoDbService,
         IEventSequenceGenerator eventSequenceGenerator,
         IEntityCollectionNameProvider entityCollectionNameProvider,
-        IGlobalReplayContext globalReplayContext
+        IGlobalReplayContext globalReplayContext,
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.mongoDbService = mongoDbService;
         this.eventSequenceGenerator = eventSequenceGenerator;
         this.entityCollectionNameProvider = entityCollectionNameProvider;
         this.globalReplayContext = globalReplayContext;
+        snapshotOptions = eventSourcingOptions.Value.Snapshot;
+    }
+
+    public async Task TakeSnapshotIfNeededAsync(long currentEventNumber)
+    {
+        if (!snapshotOptions.Enabled)
+            return;
+
+        SnapshotMetadata? lastSnapshot;
+        lock (snapshotCacheLock)
+        {
+            lastSnapshot = lastSnapshotCached;
+        }
+
+        if (lastSnapshot == null)
+        {
+            lastSnapshot = await GetLastSnapshotAsync();
+            lock (snapshotCacheLock)
+            {
+                lastSnapshotCached = lastSnapshot;
+            }
+        }
+
+        var now = DateTime.UtcNow;
+
+        var lastEventNumber = lastSnapshot?.EventNumber ?? 0;
+        var lastTime = lastSnapshot?.Timestamp ?? DateTime.MinValue;
+
+        var eventCountPassed =
+            currentEventNumber - lastEventNumber >= snapshotOptions.Trigger.EventThreshold;
+        var timePassed = HasTimePassed(lastTime, snapshotOptions.Trigger.Frequency);
+
+        var shouldTake = snapshotOptions.Trigger.Mode switch
+        {
+            SnapshotTriggerMode.EventCount => eventCountPassed,
+            SnapshotTriggerMode.Time => timePassed,
+            SnapshotTriggerMode.Either => eventCountPassed || timePassed,
+            SnapshotTriggerMode.Both => eventCountPassed && timePassed,
+            _ => false,
+        };
+
+        if (!shouldTake)
+            return;
+
+        var id = await TakeSnapshotAsync();
+
+        var updatedSnapshot = new SnapshotMetadata
+        {
+            SnapshotId = id,
+            Timestamp = now,
+            EventNumber = currentEventNumber,
+        };
+
+        lock (snapshotCacheLock)
+        {
+            lastSnapshotCached = updatedSnapshot;
+        }
+
+        await PruneOldSnapshotsAsync();
     }
 
     public async Task<string> TakeSnapshotAsync()
     {
+        ThrowIfSnapshotDisabled();
         await SnapshotLock.WaitAsync();
         try
         {
@@ -88,6 +153,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task RestoreSnapshotAsync(string snapshotId)
     {
+        ThrowIfSnapshotDisabled();
         if (!globalReplayContext.IsReplaying)
         {
             globalReplayContext.StartReplay(ReplayMode.Debug);
@@ -204,6 +270,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLastSnapshotIdAsync()
     {
+        ThrowIfSnapshotDisabled();
         var snapshots = await mongoDbService
             .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
@@ -216,6 +283,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLatestSnapshotBeforeAsync(long eventNumber)
     {
+        ThrowIfSnapshotDisabled();
         var snapshot = await mongoDbService
             .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
@@ -228,6 +296,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task<string?> GetLatestSnapshotBeforeAsync(DateTime timestamp)
     {
+        ThrowIfSnapshotDisabled();
         var snapshot = await mongoDbService
             .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
@@ -240,6 +309,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task<IReadOnlyCollection<SnapshotMetadata>> GetAllSnapshotsAsync()
     {
+        ThrowIfSnapshotDisabled();
         var documents = await mongoDbService
             .GetEntityDatabase(true)
             .GetCollection<BsonDocument>(SnapshotMetadataCollection)
@@ -254,16 +324,20 @@ public class SnapshotService : ISnapshotService
         return snapshots;
     }
 
-    public async Task<SnapshotMetadata?> GetLastSnapshotAsync() =>
-        await mongoDbService
+    public async Task<SnapshotMetadata?> GetLastSnapshotAsync()
+    {
+        ThrowIfSnapshotDisabled();
+        return await mongoDbService
             .GetEntityDatabase(true)
             .GetCollection<SnapshotMetadata>(SnapshotMetadataCollection)
             .Find(FilterDefinition<SnapshotMetadata>.Empty)
             .Sort(Builders<SnapshotMetadata>.Sort.Descending("Timestamp"))
             .FirstOrDefaultAsync();
+    }
 
     public async Task DeleteSnapshotAsync(string snapshotId)
     {
+        ThrowIfSnapshotDisabled();
         var database = mongoDbService.GetEntityDatabase(true);
         var collections = await (await database.ListCollectionNamesAsync()).ToListAsync();
 
@@ -275,6 +349,14 @@ public class SnapshotService : ISnapshotService
         {
             await database.DropCollectionAsync(collectionName);
         }
+    }
+
+    private void ThrowIfSnapshotDisabled()
+    {
+        if (!snapshotOptions.Enabled)
+            throw new InvalidOperationException(
+                "Snapshots are disabled. Please enable them in the configuration."
+            );
     }
 
     private async Task<bool> CopyCollectionAsync<T>(
@@ -311,5 +393,54 @@ public class SnapshotService : ISnapshotService
         if (docs.Count == 0)
             return;
         await target.InsertManyAsync(docs);
+    }
+
+    private static bool HasTimePassed(DateTime lastSnapshot, SnapshotFrequency frequency)
+    {
+        var now = DateTime.UtcNow;
+        return frequency switch
+        {
+            SnapshotFrequency.Day => (now - lastSnapshot).TotalDays >= 1,
+            SnapshotFrequency.Week => (now - lastSnapshot).TotalDays >= 7,
+            SnapshotFrequency.Month => (now - lastSnapshot).TotalDays >= 30,
+            SnapshotFrequency.Year => (now - lastSnapshot).TotalDays >= 365,
+            _ => false,
+        };
+    }
+
+    private async Task PruneOldSnapshotsAsync()
+    {
+        if (
+            !snapshotOptions.Enabled
+            || snapshotOptions.Retention.Strategy == SnapshotRetentionStrategy.All
+        )
+            return;
+
+        var snapshots = await GetAllSnapshotsAsync();
+
+        switch (snapshotOptions.Retention.Strategy)
+        {
+            case SnapshotRetentionStrategy.Count:
+            {
+                var toDelete = snapshots
+                    .OrderByDescending(s => s.Timestamp)
+                    .Skip(snapshotOptions.Retention.MaxCount)
+                    .ToList();
+
+                foreach (var snapshot in toDelete)
+                    await DeleteSnapshotAsync(snapshot.SnapshotId);
+                break;
+            }
+            case SnapshotRetentionStrategy.Time:
+            {
+                var threshold = DateTime.UtcNow.AddDays(-snapshotOptions.Retention.MaxAgeDays);
+
+                var toDelete = snapshots.Where(s => s.Timestamp < threshold).ToList();
+
+                foreach (var snapshot in toDelete)
+                    await DeleteSnapshotAsync(snapshot.SnapshotId);
+                break;
+            }
+        }
     }
 }

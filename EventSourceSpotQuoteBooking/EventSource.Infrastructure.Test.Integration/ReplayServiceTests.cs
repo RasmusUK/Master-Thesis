@@ -3,6 +3,7 @@ using EventSource.Core.Interfaces;
 using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Snapshot;
 using EventSource.Test.Utilities;
 
 namespace EventSource.Infrastructure.Test.Integration;

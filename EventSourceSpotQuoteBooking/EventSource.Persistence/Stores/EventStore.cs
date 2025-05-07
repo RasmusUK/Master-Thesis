@@ -1,8 +1,12 @@
 using EventSource.Application.Interfaces;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
+using EventSource.Core.Options;
 using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
+using EventSource.Persistence.Snapshot;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace EventSource.Persistence.Stores;
@@ -12,20 +16,29 @@ public class EventStore : IEventStore
     private readonly IMongoCollection<EventBase> collection;
     private readonly IEventSequenceGenerator sequenceGenerator;
     private readonly IPersonalDataService personalDataService;
+    private readonly ISnapshotService snapshotService;
+    private readonly EventSourcingOptions eventSourcingOptions;
 
     public EventStore(
         IMongoDbService mongoDbService,
         IEventSequenceGenerator sequenceGenerator,
-        IPersonalDataService personalDataService
+        IPersonalDataService personalDataService,
+        ISnapshotService snapshotService,
+        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.sequenceGenerator = sequenceGenerator;
         this.personalDataService = personalDataService;
+        this.snapshotService = snapshotService;
+        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
         collection = mongoDbService.EventCollection;
     }
 
     public async Task InsertEventAsync(IEvent e)
     {
+        if (!eventSourcingOptions.EnableEventStore)
+            return;
+
         if (e is not EventBase eventBase)
             throw new ArgumentException("Event must be of type EventBase", nameof(e));
 
@@ -37,12 +50,14 @@ public class EventStore : IEventStore
         await personalDataService.StripAndStoreAsync(eventBase);
 
         await collection.InsertOneAsync(eventBase);
+
+        await snapshotService.TakeSnapshotIfNeededAsync(eventBase.EventNumber);
     }
 
     public async Task<IEvent?> GetEventByIdAsync(Guid id)
     {
         var evt = await collection.Find(e => e.Id == id).FirstOrDefaultAsync();
-        if (evt != null)
+        if (evt is not null)
             await personalDataService.RestoreAsync(evt);
         return evt;
     }

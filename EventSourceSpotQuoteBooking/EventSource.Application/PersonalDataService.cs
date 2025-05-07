@@ -3,20 +3,30 @@ using EventSource.Application.Interfaces;
 using EventSource.Core;
 using EventSource.Core.Events;
 using EventSource.Core.Interfaces;
+using EventSource.Core.Options;
+using Microsoft.Extensions.Options;
 
 namespace EventSource.Application;
 
 public class PersonalDataService : IPersonalDataService
 {
     private readonly IPersonalDataStore personalDataStore;
+    private readonly EventSourcingOptions eventSourcingOptions;
 
-    public PersonalDataService(IPersonalDataStore store)
+    public PersonalDataService(
+        IPersonalDataStore store,
+        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
+    )
     {
         personalDataStore = store;
+        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
     }
 
     public async Task StripAndStoreAsync(IEvent e)
     {
+        if (!eventSourcingOptions.EnablePersonalDataStore)
+            return;
+
         var entity = GetEntityFromEvent(e);
         if (entity is null)
             return;
@@ -30,6 +40,9 @@ public class PersonalDataService : IPersonalDataService
 
     public async Task RestoreAsync(IEvent e)
     {
+        if (!eventSourcingOptions.EnablePersonalDataStore)
+            return;
+
         var entity = GetEntityFromEvent(e);
         if (entity is null)
             return;
@@ -46,9 +59,9 @@ public class PersonalDataService : IPersonalDataService
         return entityProp?.GetValue(e);
     }
 
-    private void StripPersonalData(object obj, Dictionary<string, object?> dict, string path)
+    private void StripPersonalData(object? obj, Dictionary<string, object?> dict, string path)
     {
-        if (obj == null)
+        if (obj is null)
             return;
 
         var type = obj.GetType();
@@ -72,9 +85,9 @@ public class PersonalDataService : IPersonalDataService
         }
     }
 
-    private void RestorePersonalData(object obj, Dictionary<string, object?> dict, string path)
+    private void RestorePersonalData(object? obj, Dictionary<string, object?> dict, string path)
     {
-        if (obj == null)
+        if (obj is null)
             return;
 
         var type = obj.GetType();

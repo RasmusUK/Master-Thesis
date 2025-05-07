@@ -1,6 +1,7 @@
 using System.Reflection;
 using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;

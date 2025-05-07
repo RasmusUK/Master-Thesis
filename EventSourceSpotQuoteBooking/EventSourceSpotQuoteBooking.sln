@@ -29,6 +29,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Persistence.Tes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Infrastructure.Test.Integration", "EventSource.Infrastructure.Test.Integration\EventSource.Infrastructure.Test.Integration.csproj", "{4BF168F8-EC79-4F59-BF53-3AF2DFB80B07}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSource.Test.Performance", "EventSource.Test.Performance\EventSource.Test.Performance.csproj", "{DE55A946-0C44-405B-B990-B80F80F1A35C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -79,6 +81,10 @@ Global
 		{4BF168F8-EC79-4F59-BF53-3AF2DFB80B07}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BF168F8-EC79-4F59-BF53-3AF2DFB80B07}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BF168F8-EC79-4F59-BF53-3AF2DFB80B07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE55A946-0C44-405B-B990-B80F80F1A35C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE55A946-0C44-405B-B990-B80F80F1A35C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE55A946-0C44-405B-B990-B80F80F1A35C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE55A946-0C44-405B-B990-B80F80F1A35C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -92,5 +98,6 @@ Global
 		{D25A2C3C-396E-4840-AA7E-44066B65454E} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 		{44664B0C-C1A5-49C2-83B8-B54797ECE2DA} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 		{4BF168F8-EC79-4F59-BF53-3AF2DFB80B07} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
+		{DE55A946-0C44-405B-B990-B80F80F1A35C} = {F4B7197B-F0AC-4520-9435-C8D6E05B8355}
 	EndGlobalSection
 EndGlobal

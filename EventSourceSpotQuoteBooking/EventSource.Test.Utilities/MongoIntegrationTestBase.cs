@@ -5,33 +5,33 @@ namespace EventSource.Test.Utilities;
 
 public class MongoIntegrationTestBase : IAsyncLifetime
 {
-    private readonly IMongoDbService mongoDbService;
-    private readonly IGlobalReplayContext replayContext;
+    protected readonly IMongoDbService MongoDbService;
+    protected readonly IGlobalReplayContext ReplayContext;
 
     protected MongoIntegrationTestBase(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext
     )
     {
-        this.mongoDbService = mongoDbService;
-        this.replayContext = replayContext;
+        this.MongoDbService = mongoDbService;
+        this.ReplayContext = replayContext;
     }
 
     public async Task InitializeAsync()
     {
-        if (replayContext.IsReplaying)
-            replayContext.StopReplay();
+        if (ReplayContext.IsReplaying)
+            ReplayContext.StopReplay();
 
-        await mongoDbService.CleanUpAsync();
-        await mongoDbService.UseProductionEntityDatabase();
+        await MongoDbService.CleanUpAsync();
+        await MongoDbService.UseProductionEntityDatabase();
     }
 
     public async Task DisposeAsync()
     {
-        if (replayContext.IsReplaying)
-            replayContext.StopReplay();
+        if (ReplayContext.IsReplaying)
+            ReplayContext.StopReplay();
 
-        await mongoDbService.CleanUpAsync();
-        await mongoDbService.UseProductionEntityDatabase();
+        await MongoDbService.CleanUpAsync();
+        await MongoDbService.UseProductionEntityDatabase();
     }
 }

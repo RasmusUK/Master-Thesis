@@ -1,4 +1,4 @@
-namespace EventSource.Persistence;
+namespace EventSource.Persistence.Options;
 
 public class MongoDbOptions
 {

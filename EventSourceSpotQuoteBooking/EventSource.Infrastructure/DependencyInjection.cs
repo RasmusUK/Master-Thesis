@@ -1,9 +1,12 @@
 using EventSource.Application;
 using EventSource.Application.Interfaces;
 using EventSource.Core.Interfaces;
+using EventSource.Core.Options;
 using EventSource.Infrastructure.Interfaces;
 using EventSource.Persistence;
 using EventSource.Persistence.Interfaces;
+using EventSource.Persistence.Options;
+using EventSource.Persistence.Snapshot;
 using EventSource.Persistence.Stores;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +26,9 @@ public static class DependencyInjection
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
         return services
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
+            .Configure<EventSourcingOptions>(
+                configuration.GetSection(EventSourcingOptions.EventSourcing)
+            )
             .AddSingleton<IPersonalDataStore, PersonalDataStore>()
             .AddSingleton<IPersonalDataService, PersonalDataService>()
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
