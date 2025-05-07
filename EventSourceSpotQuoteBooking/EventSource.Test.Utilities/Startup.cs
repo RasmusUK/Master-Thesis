@@ -59,7 +59,8 @@ public class Startup
 
             RegistrationService.RegisterEntities(
                 collectionNameProvider,
-                (typeof(TestEntity), "TestEntity")
+                (typeof(TestEntity), "TestEntity"),
+                (typeof(PersonEntity), "PersonEntity")
             );
 
             return collectionNameProvider;

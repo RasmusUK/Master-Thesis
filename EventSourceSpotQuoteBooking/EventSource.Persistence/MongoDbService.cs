@@ -3,9 +3,7 @@ using EventSource.Persistence.Events;
 using EventSource.Persistence.Interfaces;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 
 namespace EventSource.Persistence;
@@ -13,6 +11,7 @@ namespace EventSource.Persistence;
 public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<EventBase> EventCollection { get; }
+    public IMongoCollection<PersonalData> PersonalDataCollection { get; }
     public IMongoCollection<BsonDocument> CounterCollection { get; }
     private IMongoDatabase entityDatabase;
     private readonly IMongoDatabase eventDatabase;
@@ -41,6 +40,7 @@ public class MongoDbService : IMongoDbService
         (personalDataDatabase, personalDataClient) = CreateDatabase(options.PersonalDataStore);
 
         EventCollection = eventDatabase.GetCollection<EventBase>("events");
+        PersonalDataCollection = personalDataDatabase.GetCollection<PersonalData>("personalData");
         CounterCollection = eventDatabase.GetCollection<BsonDocument>("counters");
 
         entityDatabase = productionEntityDatabase;

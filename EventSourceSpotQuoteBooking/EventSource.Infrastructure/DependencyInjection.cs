@@ -21,23 +21,15 @@ public static class DependencyInjection
     )
     {
         BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
-        return services.AddApplicationServices().AddPersistence(configuration);
-    }
-
-    private static IServiceCollection AddApplicationServices(this IServiceCollection services) =>
-        services
+        return services
+            .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
+            .AddSingleton<IPersonalDataStore, PersonalDataStore>()
+            .AddSingleton<IPersonalDataService, PersonalDataService>()
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IReplayService, ReplayService>()
             .AddSingleton<IGlobalReplayContext, GlobalReplayContext>()
             .AddSingleton<IMigrationTypeRegistry, MigrationTypeRegistry>()
-            .AddSingleton<IEntityMigrator, EntityMigrator>();
-
-    private static IServiceCollection AddPersistence(
-        this IServiceCollection services,
-        IConfiguration configuration
-    ) =>
-        services
-            .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
+            .AddSingleton<IEntityMigrator, EntityMigrator>()
             .AddSingleton<IEntityUpgradeService, EntityUpgradeService>()
             .AddSingleton<IEventSequenceGenerator, EventSequenceGenerator>()
             .AddSingleton<IMongoDbService, MongoDbService>()
@@ -47,4 +39,5 @@ public static class DependencyInjection
             .AddSingleton<ISnapshotService, SnapshotService>()
             .AddScoped<ITransactionManager, TransactionManager>()
             .AddScoped(typeof(IRepository<>), typeof(SmartRepository<>));
+    }
 }
