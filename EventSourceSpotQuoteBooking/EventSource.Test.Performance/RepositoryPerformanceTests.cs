@@ -10,11 +10,6 @@ namespace EventSource.Test.Performance;
 [Collection("Integration")]
 public class RepositoryPerformanceTests : MongoIntegrationTestBase
 {
-    private static readonly string createPerformancePath = Path.Combine(
-        CsvLogger.TestResultsDir,
-        $"CreatePerformance.{DateTime.UtcNow:yyyyMMddHHmmss}.csv"
-    );
-
     public RepositoryPerformanceTests(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext
@@ -22,51 +17,31 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
         : base(mongoDbService, replayContext) { }
 
     [Theory]
-    [InlineData("Small", 1000, true, true, true)]
-    [InlineData("Small", 1000, true, true, false)]
-    [InlineData("Small", 1000, true, false, true)]
-    [InlineData("Small", 1000, true, false, false)]
-    [InlineData("Small", 1000, false, true, false)]
-    [InlineData("Small", 10000, true, true, true)]
-    [InlineData("Small", 10000, true, true, false)]
-    [InlineData("Small", 10000, true, false, true)]
-    [InlineData("Small", 10000, true, false, false)]
-    [InlineData("Small", 10000, false, true, false)]
-    [InlineData("Small", 100000, true, true, true)]
-    [InlineData("Small", 100000, true, true, false)]
-    [InlineData("Small", 100000, true, false, true)]
-    [InlineData("Small", 100000, true, false, false)]
-    [InlineData("Small", 100000, false, true, false)]
-    [InlineData("Medium", 1000, true, true, true)]
-    [InlineData("Medium", 1000, true, true, false)]
-    [InlineData("Medium", 1000, true, false, true)]
-    [InlineData("Medium", 1000, true, false, false)]
-    [InlineData("Medium", 1000, false, true, false)]
-    [InlineData("Medium", 10000, true, true, true)]
-    [InlineData("Medium", 10000, true, true, false)]
-    [InlineData("Medium", 10000, true, false, true)]
-    [InlineData("Medium", 10000, true, false, false)]
-    [InlineData("Medium", 10000, false, true, false)]
-    [InlineData("Medium", 100000, true, true, true)]
-    [InlineData("Medium", 100000, true, true, false)]
-    [InlineData("Medium", 100000, true, false, true)]
-    [InlineData("Medium", 100000, true, false, false)]
-    [InlineData("Medium", 100000, false, true, false)]
-    [InlineData("Large", 1000, true, true, true)]
-    [InlineData("Large", 1000, true, true, false)]
-    [InlineData("Large", 1000, true, false, true)]
-    [InlineData("Large", 1000, true, false, false)]
-    [InlineData("Large", 1000, false, true, false)]
-    [InlineData("Large", 10000, true, true, true)]
-    [InlineData("Large", 10000, true, true, false)]
-    [InlineData("Large", 10000, true, false, true)]
-    [InlineData("Large", 10000, true, false, false)]
-    [InlineData("Large", 10000, false, true, false)]
-    [InlineData("Large", 100000, true, true, true)]
-    [InlineData("Large", 100000, true, true, false)]
-    [InlineData("Large", 100000, true, false, true)]
-    [InlineData("Large", 100000, true, false, false)]
-    [InlineData("Large", 100000, false, true, false)]
+    [InlineData("S1", 100, true, true, true)]
+    [InlineData("S1", 100, true, true, false)]
+    [InlineData("S1", 100, true, false, true)]
+    [InlineData("S1", 100, true, false, false)]
+    [InlineData("S1", 100, false, true, false)]
+    [InlineData("S2", 100, true, true, true)]
+    [InlineData("S2", 100, true, true, false)]
+    [InlineData("S2", 100, true, false, true)]
+    [InlineData("S2", 100, true, false, false)]
+    [InlineData("S2", 100, false, true, false)]
+    [InlineData("S3", 100, true, true, true)]
+    [InlineData("S3", 100, true, true, false)]
+    [InlineData("S3", 100, true, false, true)]
+    [InlineData("S3", 100, true, false, false)]
+    [InlineData("S3", 100, false, true, false)]
+    [InlineData("S4", 100, true, true, true)]
+    [InlineData("S4", 100, true, true, false)]
+    [InlineData("S4", 100, true, false, true)]
+    [InlineData("S4", 100, true, false, false)]
+    [InlineData("S4", 100, false, true, false)]
+    [InlineData("S5", 100, true, true, true)]
+    [InlineData("S5", 100, true, true, false)]
+    [InlineData("S5", 100, true, false, true)]
+    [InlineData("S5", 100, true, false, false)]
+    [InlineData("S5", 100, false, true, false)]
     public async Task CreatePerformance(
         string entitySize,
         int count,
@@ -75,45 +50,42 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
         bool personalStore
     )
     {
-        for (var j = 0; j < 1; j++)
-        {
-            var provider = ServiceProvider.BuildServiceProviderWithSettings(
-                new Dictionary<string, string>
-                {
-                    ["EventSourcing:EnableEventStore"] = $"{eventStore}",
-                    ["EventSourcing:EnableEntityStore"] = $"{entityStore}",
-                    ["EventSourcing:EnablePersonalDataStore"] = $"{personalStore}",
-                }
-            );
-
-            var repo = provider.GetRequiredService<IRepository<TestEntity>>();
-
-            var insertDurations = new List<long>();
-            var entity = TestEntityFactory.CreateEntityBySize(entitySize);
-            await repo.CreateAsync(entity);
-
-            for (var i = 0; i < count; i++)
+        var provider = ServiceProvider.BuildServiceProviderWithSettings(
+            new Dictionary<string, string>
             {
-                var insertWatch = Stopwatch.StartNew();
-                entity.Id = Guid.NewGuid();
-                await repo.CreateAsync(entity);
-                insertWatch.Stop();
-                insertDurations.Add(insertWatch.ElapsedMilliseconds);
+                ["EventSourcing:EnableEventStore"] = $"{eventStore}",
+                ["EventSourcing:EnableEntityStore"] = $"{entityStore}",
+                ["EventSourcing:EnablePersonalDataStore"] = $"{personalStore}",
             }
+        );
 
-            CsvLogger.LogRepoCreate(
-                createPerformancePath,
-                nameof(CreatePerformance),
-                eventStore,
-                entityStore,
-                personalStore,
-                entitySize,
-                TestEntityFactory.GetSizeInMb(entity),
-                count,
-                TestEntityFactory.GetPropertyCountBySizeName(entitySize),
-                TestEntityFactory.GetNodeCountBySizeName(entitySize),
-                insertDurations
-            );
+        var repo = provider.GetRequiredService<IRepository<TestEntity>>();
+        var durations = new List<long>();
+        var entity = TestEntityFactory.CreateEntityBySize(entitySize);
+
+        //Warmup
+        await repo.CreateAsync(entity);
+
+        for (var i = 0; i < count; i++)
+        {
+            entity.Id = Guid.NewGuid();
+            var sw = Stopwatch.StartNew();
+            await repo.CreateAsync(entity);
+            sw.Stop();
+            durations.Add(sw.ElapsedMilliseconds);
         }
+
+        CsvLogger.LogRepo(
+            nameof(CreatePerformance),
+            eventStore,
+            entityStore,
+            personalStore,
+            entitySize,
+            TestEntityFactory.GetBsonSizeInMb(entity),
+            count,
+            TestEntityFactory.GetPropertyCountBySizeName(entitySize),
+            TestEntityFactory.GetNodeCountBySizeName(entitySize),
+            durations
+        );
     }
 }

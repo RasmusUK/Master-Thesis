@@ -6,8 +6,8 @@ public static class CsvLogger
 {
     private static readonly object fileLock = new();
     private static readonly HashSet<string> initializedFiles = new();
-
-    public static readonly string TestResultsDir;
+    private static readonly string TestResultsDir;
+    private static readonly DateTime Date = DateTime.UtcNow;
 
     static CsvLogger()
     {
@@ -26,8 +26,7 @@ public static class CsvLogger
         }
     }
 
-    public static void LogRepoCreate(
-        string fileName,
+    public static void LogRepo(
         string testName,
         bool eventTrue,
         bool entityTrue,
@@ -40,13 +39,15 @@ public static class CsvLogger
         IEnumerable<long> durations
     )
     {
-        var sorted = durations.OrderBy(x => x).ToList();
-        var min = sorted.FirstOrDefault();
-        var max = sorted.LastOrDefault();
-        var avg = durations.Average();
-        var total = durations.Sum();
+        var fullPath = Path.Combine(TestResultsDir, $"{testName}-{Date:yyyy-MM-dd-HH-mm-ss}.csv");
 
-        var fullPath = Path.Combine(TestResultsDir, fileName);
+        var sb = new StringBuilder();
+        foreach (var duration in durations)
+            sb.AppendLine(
+                $"{testName};{sizeName};{mb};{count};{nodes};{propCount};{eventTrue};{entityTrue};{personalTrue};{duration:F2}"
+            );
+
+        var line = sb.ToString();
 
         lock (fileLock)
         {
@@ -56,7 +57,7 @@ public static class CsvLogger
                 {
                     File.WriteAllText(
                         fullPath,
-                        "TestName;SizeName;Size (mb);Count;Nodes;Props;EventStoreEnabled;EntityStoreEnabled;PersonalDataStoreEnabled;Min (ms);Max (ms);Avg (ms);Total (ms)\n",
+                        "TestName;SizeName;Size (mb);Count;Nodes;Props;EventStoreEnabled;EntityStoreEnabled;PersonalDataStoreEnabled;Time (ms)\n",
                         Encoding.UTF8
                     );
                 }
@@ -64,9 +65,7 @@ public static class CsvLogger
                 initializedFiles.Add(fullPath);
             }
 
-            var line =
-                $"{testName};{sizeName};{mb};{count};{nodes};{propCount};{eventTrue};{entityTrue};{personalTrue};{min:F2};{max:F2};{avg:F2};{total:F2}";
-            File.AppendAllText(fullPath, line + Environment.NewLine);
+            File.AppendAllText(fullPath, line);
         }
     }
 }

@@ -1,4 +1,4 @@
-using System.Text;
+using MongoDB.Bson;
 
 namespace EventSource.Test.Performance;
 
@@ -8,9 +8,11 @@ public static class TestEntityFactory
     {
         return size switch
         {
-            "Small" => CreateNested(depth: 1, width: 1),
-            "Medium" => CreateNested(depth: 3, width: 4),
-            "Large" => CreateNested(depth: 4, width: 8),
+            "S1" => CreateNested(depth: 1, width: 1),
+            "S2" => CreateNested(depth: 3, width: 4),
+            "S3" => CreateNested(depth: 4, width: 6),
+            "S4" => CreateNested(depth: 4, width: 10),
+            "S5" => CreateNested(depth: 5, width: 8),
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null),
         };
     }
@@ -75,10 +77,10 @@ public static class TestEntityFactory
             .ToList();
     }
 
-    public static double GetSizeInMb(object obj)
+    public static double GetBsonSizeInMb<T>(T obj)
     {
-        var json = System.Text.Json.JsonSerializer.Serialize(obj);
-        return Encoding.UTF8.GetByteCount(json) / (1024.0 * 1024.0);
+        var bson = obj.ToBson();
+        return bson.Length / (1024.0 * 1024.0);
     }
 
     public static int GetPropertyCountBySizeName(string size) => GetNodeCountBySizeName(size) * 20;
@@ -87,9 +89,11 @@ public static class TestEntityFactory
     {
         var (depth, width) = size switch
         {
-            "Small" => (1, 1),
-            "Medium" => (3, 4),
-            "Large" => (6, 10),
+            "S1" => (1, 1),
+            "S2" => (3, 4),
+            "S3" => (4, 6),
+            "S4" => (4, 10),
+            "S5" => (5, 8),
             _ => throw new ArgumentOutOfRangeException(nameof(size), size, null),
         };
 
