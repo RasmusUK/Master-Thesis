@@ -23,7 +23,16 @@ public static class DependencyInjection
         IConfiguration configuration
     )
     {
-        BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        try
+        {
+            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.Standard));
+        }
+        catch (BsonSerializationException e)
+        {
+            if (!e.Message.Contains("There is already a serializer registered for type Guid"))
+                throw;
+        }
+
         return services
             .Configure<MongoDbOptions>(configuration.GetSection(MongoDbOptions.MongoDb))
             .Configure<EventSourcingOptions>(

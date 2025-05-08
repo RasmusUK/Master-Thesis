@@ -6,18 +6,11 @@ namespace EventSource.Infrastructure;
 
 public static class RegistrationService
 {
-    private static bool registered;
-
     public static void RegisterEntities(
         IEntityCollectionNameProvider collectionNameProvider,
         params (Type Type, string CollectionName)[] entities
     )
     {
-        if (registered)
-            return;
-
-        registered = true;
-
         foreach (var (entityType, collectionName) in entities)
         {
             RegisterGenericEvent(typeof(CreateEvent<>), entityType);

@@ -13,8 +13,8 @@ public class MongoIntegrationTestBase : IAsyncLifetime
         IGlobalReplayContext replayContext
     )
     {
-        this.MongoDbService = mongoDbService;
-        this.ReplayContext = replayContext;
+        MongoDbService = mongoDbService;
+        ReplayContext = replayContext;
     }
 
     public async Task InitializeAsync()

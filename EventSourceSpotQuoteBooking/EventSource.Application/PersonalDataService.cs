@@ -65,7 +65,10 @@ public class PersonalDataService : IPersonalDataService
             return;
 
         var type = obj.GetType();
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (
+            var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(p => p.GetIndexParameters().Length == 0)
+        )
         {
             if (!prop.CanRead || !prop.CanWrite)
                 continue;
