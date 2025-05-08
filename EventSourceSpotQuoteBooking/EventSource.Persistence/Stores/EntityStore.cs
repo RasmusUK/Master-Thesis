@@ -108,6 +108,9 @@ public class EntityStore : IEntityStore
     public async Task<TEntity?> GetEntityByIdAsync<TEntity>(Guid id)
         where TEntity : IEntity
     {
+        if (await UseMongoQuery<TEntity>())
+            return await GetCollection<TEntity>().Find(e => e.Id == id).FirstOrDefaultAsync();
+
         var collection = GetBsonCollection(typeof(TEntity));
         var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
 
@@ -133,6 +136,9 @@ public class EntityStore : IEntityStore
     public async Task<IReadOnlyCollection<TEntity>> GetAllAsync<TEntity>()
         where TEntity : IEntity
     {
+        if (await UseMongoQuery<TEntity>())
+            return await GetCollection<TEntity>().Find(_ => true).ToListAsync();
+
         var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
         return docs.Select(MigrateEntity<TEntity>).ToList();

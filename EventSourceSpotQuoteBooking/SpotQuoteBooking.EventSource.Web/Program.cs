@@ -19,6 +19,7 @@ builder.Services.AddMudServices();
 builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddEventSourcing(builder.Configuration);
+
 builder.Services.AddScoped<ICountryFetcher, CountryFetcher>();
 builder.Services.AddScoped<ISeeder, Seeder>();
 builder.Services.AddScoped<IAddressService, AddressService>();
@@ -29,17 +30,41 @@ builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBuyingRateService, BuyingRateService>();
 builder.Services.AddScoped<SpotQuoteValidator, SpotQuoteValidator>();
 
-var collectionNameProvider = new EntityCollectionNameProvider(new MigrationTypeRegistry());
-RegistrationService.RegisterEntities(
-    collectionNameProvider,
-    (typeof(SpotQuote), "SpotQuote"),
-    (typeof(Address), "Address"),
-    (typeof(Customer), "Customer"),
-    (typeof(Country), "Country"),
-    (typeof(Location), "Location"),
-    (typeof(BuyingRate), "BuyingRate")
-);
-builder.Services.AddSingleton<IEntityCollectionNameProvider>(collectionNameProvider);
+builder.Services.AddSingleton<ISchemaVersionRegistry>(_ =>
+{
+    var registry = new SchemaVersionRegistry();
+    return registry;
+});
+
+builder.Services.AddSingleton<IMigrationTypeRegistry>(_ =>
+{
+    var registry = new MigrationTypeRegistry();
+    return registry;
+});
+
+builder.Services.AddSingleton<IEntityMigrator>(_ =>
+{
+    var migrator = new EntityMigrator();
+    return migrator;
+});
+
+builder.Services.AddSingleton<IEntityCollectionNameProvider>(sp =>
+{
+    var registry = sp.GetRequiredService<IMigrationTypeRegistry>();
+    var collectionNameProvider = new EntityCollectionNameProvider(registry);
+
+    RegistrationService.RegisterEntities(
+        collectionNameProvider,
+        (typeof(SpotQuote), "SpotQuote"),
+        (typeof(Address), "Address"),
+        (typeof(Customer), "Customer"),
+        (typeof(Country), "Country"),
+        (typeof(Location), "Location"),
+        (typeof(BuyingRate), "BuyingRate")
+    );
+
+    return collectionNameProvider;
+});
 
 var app = builder.Build();
 
