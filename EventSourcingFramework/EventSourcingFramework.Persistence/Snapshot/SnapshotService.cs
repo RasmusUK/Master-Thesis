@@ -41,7 +41,7 @@ public class SnapshotService : ISnapshotService
 
     public async Task TakeSnapshotIfNeededAsync(long currentEventNumber)
     {
-        if (!snapshotOptions.Enabled)
+        if (!snapshotOptions.Enabled || globalReplayContext.IsReplaying)
             return;
 
         SnapshotMetadata? lastSnapshot;
@@ -349,6 +349,10 @@ public class SnapshotService : ISnapshotService
         {
             await database.DropCollectionAsync(collectionName);
         }
+        
+        var metadataCollection = database.GetCollection<SnapshotMetadata>(SnapshotMetadataCollection);
+        var filter = Builders<SnapshotMetadata>.Filter.Eq(s => s.SnapshotId, snapshotId);
+        await metadataCollection.DeleteOneAsync(filter);
     }
 
     private void ThrowIfSnapshotDisabled()

@@ -27,7 +27,7 @@ public class EntityStore : IEntityStore
         IEntityMigrator entityMigrator,
         ISchemaVersionRegistry schemaVersionRegistry,
         IMigrationTypeRegistry migrationTypeRegistry,
-        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.mongoDbService = mongoDbService;
@@ -35,7 +35,7 @@ public class EntityStore : IEntityStore
         this.entityMigrator = entityMigrator;
         this.schemaVersionRegistry = schemaVersionRegistry;
         this.migrationTypeRegistry = migrationTypeRegistry;
-        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
     }
 
     public async Task InsertEntityAsync<TEntity>(TEntity entity)

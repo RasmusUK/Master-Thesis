@@ -1,17 +1,28 @@
+using EventSourcingFramework.Application.Interfaces;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Options;
 using EventSourcingFramework.Persistence.Events;
+using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Persistence.Snapshot;
+using EventSourcingFramework.Persistence.Stores;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Persistence.Test.Integration;
 
 [Collection("Integration")]
-public class EventStoreTests
+public class EventStoreTests : MongoIntegrationTestBase
 {
     private readonly IEventStore eventStore;
+    private readonly IEventSequenceGenerator eventSequenceGenerator;
+    private readonly IPersonalDataService personalDataService;
+    private readonly ISnapshotService snapshotService;
 
-    public EventStoreTests(IEventStore eventStore)
+    public EventStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IEventStore eventStore, IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService, ISnapshotService snapshotService) : base(mongoDbService, replayContext)
     {
         this.eventStore = eventStore;
+        this.eventSequenceGenerator = eventSequenceGenerator;
+        this.personalDataService = personalDataService;
+        this.snapshotService = snapshotService;
     }
 
     [Fact]
@@ -137,5 +148,29 @@ public class EventStoreTests
 
         // Assert
         Assert.Contains(allEvents, e => e.Id == testEvent.Id);
+    }
+
+    [Fact]
+    public async Task InsertEventAsync_DoesNothing_WhenEventStoreIsDisabled()
+    {
+        // Arrange
+        var store = new EventStore(
+            MongoDbService,
+            eventSequenceGenerator,
+            personalDataService,
+            snapshotService,
+            Microsoft.Extensions.Options.Options.Create(new EventSourcingOptions
+            {
+                EnableEventStore = false
+            }));
+
+        var createEvent = new CreateEvent<TestEntity>(new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" });
+
+        // Act
+        await store.InsertEventAsync(createEvent);
+        var events = await store.GetEventsAsync();
+
+        // Assert
+        Assert.Empty(events);
     }
 }

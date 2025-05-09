@@ -236,6 +236,66 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         // Assert
         Assert.True(allSnapshots.Any());
     }
+    
+    [Fact]
+    public async Task TakeSnapshotIfNeededAsync_PrunesSnapshots_OlderThanMaxAge()
+    {
+        // Arrange
+        var maxAgeDays = 2;
+        var configuredSnapshotService = CreateSnapshotService(
+            new SnapshotOptions
+            {
+                Enabled = true,
+                Trigger = new SnapshotTriggerOptions
+                {
+                    Mode = SnapshotTriggerMode.EventCount,
+                    EventThreshold = 1,
+                    Frequency = SnapshotFrequency.Day,
+                },
+                Retention = new SnapshotRetentionOptions
+                {
+                    Strategy = SnapshotRetentionStrategy.Time,
+                    MaxAgeDays = maxAgeDays,
+                }
+            }
+        );
+
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "RetentionTest" };
+        await repository.CreateAsync(entity);
+
+        var now = DateTime.UtcNow;
+        var currentEventNumber = await sequenceGenerator.GetCurrentSequenceNumberAsync();
+
+        var snapshotCollection = MongoDbService
+            .GetEntityDatabase(true)
+            .GetCollection<SnapshotMetadata>("snapshots");
+
+        await snapshotCollection.InsertManyAsync(new[]
+        {
+            new SnapshotMetadata
+            {
+                SnapshotId = "old-1",
+                EventNumber = currentEventNumber - 10,
+                Timestamp = now.AddDays(-maxAgeDays - 1)
+            },
+            new SnapshotMetadata
+            {
+                SnapshotId = "old-2",
+                EventNumber = currentEventNumber - 5,
+                Timestamp = now.AddDays(-maxAgeDays - 2)
+            }
+        });
+
+        // Act
+        await configuredSnapshotService.TakeSnapshotIfNeededAsync(currentEventNumber + 1);
+        var remainingSnapshots = await configuredSnapshotService.GetAllSnapshotsAsync();
+
+        // Assert
+        Assert.DoesNotContain(remainingSnapshots, s => s.SnapshotId == "old-1");
+        Assert.DoesNotContain(remainingSnapshots, s => s.SnapshotId == "old-2");
+        Assert.Contains(remainingSnapshots, s => s.SnapshotId != "old-1" && s.SnapshotId != "old-2");
+    }
+
 
     private SnapshotService CreateSnapshotService(SnapshotOptions options)
     {

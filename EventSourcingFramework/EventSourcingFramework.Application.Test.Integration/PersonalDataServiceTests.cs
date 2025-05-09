@@ -1,9 +1,12 @@
 using EventSourcingFramework.Application.Interfaces;
+using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Options;
 using EventSourcingFramework.Persistence;
 using EventSourcingFramework.Persistence.Events;
 using EventSourcingFramework.Persistence.Interfaces;
 using EventSourcingFramework.Test.Utilities;
+using Microsoft.Extensions.Options;
 using Moq;
 
 namespace EventSourcingFramework.Application.Test.Integration;
@@ -164,5 +167,87 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
         Assert.Null(evt.Entity.Address.City);
         Assert.Equal(0, evt.Entity.Address.Location.Latitude);
         Assert.Equal(0, evt.Entity.Address.Location.Longitude);
+    }
+    
+    [Fact]
+    public async Task StripAndStoreAsync_SkipsWhenEntityPropertyMissing()
+    {
+        // Arrange
+        var evt = new EventWithoutEntity();
+
+        // Act & Assert
+        await personalDataService.StripAndStoreAsync(evt);
+        var stored = await personalDataStore.RetrieveAsync(evt.Id);
+        Assert.Empty(stored);
+    }
+
+    [Fact]
+    public async Task RestoreAsync_SkipsWhenEntityPropertyMissing()
+    {
+        // Arrange
+        var evt = new EventWithoutEntity();
+
+        // Act & Assert
+        await personalDataService.RestoreAsync(evt);
+    }
+    
+    [Fact]
+    public async Task StripAndStoreAsync_Skips_WhenPersonalDataDisabled()
+    {
+        // Arrange
+        var service = CreateServiceWithOptionsEnabled(false);
+
+        var entity = new PersonEntity
+        {
+            Id = Guid.NewGuid(),
+            Name = "ShouldNotBeStored",
+            Email = "nope@example.com",
+            Address = new Address { City = "Nowhere" },
+        };
+
+        var evt = new PersonCreatedEvent(entity);
+
+        // Act
+        await service.StripAndStoreAsync(evt);
+        var stored = await personalDataStore.RetrieveAsync(evt.Id);
+
+        // Assert
+        Assert.Empty(stored);
+    }
+
+    [Fact]
+    public async Task RestoreAsync_Skips_WhenPersonalDataDisabled()
+    {
+        // Arrange
+        var id = Guid.NewGuid();
+
+        await personalDataStore.StoreAsync(id, new Dictionary<string, object?>
+        {
+            { "Name", "ShouldNotRestore" }
+        });
+
+        var entity = new PersonEntity { Id = id };
+        var evt = new PersonCreatedEvent(entity) { Id = id };
+
+        var service = CreateServiceWithOptionsEnabled(false);
+
+        // Act
+        await service.RestoreAsync(evt);
+
+        // Assert
+        Assert.Null(evt.Entity.Name);
+    }
+
+    
+    private record EventWithoutEntity() : EventBase(Guid.NewGuid());
+    
+    private IPersonalDataService CreateServiceWithOptionsEnabled(bool enabled)
+    {
+        var options = Options.Create(new EventSourcingOptions
+        {
+            EnablePersonalDataStore = enabled
+        });
+
+        return new PersonalDataService(personalDataStore, options);
     }
 }

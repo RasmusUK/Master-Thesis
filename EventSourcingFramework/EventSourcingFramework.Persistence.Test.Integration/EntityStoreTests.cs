@@ -1,7 +1,10 @@
 using EventSourcingFramework.Application.Interfaces;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Options;
+using EventSourcingFramework.Persistence.Events;
 using EventSourcingFramework.Persistence.Exceptions;
 using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Persistence.Stores;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 
@@ -13,17 +16,22 @@ public class EntityStoreTests : MongoIntegrationTestBase
     private readonly IEntityStore store;
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider nameProvider;
+    private readonly IEntityMigrator entityMigrator;
+    private readonly ISchemaVersionRegistry schemaVersionRegistry;
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
 
     public EntityStoreTests(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext,
         IEntityStore store,
-        IEntityCollectionNameProvider nameProvider
-    )
+        IEntityCollectionNameProvider nameProvider, IEntityMigrator entityMigrator, ISchemaVersionRegistry schemaVersionRegistry, IMigrationTypeRegistry migrationTypeRegistry)
         : base(mongoDbService, replayContext)
     {
         this.store = store;
         this.nameProvider = nameProvider;
+        this.entityMigrator = entityMigrator;
+        this.schemaVersionRegistry = schemaVersionRegistry;
+        this.migrationTypeRegistry = migrationTypeRegistry;
         this.mongoDbService = mongoDbService;
     }
 
@@ -335,5 +343,91 @@ public class EntityStoreTests : MongoIntegrationTestBase
         // Assert
         Assert.Single(results);
         Assert.Equal("Filter - Match", results.First().Name);
+    }
+    
+    [Fact]
+    public async Task GetAllProjectionsAsync_MigratesAndProjectsEntities()
+    {
+        // Arrange
+        var v1 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Project",
+            LastName = "Me"
+        };
+        var v2 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Skip",
+            LastName = "This"
+        };
+
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+        await collection.InsertManyAsync(new[] { v1.ToBsonDocument(), v2.ToBsonDocument() });
+
+        // Act
+        var projections = await store.GetAllProjectionsAsync<TestEntity, string>(e => e.Name);
+
+        // Assert
+        Assert.Contains("Project - Me", projections);
+        Assert.Contains("Skip - This", projections);
+        Assert.Equal(2, projections.Count);
+    }
+
+    [Fact]
+    public async Task GetAllProjectionsByFilterAsync_MigratesAndFiltersAndProjects()
+    {
+        // Arrange
+        var v1 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Project",
+            LastName = "Keep"
+        };
+        var v2 = new TestEntity1
+        {
+            Id = Guid.NewGuid(),
+            FirstName = "Project",
+            LastName = "Drop"
+        };
+
+        var collection = mongoDbService.GetEntityCollection<BsonDocument>(
+            nameProvider.GetCollectionName(typeof(TestEntity))
+        );
+        await collection.InsertManyAsync(new[] { v1.ToBsonDocument(), v2.ToBsonDocument() });
+
+        // Act
+        var projections = await store.GetAllProjectionsByFilterAsync<TestEntity, string>(
+            e => e.Name,
+            e => e.Name == "Project - Keep"
+        );
+
+        // Assert
+        Assert.Single(projections);
+        Assert.Equal("Project - Keep", projections.First());
+    }
+
+    
+    [Fact]
+    public async Task InsertEntityAsync_DoesNothing_WhenEntityStoreIsDisabled()
+    {
+        // Arrange
+        var entityStore = new EntityStore(
+            MongoDbService, nameProvider, entityMigrator, schemaVersionRegistry, migrationTypeRegistry,
+            Microsoft.Extensions.Options.Options.Create(new EventSourcingOptions
+            {
+                EnableEntityStore = false
+            }));
+
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" };
+
+        // Act
+        await entityStore.InsertEntityAsync(entity);
+        var entities = await entityStore.GetAllAsync<TestEntity>();
+
+        // Assert
+        Assert.Empty(entities);
     }
 }

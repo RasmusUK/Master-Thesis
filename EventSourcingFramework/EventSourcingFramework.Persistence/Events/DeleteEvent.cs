@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace EventSourcingFramework.Persistence.Events;
 
-public record DeleteEvent<T>(T Entity) : EventBase(Entity.Id), IUpdateEvent<T>
+public record DeleteEvent<T>(T Entity) : EventBase(Entity.Id), IDeleteEvent<T>
     where T : IEntity
 {
     public override string ToString() => JsonConvert.SerializeObject(Entity, Formatting.Indented);

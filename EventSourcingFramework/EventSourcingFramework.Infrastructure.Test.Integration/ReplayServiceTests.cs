@@ -1,10 +1,14 @@
-﻿using EventSourcingFramework.Application.Interfaces;
+﻿using EventSourcingFramework.Application;
+using EventSourcingFramework.Application.Interfaces;
+using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Options;
 using EventSourcingFramework.Infrastructure.Interfaces;
 using EventSourcingFramework.Persistence.Events;
 using EventSourcingFramework.Persistence.Interfaces;
 using EventSourcingFramework.Persistence.Snapshot;
 using EventSourcingFramework.Test.Utilities;
+using Microsoft.Extensions.Options;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration;
 
@@ -163,8 +167,9 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "NoSnapYet" };
-        var create = new CreateEvent<TestEntity>(entity);
-        await eventStore.InsertEventAsync(create);
+        await eventStore.InsertEventAsync( new CreateEvent<TestEntity>(entity));
+        await eventStore.InsertEventAsync(new DeleteEvent<TestEntity>(entity));
+        await eventStore.InsertEventAsync( new CreateEvent<TestEntity>(entity));
 
         // Act
         await replayService.ReplayAllAsync(autoStop: true, useSnapshot: true);
@@ -469,7 +474,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayUntilEventNumberAsync(
             updateV2.EventNumber,
-            autoStop: true,
+            autoStop: false,
             useSnapshot: false
         );
 
@@ -524,5 +529,111 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         Assert.NotNull(result);
         Assert.Equal("Partial - Migration", result.Name);
         Assert.Equal(3, result.SchemaVersion);
+    }
+    
+    [Fact]
+    public async Task ReplayService_DebugMode_CapturesSimulatedEventsAndSwitchesDatabases()
+    {
+        // Arrange
+        await replayService.StartReplay(ReplayMode.Debug);
+
+        var id = Guid.NewGuid();
+        var entity = new TestEntity { Id = id, Name = "DebugSimulated" };
+
+        await repository.CreateAsync(entity);
+        await repository.UpdateAsync(entity);
+        await repository.DeleteAsync(entity);
+
+        // Act
+        var simulated = replayService.GetSimulatedEvents();
+        
+        // Assert
+        Assert.NotNull(simulated);
+        Assert.Equal(3, simulated.Count);
+        Assert.Contains(simulated, e => e is CreateEvent<TestEntity>);
+        Assert.Contains(simulated, e => e is UpdateEvent<TestEntity>);
+        Assert.Contains(simulated, e => e is DeleteEvent<TestEntity>);
+        
+    }
+    
+    [Fact]
+    public async Task StartReplay_SetsReplayModeToRunning()
+    {
+        // Act
+        await replayService.StartReplay();
+
+        // Assert
+        Assert.True(replayService.IsRunning());
+    }
+    
+    [Fact]
+    public async Task ReplayFromAsync_RehydratesEntityStateFromGivenTimestamp()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BeforeReplay" };
+        await repository.CreateAsync(entity);
+
+        var from = DateTime.UtcNow;
+        await Task.Delay(10);
+
+        entity.Name = "AfterReplay";
+        await eventStore.InsertEventAsync(new UpdateEvent<TestEntity>(entity));
+        await entityStore.DeleteEntityAsync(entity);
+
+        // Act
+        await replayService.ReplayFromAsync(from, autoStop: true, useSnapshot: false);
+
+        // Assert
+        var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
+        Assert.NotNull(result);
+        Assert.Equal("AfterReplay", result!.Name);
+    }
+    
+    [Fact]
+    public async Task ReplayService_DoesNotUseSnapshots_WhenSnapshotsDisabled()
+    {
+        // Arrange
+        var testId = Guid.NewGuid();
+        var entity = new TestEntity { Id = testId, Name = "NoSnapshots" };
+        await repository.CreateAsync(entity);
+
+        var replayServiceWithSnapshotsDisabled = new ReplayService(
+            eventStore,
+            entityStore,
+            ReplayContext,
+            snapshotService,
+            MongoDbService,
+            Options.Create(new EventSourcingOptions
+            {
+                Snapshot = new SnapshotOptions
+                {
+                    Enabled = false 
+                }
+            })
+        );
+
+        // Act
+        await replayServiceWithSnapshotsDisabled.ReplayAllAsync(useSnapshot: true);
+        await replayServiceWithSnapshotsDisabled.ReplayFromAsync(DateTime.UtcNow, useSnapshot: true);
+        await replayServiceWithSnapshotsDisabled.ReplayFromEventNumberAsync(1, useSnapshot: true);
+        await replayServiceWithSnapshotsDisabled.ReplayUntilEventNumberAsync(10000, useSnapshot: true);
+        await replayServiceWithSnapshotsDisabled.ReplayFromUntilEventNumberAsync(1, 10000, useSnapshot: true);
+
+        // Assert
+        var snapshots = await snapshotService.GetAllSnapshotsAsync();
+        Assert.Empty(snapshots);
+    }
+
+    [Fact]
+    public async Task StopReplay_SetsReplayToNotRunning()
+    {
+        // Arrange
+        await replayService.StartReplay(ReplayMode.Debug);
+
+        // Act
+        await replayService.StopReplay();
+
+        // Assert
+        Assert.False(replayService.IsRunning());
     }
 }

@@ -14,11 +14,11 @@ public class PersonalDataStore : IPersonalDataStore
 
     public PersonalDataStore(
         IMongoDbService mongoDbService,
-        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         collection = mongoDbService.PersonalDataCollection;
-        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
     }
 
     public async Task StoreAsync(Guid eventId, Dictionary<string, object?> data)

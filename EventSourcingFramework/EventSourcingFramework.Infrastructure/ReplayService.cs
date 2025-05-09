@@ -239,7 +239,7 @@ public class ReplayService : IReplayService
         if (!useSnapshot || !snapshotOptions.Enabled)
             return;
 
-        string? snapshotId = null;
+        string? snapshotId;
 
         if (fromNumber.HasValue)
             snapshotId = await snapshotService.GetLatestSnapshotBeforeAsync(fromNumber.Value);

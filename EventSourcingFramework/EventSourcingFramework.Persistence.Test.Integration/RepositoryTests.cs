@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using EventSourcingFramework.Application;
 using EventSourcingFramework.Application.Interfaces;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Exceptions;
@@ -184,6 +185,118 @@ public class RepositoryTests : MongoIntegrationTestBase
         Assert.Contains(events, e => e is DeleteEvent<TestEntity>);
         Assert.Contains(events, e => e is CreateEvent<TestEntity>);
     }
+    
+        
+    [Fact]
+    public async Task ReadByIdAsync_ReturnsEntity_WhenExists()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ReadById" };
+        await repository.CreateAsync(entity);
+
+        var result = await repository.ReadByIdAsync(entity.Id);
+
+        Assert.NotNull(result);
+        Assert.Equal("ReadById", result!.Name);
+    }
+
+    [Fact]
+    public async Task ReadByFilterAsync_ReturnsEntity_WhenFilterMatches()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Filtered" };
+        await repository.CreateAsync(entity);
+
+        var result = await repository.ReadByFilterAsync(e => e.Name == "Filtered");
+
+        Assert.NotNull(result);
+        Assert.Equal(entity.Id, result!.Id);
+    }
+
+    [Fact]
+    public async Task ReadProjectionByIdAsync_ReturnsProjectedField()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectedId" };
+        await repository.CreateAsync(entity);
+
+        var name = await repository.ReadProjectionByIdAsync(entity.Id, e => e.Name);
+
+        Assert.Equal("ProjectedId", name);
+    }
+
+    [Fact]
+    public async Task ReadProjectionByFilterAsync_ReturnsProjection_WhenMatches()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectionFilter" };
+        await repository.CreateAsync(entity);
+
+        var result = await repository.ReadProjectionByFilterAsync(
+            e => e.Name == "ProjectionFilter",
+            e => e.Id
+        );
+
+        Assert.Equal(entity.Id, result);
+    }
+
+    [Fact]
+    public async Task ReadAllAsync_ReturnsAllEntities()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "AllRead" };
+        await repository.CreateAsync(entity);
+
+        var all = await repository.ReadAllAsync();
+
+        Assert.Contains(all, e => e.Id == entity.Id);
+    }
+
+    [Fact]
+    public async Task ReadAllByFilterAsync_ReturnsMatchingEntities()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "FilteredAll" };
+        await repository.CreateAsync(entity);
+
+        var results = await repository.ReadAllByFilterAsync(e => e.Name == "FilteredAll");
+
+        Assert.Single(results);
+        Assert.Equal(entity.Id, results.First().Id);
+    }
+
+    [Fact]
+    public async Task ReadAllProjectionsAsync_ReturnsAllProjectedValues()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectAll" };
+        await repository.CreateAsync(entity);
+
+        var names = await repository.ReadAllProjectionsAsync(e => e.Name);
+
+        Assert.Contains("ProjectAll", names);
+    }
+
+    [Fact]
+    public async Task ReadAllProjectionsByFilterAsync_ReturnsFilteredProjections()
+    {
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectedFilter" };
+        await repository.CreateAsync(entity);
+
+        var names = await repository.ReadAllProjectionsByFilterAsync(
+            e => e.Name,
+            e => e.Name == "ProjectedFilter"
+        );
+
+        Assert.Single(names);
+        Assert.Equal("ProjectedFilter", names.First());
+    }
+
+    [Fact]
+    public async Task CannotEmitEventsWhileReplayingInStrict()
+    {
+        // Arrange
+        var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ShouldFail" };
+        replayContext.StartReplay();
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<RepositoryException>(() => repository.CreateAsync(entity));
+        Assert.Contains("Cannot emit events during replay", ex.Message);
+    }
+
 
     private class FailingEntityStoreWithRead : IEntityStore
     {

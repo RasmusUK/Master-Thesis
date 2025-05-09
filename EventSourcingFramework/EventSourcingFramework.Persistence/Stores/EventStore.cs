@@ -24,13 +24,13 @@ public class EventStore : IEventStore
         IEventSequenceGenerator sequenceGenerator,
         IPersonalDataService personalDataService,
         ISnapshotService snapshotService,
-        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.sequenceGenerator = sequenceGenerator;
         this.personalDataService = personalDataService;
         this.snapshotService = snapshotService;
-        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
         collection = mongoDbService.EventCollection;
     }
 

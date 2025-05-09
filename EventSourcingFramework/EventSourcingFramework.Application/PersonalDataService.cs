@@ -15,11 +15,11 @@ public class PersonalDataService : IPersonalDataService
 
     public PersonalDataService(
         IPersonalDataStore store,
-        IOptionsMonitor<EventSourcingOptions> eventSourcingOptions
+        IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         personalDataStore = store;
-        this.eventSourcingOptions = eventSourcingOptions.CurrentValue;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
     }
 
     public async Task StripAndStoreAsync(IEvent e)
@@ -59,11 +59,8 @@ public class PersonalDataService : IPersonalDataService
         return entityProp?.GetValue(e);
     }
 
-    private void StripPersonalData(object? obj, Dictionary<string, object?> dict, string path)
+    private void StripPersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
-        if (obj is null)
-            return;
-
         var type = obj.GetType();
         foreach (
             var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -88,17 +85,11 @@ public class PersonalDataService : IPersonalDataService
         }
     }
 
-    private void RestorePersonalData(object? obj, Dictionary<string, object?> dict, string path)
+    private void RestorePersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
-        if (obj is null)
-            return;
-
         var type = obj.GetType();
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
-            if (!prop.CanRead || !prop.CanWrite)
-                continue;
-
             var propPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
 
             if (dict.TryGetValue(propPath, out var val))

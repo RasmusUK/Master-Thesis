@@ -229,20 +229,26 @@ public class SmartRepository<T> : IRepository<T>
         Expression<Func<T, TProjection>> projection
     )
     {
-        var dbResults = await inner.ReadAllProjectionsAsync(projection);
         if (!transactionManager.IsActive)
-            return dbResults;
+            return await inner.ReadAllProjectionsAsync(projection);
 
+        var compiledProjection = projection.Compile();
         var deletedIds = transactionManager
             .GetTrackedDeletedEntities<T>()
             .Select(x => x.Id)
             .ToHashSet();
-        var projected = transactionManager
+
+        var dbEntities = await inner.ReadAllAsync();
+        var filteredDb = dbEntities
+            .Where(x => !deletedIds.Contains(x.Id))
+            .Select(compiledProjection);
+
+        var projectedInMemory = transactionManager
             .GetTrackedUpsertedEntities<T>()
             .Where(x => !deletedIds.Contains(x.Id))
-            .Select(projection.Compile());
+            .Select(compiledProjection);
 
-        return dbResults.Concat(projected).ToList();
+        return filteredDb.Concat(projectedInMemory).ToList();
     }
 
     public async Task<
@@ -252,9 +258,8 @@ public class SmartRepository<T> : IRepository<T>
         Expression<Func<T, bool>> filter
     )
     {
-        var dbResults = await inner.ReadAllProjectionsByFilterAsync(projection, filter);
         if (!transactionManager.IsActive)
-            return dbResults;
+            return await inner.ReadAllProjectionsByFilterAsync(projection, filter);
 
         var compiledFilter = filter.Compile();
         var compiledProjection = projection.Compile();
@@ -263,12 +268,17 @@ public class SmartRepository<T> : IRepository<T>
             .Select(x => x.Id)
             .ToHashSet();
 
-        var projected = transactionManager
+        var dbEntities = await inner.ReadAllByFilterAsync(filter);
+        var filteredDb = dbEntities
+            .Where(x => !deletedIds.Contains(x.Id))
+            .Select(compiledProjection);
+
+        var projectedInMemory = transactionManager
             .GetTrackedUpsertedEntities<T>()
             .Where(x => !deletedIds.Contains(x.Id))
             .Where(compiledFilter)
             .Select(compiledProjection);
 
-        return dbResults.Concat(projected).ToList();
+        return filteredDb.Concat(projectedInMemory).ToList();
     }
 }
