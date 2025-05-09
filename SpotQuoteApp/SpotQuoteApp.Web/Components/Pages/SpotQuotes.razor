@@ -1,0 +1,60 @@
+@page "/spot-quotes"
+@using SpotQuoteApp.Application.DTOs
+@using SpotQuoteApp.Application.Interfaces
+@inject ISpotQuoteService SpotQuoteService
+@inject NavigationManager Navigation
+
+<PageTitle>Spot Quotes</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="pt-5 pb-5">
+    <MudText Typo="Typo.h5">Spot Quotes</MudText>
+    <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@CreateNew" Variant="Variant.Filled" Color="Color.Primary">
+        Create
+    </MudButton>
+</MudStack>
+
+<MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" RowClick="OnRowClick" Loading="@loading" 
+             SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" 
+             FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+    <Columns>
+        <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
+        <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.TransportMode" Title="Mode" Filterable="false"/>
+        <PropertyColumn Property="x => x.AddressFrom.Country.Code" Title="Pickup"/>
+        <PropertyColumn Property="x => x.AddressTo.Country.Code" Title="Delivery"/>
+        <PropertyColumn Property="x => x.ValidUntil" Title="Validity" Filterable="false">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="SpotQuoteDto"/>
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private IEnumerable<SpotQuoteDto> spotQuotes = new List<SpotQuoteDto>();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        spotQuotes = (await SpotQuoteService.GetAllSpotQuotesAsync()).OrderByDescending(s => s.CreatedAt);
+        loading = false;
+    }
+    
+    private void CreateNew()
+    {
+        Navigation.NavigateTo("/spot-quotes/create");
+    }
+
+    private void OnRowClick(DataGridRowClickEventArgs<SpotQuoteDto> e)
+    {
+        Navigation.NavigateTo($"/spot-quotes/edit/{e.Item.Id}");
+    }
+}

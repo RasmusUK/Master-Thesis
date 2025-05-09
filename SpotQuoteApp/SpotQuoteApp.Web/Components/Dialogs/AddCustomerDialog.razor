@@ -1,0 +1,32 @@
+@using SpotQuoteApp.Application.DTOs
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="form" Model="customer" Valid="isValid">
+            <MudTextField @bind-Value="customer.Name" Label="Customer Name" Required="true" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="Save">Save</MudButton>
+        <MudButton Color="Color.Secondary" OnClick="Cancel">Cancel</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+    private MudForm form;
+    private bool isValid = false;
+    private CustomerDto customer = new();
+
+    private async Task Save()
+    {
+        await form.Validate();
+        if (form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok(customer));
+        }
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+}

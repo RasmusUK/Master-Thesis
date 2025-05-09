@@ -1,0 +1,79 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Application", "EventSourcingFramework.Application\EventSourcingFramework.Application.csproj", "{7281407C-7EB8-4487-916D-FDC50D2ACE28}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Application.Test.Integration", "EventSourcingFramework.Application.Test.Integration\EventSourcingFramework.Application.Test.Integration.csproj", "{39934412-B742-47A8-BF55-DCD55B28C634}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Core", "EventSourcingFramework.Core\EventSourcingFramework.Core.csproj", "{BE708AB3-A366-46BE-8D32-C2924E06F5F0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure", "EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj", "{51741B8F-556C-429A-B614-9DED0667BF9B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure.Test.Integration", "EventSourcingFramework.Infrastructure.Test.Integration\EventSourcingFramework.Infrastructure.Test.Integration.csproj", "{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Persistence", "EventSourcingFramework.Persistence\EventSourcingFramework.Persistence.csproj", "{2D9D3077-B19C-4826-8DB2-5AB9ACF396AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Persistence.Test.Integration", "EventSourcingFramework.Persistence.Test.Integration\EventSourcingFramework.Persistence.Test.Integration.csproj", "{BB4786C4-9412-4971-A5C3-A6AED91C700E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Test.Performance", "EventSourcingFramework.Test.Performance\EventSourcingFramework.Test.Performance.csproj", "{3164AAFA-DA23-4F15-8198-033A4033CE5A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Test.Utilities", "EventSourcingFramework.Test.Utilities\EventSourcingFramework.Test.Utilities.csproj", "{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{51770EF6-3693-43C7-A513-021F4F646D36}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7281407C-7EB8-4487-916D-FDC50D2ACE28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7281407C-7EB8-4487-916D-FDC50D2ACE28}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7281407C-7EB8-4487-916D-FDC50D2ACE28}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7281407C-7EB8-4487-916D-FDC50D2ACE28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39934412-B742-47A8-BF55-DCD55B28C634}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39934412-B742-47A8-BF55-DCD55B28C634}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39934412-B742-47A8-BF55-DCD55B28C634}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39934412-B742-47A8-BF55-DCD55B28C634}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE708AB3-A366-46BE-8D32-C2924E06F5F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE708AB3-A366-46BE-8D32-C2924E06F5F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE708AB3-A366-46BE-8D32-C2924E06F5F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE708AB3-A366-46BE-8D32-C2924E06F5F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{51741B8F-556C-429A-B614-9DED0667BF9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{51741B8F-556C-429A-B614-9DED0667BF9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{51741B8F-556C-429A-B614-9DED0667BF9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{51741B8F-556C-429A-B614-9DED0667BF9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2D9D3077-B19C-4826-8DB2-5AB9ACF396AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2D9D3077-B19C-4826-8DB2-5AB9ACF396AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2D9D3077-B19C-4826-8DB2-5AB9ACF396AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2D9D3077-B19C-4826-8DB2-5AB9ACF396AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB4786C4-9412-4971-A5C3-A6AED91C700E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB4786C4-9412-4971-A5C3-A6AED91C700E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB4786C4-9412-4971-A5C3-A6AED91C700E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB4786C4-9412-4971-A5C3-A6AED91C700E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3164AAFA-DA23-4F15-8198-033A4033CE5A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3164AAFA-DA23-4F15-8198-033A4033CE5A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3164AAFA-DA23-4F15-8198-033A4033CE5A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3164AAFA-DA23-4F15-8198-033A4033CE5A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{39934412-B742-47A8-BF55-DCD55B28C634} = {51770EF6-3693-43C7-A513-021F4F646D36}
+		{DFB131B6-92EB-4DC8-A335-E9EB0B1C71F1} = {51770EF6-3693-43C7-A513-021F4F646D36}
+		{BB4786C4-9412-4971-A5C3-A6AED91C700E} = {51770EF6-3693-43C7-A513-021F4F646D36}
+		{3164AAFA-DA23-4F15-8198-033A4033CE5A} = {51770EF6-3693-43C7-A513-021F4F646D36}
+		{2BFB4304-CA3A-4F86-B216-8C923F3DE9D2} = {51770EF6-3693-43C7-A513-021F4F646D36}
+	EndGlobalSection
+EndGlobal

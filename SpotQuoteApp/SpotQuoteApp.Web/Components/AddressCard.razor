@@ -1,0 +1,165 @@
+@using SpotQuoteApp.Core.ValueObjects.Enums
+@using SpotQuoteApp.Web.Data
+@using SpotQuoteApp.Application.DTOs
+<MudCard>
+    <MudCardHeader>
+        <MudText Typo="Typo.h6">@Title</MudText>
+    </MudCardHeader>
+    <MudCardContent>
+        <MudGrid>
+            <MudItem xs="12">
+                <MudAutocomplete 
+                    Value="SelectedAddress"
+                    Label="Select existing address"
+                    Clearable="true"
+                    MaxItems="100"
+                    SearchFunc="@SearchAddresses" 
+                    ValueChanged="@((AddressDto newValue) => AddressSelectedChanged(newValue))"
+                    ToStringFunc="@(a => a == null ? "" : $"{a.CompanyName} - {a.Email} - {a.Phone} - {a.Attention} - {a.Country.Code} - {a.ZipCode} - {a.City} - {a.AddressLine1} - {a.AddressLine2}")"/>
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Company name" Clearable="true"
+                              Value="Address.CompanyName"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.CompanyName = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Email" Clearable="true"
+                              Value="Address.Email"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.Email = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Phone" Clearable="true"
+                              Value="Address.Phone"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.Phone = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Attention" Clearable="true"
+                              Value="Address.Attention"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.Attention = v))" />
+            </MudItem>
+
+            <MudFlexBreak />
+
+            <MudItem xs="3">
+                <MudAutocomplete T="CountryDto"
+                                 Value="Address.Country"
+                                 Label="Country"
+                                 Clearable="true"
+                                 MaxItems="null"
+                                 Required="true"
+                                 SearchFunc="SearchCountries"
+                                 ToStringFunc="@(c => c == null ? "" : $"{c.Code} - {c.Name}")"
+                                 ValueChanged="@(val => OnFieldChanged(val, v => Address.Country = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Zip code" Clearable="true"
+                              Value="Address.ZipCode"
+                              Required="TransportMode == TransportMode.Courier || TransportMode == TransportMode.Road"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.ZipCode = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="City" Clearable="true"
+                              Value="Address.City"
+                              Required="TransportMode == TransportMode.Courier || TransportMode == TransportMode.Road"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.City = v))" />
+            </MudItem>
+
+            <MudFlexBreak />
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Address line 1" Clearable="true"
+                              Value="Address.AddressLine1"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.AddressLine1 = v))" />
+            </MudItem>
+
+            <MudItem xs="3">
+                <MudTextField T="string" Label="Address line 2" Clearable="true"
+                              Value="Address.AddressLine2"
+                              ValueChanged="@(val => OnFieldChanged(val, v => Address.AddressLine2 = v))" />
+            </MudItem>
+
+            <MudFlexBreak />
+
+            <MudItem xs="3">
+                @if (TransportMode == TransportMode.Air)
+                {
+                    <MudTextField T="string" Label="Airport" Clearable="true" Required="true"
+                                  Value="Address.Airport"
+                                  ValueChanged="@(val => OnFieldChanged(val, v => Address.Airport = v))" />
+                }
+                @if (TransportMode == TransportMode.Sea)
+                {
+                    <MudTextField T="string" Label="Port" Clearable="true" Required="true"
+                                  Value="Address.Port"
+                                  ValueChanged="@(val => OnFieldChanged(val, v => Address.Port = v))" />
+                }
+            </MudItem>
+        </MudGrid>
+    </MudCardContent>
+</MudCard>
+
+@code {
+    [Parameter] public string Title { get; set; } = "Address";
+    [Parameter] public AddressDto Address { get; set; } = new();
+    [Parameter] public EventCallback<AddressDto> AddressChanged { get; set; }
+    [Parameter] public TransportMode? TransportMode { get; set; }
+    [Parameter] public EventCallback<TransportMode?> TransportModeChanged { get; set; }
+    [Parameter] public IEnumerable<CountryDto> Countries { get; set; }
+    [Parameter] public IEnumerable<AddressDto> Addresses { get; set; }
+    private AddressDto? SelectedAddress { get; set; }
+
+    private async Task<IEnumerable<CountryDto>> SearchCountries(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            Countries : 
+            Countries.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                 || x.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+
+    private async Task<IEnumerable<AddressDto>> SearchAddresses(string value, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(value))
+            return Addresses;
+
+        return Addresses.Where(x => x.CompanyName.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.Email.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.Phone.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.Attention.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.AddressLine1.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.AddressLine2.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.City.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.ZipCode.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.Country.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)
+                                    || x.Country.Code.Contains(value, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private async Task AddressSelectedChanged(AddressDto? address)
+    {
+        SelectedAddress = address;
+        if (address is null)
+            return;
+        
+        Address.Id = address.Id;
+        Address.CompanyName = address.CompanyName;
+        Address.Email = address.Email;
+        Address.Phone = address.Phone;
+        Address.Attention = address.Attention;
+        Address.Country = address.Country;
+        Address.ZipCode = address.ZipCode;
+        Address.City = address.City;
+        Address.AddressLine1 = address.AddressLine1;
+        Address.AddressLine2 = address.AddressLine2;
+        await AddressChanged.InvokeAsync(address);
+    }
+    
+    private void OnFieldChanged<T>(T value, Action<T> setter)
+    {
+        setter(value);
+        Address.Id = Guid.NewGuid();
+        SelectedAddress = null;
+    }
+}

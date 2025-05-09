@@ -1,0 +1,175 @@
+@page "/customers"
+@using SpotQuoteApp.Application.DTOs
+@using SpotQuoteApp.Application.Interfaces
+@using SpotQuoteApp.Web.Components.Dialogs
+@inject ICustomerService CustomerService
+@inject IDialogService DialogService
+
+<PageTitle>Customers</PageTitle>
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="pt-5 pb-5">
+   <MudText Typo="Typo.h5">Customers</MudText>
+    <MudButton Class="mt-2 mb-4" Variant="Variant.Filled" Color="Color.Primary" 
+               StartIcon="@Icons.Material.Filled.Add"  
+               OnClick="OpenAddCustomerDialog">Add Customer</MudButton>
+</MudStack>
+
+<MudPaper Class="p-4">
+    @if (customers == null)
+    {
+        <MudProgressCircular Indeterminate Color="Color.Primary" />
+    }
+    else
+    {
+        <MudExpansionPanels>
+            @foreach (var customer in customers)
+            {
+                <MudExpansionPanel Text="@customer.Name">
+                    <MudText Class="mb-4">Users:</MudText>
+                    <MudTable Items="customer.Users" Hover="true">
+                        <HeaderContent>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Email</MudTh>
+                            <MudTh>Phone</MudTh>
+                            <MudTh>Office</MudTh>
+                            <MudTh></MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Name">@context.Name</MudTd>
+                            <MudTd DataLabel="Email">@context.Email</MudTd>
+                            <MudTd DataLabel="Phone">@context.Phone</MudTd>
+                            <MudTd DataLabel="Office">@context.Office</MudTd>
+                            <MudTd>
+                                <MudButton Variant="Variant.Filled" Color="Color.Error" OnClick="() => DeleteUserAsync(customer.Id, context.Id)">Delete</MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                
+                    <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        <MudButton Class="mt-3" Variant="Variant.Filled" Color="Color.Primary" 
+                                   OnClick="() => OpenAddUserDialog(customer.Id)">Add User</MudButton>
+                        <MudButton Class="mt-4" Variant="Variant.Outlined" Color="Color.Error" 
+                                   OnClick="() => DeleteCustomerAsync(customer.Id)">Delete Customer</MudButton>
+                    </MudStack>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+    }
+</MudPaper>
+
+@if (showErrorAlert)
+{
+    <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="@(() => ShowErrorAlert(false))">@errorMessage</MudAlert>
+}
+
+@code {
+    private List<CustomerDto>? customers;
+    private string errorMessage = string.Empty;
+    private bool showErrorAlert;
+
+    protected override async Task OnInitializedAsync()
+    {
+        customers = (await CustomerService.GetAllCustomersAsync()).ToList();
+    }
+
+    private async Task AddUserAsync(Guid customerId, UserDto user)
+    {
+        var customer = customers?.FirstOrDefault(c => c.Id == customerId);
+        if (customer != null)
+        {
+            user.Id = Guid.NewGuid();
+            await CustomerService.AddUserAsync(customerId, user);
+            customer.Users.Add(user);
+        }
+        StateHasChanged();
+    }
+
+    private async Task DeleteUserAsync(Guid customerId, Guid userId)
+    {
+        try
+        {
+            var customer = customers?.FirstOrDefault(c => c.Id == customerId);
+            var user = customer?.Users.FirstOrDefault(u => u.Id == userId);
+            if (user != null)
+            {
+                await CustomerService.DeleteUserAsync(customerId, userId);
+                customer.Users.Remove(user);
+            }
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+            ShowErrorAlert(true);
+        }
+    }
+
+    private async Task AddCustomer(CustomerDto customer)
+    {
+        try
+        {
+            customer.Id = Guid.NewGuid();
+            customer.Users = new List<UserDto>();
+            await CustomerService.AddCustomerAsync(customer);
+            customers?.Add(customer);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
+    }
+
+    private async Task DeleteCustomerAsync(Guid customerId)
+    {
+        try
+        {
+            var customer = customers?.FirstOrDefault(c => c.Id == customerId);
+            if (customer != null)
+            {
+                await CustomerService.DeleteCustomerAsync(customer);
+                customers.Remove(customer);
+            }
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
+    }
+
+    private async Task OpenAddCustomerDialog()
+    {
+        var dialog = await DialogService.ShowAsync<AddCustomerDialog>("Add Customer", new DialogOptions{
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        });
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is CustomerDto customer)
+        {
+            await AddCustomer(customer);
+        }
+        StateHasChanged();
+    }
+
+    private async Task OpenAddUserDialog(Guid customerId)
+    {
+        var dialog = await DialogService.ShowAsync<AddUserDialog>("Add User", new DialogOptions{
+            MaxWidth = MaxWidth.Small,
+            FullWidth = true
+        });
+        var result = await dialog.Result;
+        if (!result.Canceled && result.Data is UserDto user)
+        {
+            await AddUserAsync(customerId, user);
+        }
+        StateHasChanged();
+    }
+    
+    private void ShowErrorAlert(bool value)
+    {
+        showErrorAlert = value;
+        StateHasChanged();
+    }
+}
