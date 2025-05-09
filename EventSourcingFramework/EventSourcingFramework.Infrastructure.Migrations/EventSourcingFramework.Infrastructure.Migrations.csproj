@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+      <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Abstractions\EventSourcingFramework.Infrastructure.Abstractions.csproj" />
+      <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj" />
+    </ItemGroup>
+
+</Project>

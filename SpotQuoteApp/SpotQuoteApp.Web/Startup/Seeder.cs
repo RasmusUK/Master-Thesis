@@ -1,8 +1,5 @@
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Persistence.Interfaces;
-using MongoDB.Driver;
-using MongoDB.Driver.Linq;
-using SpotQuoteApp.Application.DTOs;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;

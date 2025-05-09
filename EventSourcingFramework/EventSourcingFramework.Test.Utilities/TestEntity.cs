@@ -1,4 +1,4 @@
-﻿using EventSourcingFramework.Persistence;
+﻿using EventSourcingFramework.Core.Models;
 
 namespace EventSourcingFramework.Test.Utilities;
 

@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
-using EventSourcingFramework.Application.Interfaces;
+using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 

@@ -1,6 +1,9 @@
 using EventSourcingFramework.Infrastructure;
-using EventSourcingFramework.Persistence;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Infrastructure.DependencyInjection;
+using EventSourcingFramework.Infrastructure.Migrations;
+using EventSourcingFramework.Infrastructure.MongoDb;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,7 +78,7 @@ public static class ServiceProvider
             var registry = sp.GetRequiredService<IMigrationTypeRegistry>();
             var collectionNameProvider = new EntityCollectionNameProvider(registry);
 
-            RegistrationService.RegisterEntities(
+            MongoDbEventRegistration.RegisterEvents(
                 collectionNameProvider,
                 (typeof(TestEntity), "TestEntity")
             );

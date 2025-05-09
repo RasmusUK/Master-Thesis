@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
 using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;

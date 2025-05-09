@@ -1,6 +1,6 @@
-using EventSourcingFramework.Application.Interfaces;
+using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Core;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Application.Test.Integration;

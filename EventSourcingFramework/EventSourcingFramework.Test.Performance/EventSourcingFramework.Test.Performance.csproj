@@ -22,7 +22,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
-      <ProjectReference Include="..\EventSourcingFramework.Persistence\EventSourcingFramework.Persistence.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Test.Utilities\EventSourcingFramework.Test.Utilities.csproj" />
     </ItemGroup>
 

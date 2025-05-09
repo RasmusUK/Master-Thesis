@@ -1,13 +1,10 @@
-using EventSourcingFramework.Application.Interfaces;
-using EventSourcingFramework.Core;
+using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
+using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.UseCases.PersonalData;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Core.Options;
-using EventSourcingFramework.Persistence;
-using EventSourcingFramework.Persistence.Events;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Test.Utilities;
-using Microsoft.Extensions.Options;
-using Moq;
 
 namespace EventSourcingFramework.Application.Test.Integration;
 
@@ -115,7 +112,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Generic" };
-        var evt = new CreateEvent<TestEntity>(entity);
+        var evt = new MongoCreateEvent<TestEntity>(entity);
 
         // Act
         await personalDataService.StripAndStoreAsync(evt);
@@ -239,14 +236,14 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     
-    private record EventWithoutEntity() : EventBase(Guid.NewGuid());
+    private record EventWithoutEntity() : MongoEventBase(Guid.NewGuid());
     
     private IPersonalDataService CreateServiceWithOptionsEnabled(bool enabled)
     {
-        var options = Options.Create(new EventSourcingOptions
+        var options = new EventSourcingOptions
         {
             EnablePersonalDataStore = enabled
-        });
+        };
 
         return new PersonalDataService(personalDataStore, options);
     }

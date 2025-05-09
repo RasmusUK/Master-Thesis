@@ -1,30 +1,43 @@
-using EventSourcingFramework.Persistence;
+using EventSourcingFramework.Core.Models;
 
 namespace SpotQuoteApp.Core.AggregateRoots;
 
-public class Address(
-    string companyName,
-    Guid countryId,
-    string city,
-    string zipCode,
-    string addressLine1,
-    string addressLine2,
-    string email,
-    string phone,
-    string attention,
-    string? port = null,
-    string? airport = null
-    ) : Entity
+public class Address : Entity
 {
-    public string CompanyName { get; set; } = companyName;
-    public Guid CountryId { get; set; } = countryId;
-    public string City { get; set; } = city;
-    public string ZipCode { get; set; } = zipCode;
-    public string AddressLine1 { get; set; } = addressLine1;
-    public string AddressLine2 { get; set; } = addressLine2;
-    public string Email { get; set; } = email;
-    public string Phone { get; set; } = phone;
-    public string Attention { get; set; } = attention;
-    public string? Port { get; set; } = port;
-    public string? Airport { get; set; } = airport;
+    public Address(string companyName,
+        Guid countryId,
+        string city,
+        string zipCode,
+        string addressLine1,
+        string addressLine2,
+        string email,
+        string phone,
+        string attention,
+        string? port = null,
+        string? airport = null)
+    {
+        CompanyName = companyName;
+        CountryId = countryId;
+        City = city;
+        ZipCode = zipCode;
+        AddressLine1 = addressLine1;
+        AddressLine2 = addressLine2;
+        Email = email;
+        Phone = phone;
+        Attention = attention;
+        Port = port;
+        Airport = airport;
+    }
+
+    public string CompanyName { get; set; }
+    public Guid CountryId { get; set; }
+    public string City { get; set; }
+    public string ZipCode { get; set; }
+    public string AddressLine1 { get; set; }
+    public string AddressLine2 { get; set; }
+    public string Email { get; set; }
+    public string Phone { get; set; }
+    public string Attention { get; set; }
+    public string? Port { get; set; }
+    public string? Airport { get; set; }
 }

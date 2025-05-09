@@ -1,4 +1,4 @@
-using EventSourcingFramework.Core.Events;
+using EventSourcingFramework.Core.Models.Events;
 
 namespace EventSourcingFramework.Test.Utilities;
 

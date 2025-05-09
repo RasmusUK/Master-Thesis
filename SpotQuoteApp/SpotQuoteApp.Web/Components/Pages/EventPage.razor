@@ -1,5 +1,6 @@
 @page "/events/{Id:guid}"
 @using global::EventSourcingFramework.Core.Interfaces
+@using EventSourcingFramework.Core.Models.Events
 @inject IEventStore EventStore;
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Event</MudText>

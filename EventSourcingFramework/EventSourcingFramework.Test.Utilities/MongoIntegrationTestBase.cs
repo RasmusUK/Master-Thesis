@@ -1,5 +1,5 @@
-using EventSourcingFramework.Application.Interfaces;
-using EventSourcingFramework.Persistence.Interfaces;
+using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 
 namespace EventSourcingFramework.Test.Utilities;
 

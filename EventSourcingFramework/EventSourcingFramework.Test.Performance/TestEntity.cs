@@ -1,5 +1,5 @@
 ﻿using EventSourcingFramework.Core;
-using EventSourcingFramework.Persistence;
+using EventSourcingFramework.Core.Models;
 
 namespace EventSourcingFramework.Test.Performance;
 

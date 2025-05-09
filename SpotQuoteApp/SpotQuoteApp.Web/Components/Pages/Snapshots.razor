@@ -1,10 +1,5 @@
 @page "/snapshots"
-@using global::EventSourcingFramework.Persistence.Interfaces
-@using global::EventSourcingFramework.Application.Interfaces
-@using global::EventSourcingFramework.Application
-@using global::EventSourcingFramework.Infrastructure
-@using global::EventSourcingFramework.Infrastructure.Interfaces
-@using global::EventSourcingFramework.Persistence.Snapshot
+@using EventSourcingFramework.Application.Abstractions.Snapshots
 @inject ISnapshotService SnapshotService
 @inject ISnackbar Snackbar
 

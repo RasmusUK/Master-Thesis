@@ -1,5 +1,5 @@
-using EventSourcingFramework.Persistence.Events;
+using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 
 namespace EventSourcingFramework.Test.Utilities;
 
-public record PersonCreatedEvent(PersonEntity Entity) : CreateEvent<PersonEntity>(Entity);
+public record PersonCreatedEvent(PersonEntity Entity) : MongoCreateEvent<PersonEntity>(Entity);

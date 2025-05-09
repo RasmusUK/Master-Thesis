@@ -1,4 +1,4 @@
-using EventSourcingFramework.Persistence;
+using EventSourcingFramework.Core.Models;
 using SpotQuoteApp.Core.ValueObjects;
 
 namespace SpotQuoteApp.Core.AggregateRoots;
