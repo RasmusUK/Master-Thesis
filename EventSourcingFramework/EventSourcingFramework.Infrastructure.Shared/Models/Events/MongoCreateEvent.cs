@@ -1,4 +1,6 @@
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
 using Newtonsoft.Json;
 

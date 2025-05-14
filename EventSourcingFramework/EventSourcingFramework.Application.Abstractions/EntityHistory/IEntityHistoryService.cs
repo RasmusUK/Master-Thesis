@@ -1,7 +1,9 @@
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
 
-namespace EventSourcingFramework.Application.Abstractions;
+namespace EventSourcingFramework.Application.Abstractions.EntityHistory;
 
 public interface IEntityHistoryService
 {

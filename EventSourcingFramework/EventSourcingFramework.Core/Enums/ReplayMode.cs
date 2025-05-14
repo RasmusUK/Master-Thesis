@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Core;
+namespace EventSourcingFramework.Core.Enums;
 
 public enum ReplayMode
 {

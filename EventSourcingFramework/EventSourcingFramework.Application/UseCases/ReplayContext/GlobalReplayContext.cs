@@ -1,7 +1,8 @@
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Models.Events;
-using EventSourcingFramework.Infrastructure.Http;
 
 namespace EventSourcingFramework.Application.UseCases.ReplayContext;
 

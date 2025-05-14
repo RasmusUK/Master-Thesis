@@ -1,11 +1,12 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Events;
-using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 

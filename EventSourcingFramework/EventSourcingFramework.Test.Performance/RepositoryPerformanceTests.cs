@@ -1,7 +1,8 @@
 ﻿using System.Diagnostics;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 

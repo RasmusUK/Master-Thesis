@@ -1,6 +1,6 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Infrastructure.DependencyInjection;
 using EventSourcingFramework.Infrastructure.Migrations;
 using EventSourcingFramework.Infrastructure.MongoDb;

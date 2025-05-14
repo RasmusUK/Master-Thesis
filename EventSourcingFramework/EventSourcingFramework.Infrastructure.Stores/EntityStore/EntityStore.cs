@@ -1,9 +1,11 @@
 using System.Linq.Expressions;
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;

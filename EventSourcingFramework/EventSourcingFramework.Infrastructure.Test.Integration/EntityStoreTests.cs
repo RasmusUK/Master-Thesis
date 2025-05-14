@@ -1,8 +1,9 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.Migrations;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using EventSourcingFramework.Test.Utilities;

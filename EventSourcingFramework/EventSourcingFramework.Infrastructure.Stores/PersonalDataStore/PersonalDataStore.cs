@@ -1,7 +1,7 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 

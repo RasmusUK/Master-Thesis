@@ -1,10 +1,11 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Infrastructure.Snapshots;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Driver;

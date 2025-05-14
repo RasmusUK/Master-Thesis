@@ -2,7 +2,8 @@ using System.Linq.Expressions;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 
 namespace EventSourcingFramework.Infrastructure.Repositories;

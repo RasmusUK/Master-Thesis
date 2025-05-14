@@ -3,7 +3,7 @@ using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+namespace EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 
 public interface IMongoDbService
 {

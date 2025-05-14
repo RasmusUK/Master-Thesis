@@ -1,7 +1,9 @@
 ﻿using System.Text;
 using System.Text.Json;
 using EventSourcingFramework.Application.Abstractions;
-using EventSourcingFramework.Infrastructure.Abstractions.ApiResponseStore;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Core.Enums;
+using EventSourcingFramework.Core.Interfaces;
 
 namespace EventSourcingFramework.Infrastructure.Http;
 

@@ -1,9 +1,8 @@
 using System.Reflection;
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
-using EventSourcingFramework.Infrastructure.Abstractions;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;

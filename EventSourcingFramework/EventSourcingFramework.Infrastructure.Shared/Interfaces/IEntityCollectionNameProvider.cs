@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+namespace EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 
 public interface IEntityCollectionNameProvider
 {

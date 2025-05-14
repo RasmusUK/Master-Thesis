@@ -1,5 +1,7 @@
+using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Core;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 
 namespace EventSourcingFramework.Infrastructure.Migrations;
 

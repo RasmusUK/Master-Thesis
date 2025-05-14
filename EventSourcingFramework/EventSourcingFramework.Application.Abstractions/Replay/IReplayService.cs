@@ -1,7 +1,8 @@
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Models.Events;
 
-namespace EventSourcingFramework.Application.Abstractions;
+namespace EventSourcingFramework.Application.Abstractions.Replay;
 
 public interface IReplayService
 {

@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Abstractions.EventStore;
+namespace EventSourcingFramework.Application.Abstractions.EventStore;
 
 public interface IEventSequenceGenerator
 {

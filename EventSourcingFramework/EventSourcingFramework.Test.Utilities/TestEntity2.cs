@@ -1,4 +1,5 @@
 using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 
 namespace EventSourcingFramework.Test.Utilities;
 

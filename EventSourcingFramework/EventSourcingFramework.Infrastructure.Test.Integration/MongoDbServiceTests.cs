@@ -1,5 +1,6 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;

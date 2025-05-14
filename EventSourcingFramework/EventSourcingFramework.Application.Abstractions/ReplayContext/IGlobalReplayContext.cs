@@ -1,8 +1,8 @@
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Models.Events;
-using EventSourcingFramework.Infrastructure.Http;
 
-namespace EventSourcingFramework.Application.Abstractions;
+namespace EventSourcingFramework.Application.Abstractions.ReplayContext;
 
 public interface IGlobalReplayContext
 {

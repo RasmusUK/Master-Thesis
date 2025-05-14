@@ -1,6 +1,6 @@
 using System.Collections;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;

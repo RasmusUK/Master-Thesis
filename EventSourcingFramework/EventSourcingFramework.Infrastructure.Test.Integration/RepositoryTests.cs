@@ -1,10 +1,13 @@
 using System.Linq.Expressions;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Repositories;
 using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
 using EventSourcingFramework.Test.Utilities;

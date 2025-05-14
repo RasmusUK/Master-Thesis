@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+namespace EventSourcingFramework.Application.Abstractions.Migrations;
 
 public interface IMigrationTypeRegistry
 {

@@ -1,6 +1,8 @@
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 
-namespace EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+namespace EventSourcingFramework.Application.Abstractions.Migrations;
 
 public interface IEntityMigrator
 {

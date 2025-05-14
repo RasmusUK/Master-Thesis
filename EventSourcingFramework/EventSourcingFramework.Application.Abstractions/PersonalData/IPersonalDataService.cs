@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Models.Events;
 
-namespace EventSourcingFramework.Application.Abstractions;
+namespace EventSourcingFramework.Application.Abstractions.PersonalData;
 
 public interface IPersonalDataService
 {

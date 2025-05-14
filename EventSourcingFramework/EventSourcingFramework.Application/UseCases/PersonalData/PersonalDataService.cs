@@ -1,6 +1,9 @@
 using System.Reflection;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
+using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Events;
 

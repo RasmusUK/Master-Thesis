@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Application.Abstractions;
+namespace EventSourcingFramework.Application.Abstractions.Replay;
 
 public interface IReplayEnvironmentSwitcher
 {

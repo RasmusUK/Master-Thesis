@@ -1,4 +1,4 @@
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 
 namespace EventSourcingFramework.Infrastructure.Migrations;
 

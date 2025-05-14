@@ -1,6 +1,6 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models;
-using EventSourcingFramework.Infrastructure.Abstractions.ApiResponseStore;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Core.Interfaces;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;

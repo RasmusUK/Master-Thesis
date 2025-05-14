@@ -1,4 +1,6 @@
 using System.Linq.Expressions;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 
 namespace EventSourcingFramework.Core.Interfaces;
 

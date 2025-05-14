@@ -23,8 +23,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure.Shared", "EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj", "{195636BA-7B78-483D-8B71-42F9531A7374}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure.Abstractions", "EventSourcingFramework.Infrastructure.Abstractions\EventSourcingFramework.Infrastructure.Abstractions.csproj", "{E0540CD3-1413-44C9-9708-175A60CC70ED}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure.Snapshots", "EventSourcingFramework.Infrastructure.Snapshots\EventSourcingFramework.Infrastructure.Snapshots.csproj", "{0E26517F-369F-4EBD-90DA-4FCE6E3309D9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EventSourcingFramework.Infrastructure.MongoDb", "EventSourcingFramework.Infrastructure.MongoDb\EventSourcingFramework.Infrastructure.MongoDb.csproj", "{77307E19-F7E5-4561-956F-D474DCB1B852}"
@@ -79,10 +77,6 @@ Global
 		{195636BA-7B78-483D-8B71-42F9531A7374}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{195636BA-7B78-483D-8B71-42F9531A7374}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{195636BA-7B78-483D-8B71-42F9531A7374}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E0540CD3-1413-44C9-9708-175A60CC70ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E0540CD3-1413-44C9-9708-175A60CC70ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E0540CD3-1413-44C9-9708-175A60CC70ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E0540CD3-1413-44C9-9708-175A60CC70ED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E26517F-369F-4EBD-90DA-4FCE6E3309D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E26517F-369F-4EBD-90DA-4FCE6E3309D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E26517F-369F-4EBD-90DA-4FCE6E3309D9}.Release|Any CPU.ActiveCfg = Release|Any CPU

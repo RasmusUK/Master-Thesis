@@ -1,4 +1,5 @@
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
 
 namespace EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
 

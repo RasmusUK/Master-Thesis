@@ -1,8 +1,9 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using EventSourcingFramework.Infrastructure.Repositories;
 using EventSourcingFramework.Test.Utilities;
 

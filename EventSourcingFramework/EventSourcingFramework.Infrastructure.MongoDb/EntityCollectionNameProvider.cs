@@ -1,6 +1,5 @@
-using EventSourcingFramework.Infrastructure.Abstractions;
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 
 namespace EventSourcingFramework.Infrastructure.MongoDb;
 

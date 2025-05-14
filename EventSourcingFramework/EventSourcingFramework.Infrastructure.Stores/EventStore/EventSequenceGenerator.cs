@@ -1,5 +1,5 @@
-using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Application.Abstractions.EventStore;
 using MongoDB.Bson;
 using MongoDB.Driver;
 

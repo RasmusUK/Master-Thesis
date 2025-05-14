@@ -1,5 +1,6 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Application.Abstractions.Replay;
 
 namespace EventSourcingFramework.Infrastructure.MongoDb;
 

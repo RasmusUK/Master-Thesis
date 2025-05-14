@@ -1,9 +1,13 @@
 using System.Linq.Expressions;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
 using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
 

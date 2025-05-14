@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Abstractions.ApiResponseStore;
+namespace EventSourcingFramework.Core.Interfaces;
 
 public interface IApiResponseStore
 {

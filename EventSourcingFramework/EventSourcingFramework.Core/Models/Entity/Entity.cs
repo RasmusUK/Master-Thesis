@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Core.Models;
+namespace EventSourcingFramework.Core.Models.Entity;
 
 public abstract class Entity : IEntity
 {

@@ -1,4 +1,4 @@
-using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
+using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Migrations;
 using EventSourcingFramework.Test.Utilities;
 

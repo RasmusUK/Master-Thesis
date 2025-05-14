@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Http;
+namespace EventSourcingFramework.Core.Enums;
 
 public enum ApiReplayMode
 {

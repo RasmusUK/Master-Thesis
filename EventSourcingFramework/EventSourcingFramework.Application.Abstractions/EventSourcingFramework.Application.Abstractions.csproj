@@ -10,8 +10,4 @@
       <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Migrations\" />
-    </ItemGroup>
-
 </Project>

@@ -1,5 +1,5 @@
+using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using MongoDB.Bson.Serialization;
 
 namespace EventSourcingFramework.Infrastructure.MongoDb;

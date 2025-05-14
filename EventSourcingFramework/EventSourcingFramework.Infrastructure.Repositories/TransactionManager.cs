@@ -1,5 +1,6 @@
 using EventSourcingFramework.Core;
-using EventSourcingFramework.Infrastructure.Abstractions;
+using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 
