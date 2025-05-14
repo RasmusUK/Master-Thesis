@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\..\EventSourcingFramework\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
-      <ProjectReference Include="..\..\EventSourcingFramework\EventSourcingFramework.Persistence\EventSourcingFramework.Persistence.csproj" />
     </ItemGroup>
 
     <ItemGroup>
