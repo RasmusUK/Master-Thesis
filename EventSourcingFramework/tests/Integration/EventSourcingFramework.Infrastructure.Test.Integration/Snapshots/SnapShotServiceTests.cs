@@ -7,6 +7,7 @@ using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Snapshots.Services;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 using MongoDB.Driver;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Snapshots;

@@ -5,6 +5,7 @@ using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 

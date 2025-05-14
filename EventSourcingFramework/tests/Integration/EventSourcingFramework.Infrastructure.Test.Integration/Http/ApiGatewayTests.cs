@@ -194,4 +194,54 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
         Assert.NotNull(stored);
     }
+    
+    [Fact]
+    public async Task PostAsync_CallsHttpClient_AndStoresResponse()
+    {
+        // Arrange
+        var url = "https://fake.api/post-endpoint";
+        var requestBody = new { Name = "NewPost", Age = 30 };
+        var key = $"POST:{url}:{JsonSerializer.Serialize(requestBody)}";
+
+        await collection.DeleteManyAsync(x => x.Key == key);
+
+        // Act
+        var result = await apiGateway.PostAsync<object, SampleResponse>(url, requestBody);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Live Response", result.Message);
+        Assert.Equal(123, result.Value);
+
+        var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
+        Assert.NotNull(stored);
+    }
+
+    [Fact]
+    public async Task SendAsync_CallsHttpClient_AndStoresResponse()
+    {
+        // Arrange
+        var url = "https://fake.api/custom";
+        var request = new HttpRequestMessage(HttpMethod.Put, url)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(new { Data = "X" }), Encoding.UTF8, "application/json")
+        };
+
+        var content = await request.Content.ReadAsStringAsync();
+        var key = $"PUT:{url}:{content}";
+
+        await collection.DeleteManyAsync(x => x.Key == key);
+
+        // Act
+        var result = await apiGateway.SendAsync<SampleResponse>(request);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Live Response", result.Message);
+        Assert.Equal(123, result.Value);
+
+        var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
+        Assert.NotNull(stored);
+    }
+
 }

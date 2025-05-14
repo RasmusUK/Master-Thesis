@@ -2,6 +2,7 @@ using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 using MongoDB.Bson.Serialization;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;

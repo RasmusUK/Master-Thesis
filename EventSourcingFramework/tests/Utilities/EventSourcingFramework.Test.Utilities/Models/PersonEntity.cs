@@ -1,7 +1,7 @@
 using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Models.Entity;
 
-namespace EventSourcingFramework.Test.Utilities;
+namespace EventSourcingFramework.Test.Utilities.Models;
 
 public class PersonEntity : Entity
 {

@@ -2,6 +2,7 @@ using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 

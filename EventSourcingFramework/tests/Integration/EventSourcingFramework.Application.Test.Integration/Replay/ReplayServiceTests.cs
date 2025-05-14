@@ -9,6 +9,7 @@ using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Infrastructure.Snapshots.Config;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 using Microsoft.Extensions.Options;
 
 namespace EventSourcingFramework.Application.Test.Integration.Replay;

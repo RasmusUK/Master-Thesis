@@ -2,6 +2,7 @@ using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Application.Test.Integration.ReplayContext;
 

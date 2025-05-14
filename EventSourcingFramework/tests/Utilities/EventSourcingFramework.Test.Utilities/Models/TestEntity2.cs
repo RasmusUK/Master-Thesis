@@ -1,7 +1,6 @@
-using EventSourcingFramework.Core.Models;
 using EventSourcingFramework.Core.Models.Entity;
 
-namespace EventSourcingFramework.Test.Utilities;
+namespace EventSourcingFramework.Test.Utilities.Models;
 
 public class TestEntity2 : Entity
 {

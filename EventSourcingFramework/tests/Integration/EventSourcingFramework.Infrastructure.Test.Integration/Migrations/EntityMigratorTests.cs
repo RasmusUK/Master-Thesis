@@ -1,6 +1,7 @@
 using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
 

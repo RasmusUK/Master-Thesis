@@ -6,6 +6,7 @@ using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 using MongoDB.Bson;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;

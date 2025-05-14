@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Models.Events;
 
-namespace EventSourcingFramework.Test.Utilities;
+namespace EventSourcingFramework.Test.Utilities.Models;
 
 public record TestEvent : IEvent
 {

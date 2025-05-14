@@ -4,6 +4,7 @@ using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Application.Test.Integration.EntityHistory;
 
