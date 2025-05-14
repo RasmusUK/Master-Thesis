@@ -45,12 +45,10 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
-else
-{
-    using var scope = app.Services.CreateScope();
-    var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
-    await seeder.Seed();
-}
+
+using var scope = app.Services.CreateScope();
+var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+await seeder.Seed();
 
 app.UseHttpsRedirection();
 
