@@ -66,6 +66,7 @@ public class GlobalReplayContext : IGlobalReplayContext
 
             isReplaying = true;
             replayMode = mode;
+            apiReplayMode = apiMode;
             events.Clear();
         }
     }

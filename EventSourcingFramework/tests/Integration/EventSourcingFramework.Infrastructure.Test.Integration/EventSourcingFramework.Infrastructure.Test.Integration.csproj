@@ -24,6 +24,7 @@
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Application.Abstractions\EventSourcingFramework.Application.Abstractions.csproj" />
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+      <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.Http\EventSourcingFramework.Infrastructure.Http.csproj" />
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.Migrations\EventSourcingFramework.Infrastructure.Migrations.csproj" />
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.MongoDb\EventSourcingFramework.Infrastructure.MongoDb.csproj" />
       <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.Repositories\EventSourcingFramework.Infrastructure.Repositories.csproj" />

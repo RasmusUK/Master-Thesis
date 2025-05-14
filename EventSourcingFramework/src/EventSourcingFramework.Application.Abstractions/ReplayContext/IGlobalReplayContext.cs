@@ -10,7 +10,7 @@ public interface IGlobalReplayContext
     ApiReplayMode ApiReplayMode { get; }
     bool IsReplaying { get; }
     bool IsLoading { get; set; }
-    void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiMode = ApiReplayMode.CacheOnly);
+    void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiReplayMode = ApiReplayMode.CacheOnly);
     void StopReplay();
     IReadOnlyCollection<IEvent> GetEvents();
     void AddEvent(IEvent e);
