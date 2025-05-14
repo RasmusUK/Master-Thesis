@@ -5,11 +5,9 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Application", "src\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj", "{83974782-B112-4C97-9F5B-252527FA3A1E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Web.Old", "src\SpotQuoteApp.Web.Old\SpotQuoteApp.Web.Old.csproj", "{F8673F13-2DC7-4E8A-A8E0-CD2794B53A98}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Web", "src\SpotQuoteApp.Web\SpotQuoteApp.Web.csproj", "{F8673F13-2DC7-4E8A-A8E0-CD2794B53A98}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Core", "src\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj", "{0CEC0C88-94C5-425B-BA13-BF96A29E464B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Web", "src\SpotQuoteApp.Web\SpotQuoteApp.Web.csproj", "{89841B8D-A479-4149-85C5-6AD8DE39709B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,10 +31,6 @@ Global
 		{02173418-E907-4A7D-BD3E-152DE931EE9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{02173418-E907-4A7D-BD3E-152DE931EE9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{02173418-E907-4A7D-BD3E-152DE931EE9B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{89841B8D-A479-4149-85C5-6AD8DE39709B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{89841B8D-A479-4149-85C5-6AD8DE39709B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{89841B8D-A479-4149-85C5-6AD8DE39709B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{89841B8D-A479-4149-85C5-6AD8DE39709B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
