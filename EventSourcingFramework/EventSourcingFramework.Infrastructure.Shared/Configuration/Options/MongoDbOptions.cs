@@ -7,6 +7,7 @@ public class MongoDbOptions
     public DatabaseOptions EntityStore { get; set; } = new();
     public DatabaseOptions DebugEntityStore { get; set; } = new();
     public DatabaseOptions PersonalDataStore { get; set; } = new();
+    public DatabaseOptions ApiResponseStore { get; set; } = new();
 }
 
 public class DatabaseOptions

@@ -2,16 +2,15 @@ using System.Linq.Expressions;
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions;
 using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
-using EventSourcingFramework.Infrastructure.EntityStore.Exceptions;
+using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.EntityStore;
+namespace EventSourcingFramework.Infrastructure.Stores.EntityStore;
 
 public class EntityStore : IEntityStore
 {

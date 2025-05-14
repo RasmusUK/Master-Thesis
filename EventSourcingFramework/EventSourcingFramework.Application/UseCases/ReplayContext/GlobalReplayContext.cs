@@ -1,6 +1,7 @@
 using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Models.Events;
+using EventSourcingFramework.Infrastructure.Http;
 
 namespace EventSourcingFramework.Application.UseCases.ReplayContext;
 
@@ -11,6 +12,7 @@ public class GlobalReplayContext : IGlobalReplayContext
     private bool isReplaying;
     private bool isLoading;
     private ReplayMode replayMode = ReplayMode.Strict;
+    private ApiReplayMode apiReplayMode = ApiReplayMode.CacheOnly;
     private readonly List<IEvent> events = new();
 
     public bool IsReplaying
@@ -44,8 +46,17 @@ public class GlobalReplayContext : IGlobalReplayContext
                 return replayMode;
         }
     }
+    
+    public ApiReplayMode ApiReplayMode
+    {
+        get
+        {
+            lock (LockObj)
+                return apiReplayMode;
+        }
+    }
 
-    public void StartReplay(ReplayMode mode = ReplayMode.Strict)
+    public void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiMode = ApiReplayMode.CacheOnly)
     {
         lock (LockObj)
         {

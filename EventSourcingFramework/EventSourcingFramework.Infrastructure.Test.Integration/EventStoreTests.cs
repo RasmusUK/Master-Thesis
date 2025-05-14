@@ -5,6 +5,7 @@ using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Infrastructure.Stores.EventStore;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration;
@@ -154,7 +155,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     public async Task InsertEventAsync_DoesNothing_WhenEventStoreIsDisabled()
     {
         // Arrange
-        var store = new EventStore.EventStore(
+        var store = new EventStore(
             MongoDbService,
             eventSequenceGenerator,
             personalDataService,

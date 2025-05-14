@@ -15,16 +15,19 @@ public class MongoDbService : IMongoDbService
 {
     public IMongoCollection<MongoEventBase> EventCollection { get; }
     public IMongoCollection<MongoPersonalData> PersonalDataCollection { get; }
+    public IMongoCollection<MongoApiResponse> ApiResponseCollection { get; }
     public IMongoCollection<BsonDocument> CounterCollection { get; }
     private IMongoDatabase entityDatabase;
     private readonly IMongoDatabase eventDatabase;
     private readonly IMongoDatabase productionEntityDatabase;
     private readonly IMongoDatabase debugEntityDatabase;
     private readonly IMongoDatabase personalDataDatabase;
+    private readonly IMongoDatabase apiResponseDatabase;
     private readonly MongoClient eventClient;
     private readonly MongoClient productionEntityClient;
     private readonly MongoClient debugEntityClient;
     private readonly MongoClient personalDataClient;
+    private readonly MongoClient apiResponseClient;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
 
     public MongoDbService(
@@ -41,10 +44,12 @@ public class MongoDbService : IMongoDbService
         (productionEntityDatabase, productionEntityClient) = CreateDatabase(options.EntityStore);
         (debugEntityDatabase, debugEntityClient) = CreateDatabase(options.DebugEntityStore);
         (personalDataDatabase, personalDataClient) = CreateDatabase(options.PersonalDataStore);
+        (apiResponseDatabase, apiResponseClient) = CreateDatabase(options.ApiResponseStore);
 
         EventCollection = eventDatabase.GetCollection<MongoEventBase>("events");
         PersonalDataCollection = personalDataDatabase.GetCollection<MongoPersonalData>("personalData");
         CounterCollection = eventDatabase.GetCollection<BsonDocument>("counters");
+        ApiResponseCollection = apiResponseDatabase.GetCollection<MongoApiResponse>("apiResponses");
 
         entityDatabase = productionEntityDatabase;
 
@@ -76,6 +81,9 @@ public class MongoDbService : IMongoDbService
         );
         await debugEntityClient.DropDatabaseAsync(
             debugEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+        await apiResponseClient.DropDatabaseAsync(
+            apiResponseDatabase.DatabaseNamespace.DatabaseName
         );
     }
 

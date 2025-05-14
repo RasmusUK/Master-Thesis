@@ -3,7 +3,8 @@ using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
-using EventSourcingFramework.Infrastructure.EntityStore.Exceptions;
+using EventSourcingFramework.Infrastructure.Stores.EntityStore;
+using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 
@@ -413,7 +414,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     public async Task InsertEntityAsync_DoesNothing_WhenEntityStoreIsDisabled()
     {
         // Arrange
-        var entityStore = new EntityStore.EntityStore(
+        var entityStore = new EntityStore(
             MongoDbService, nameProvider, entityMigrator, schemaVersionRegistry, migrationTypeRegistry,
             Microsoft.Extensions.Options.Options.Create(new EventSourcingOptions
             {

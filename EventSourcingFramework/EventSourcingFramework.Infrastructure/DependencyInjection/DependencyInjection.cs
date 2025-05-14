@@ -12,12 +12,14 @@ using EventSourcingFramework.Infrastructure.Abstractions;
 using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
 using EventSourcingFramework.Infrastructure.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
-using EventSourcingFramework.Infrastructure.EventStore;
 using EventSourcingFramework.Infrastructure.Migrations;
 using EventSourcingFramework.Infrastructure.MongoDb;
 using EventSourcingFramework.Infrastructure.Repositories;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 using EventSourcingFramework.Infrastructure.Snapshots;
+using EventSourcingFramework.Infrastructure.Stores.EntityStore;
+using EventSourcingFramework.Infrastructure.Stores.EventStore;
+using EventSourcingFramework.Infrastructure.Stores.PersonalDataStore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -53,7 +55,7 @@ public static class DependencyInjection
                 sp.GetRequiredService<IOptions<EventSourcingOptions>>().Value)
             .AddSingleton<ISnapshotSettings, SnapshotSettingsAdapter>()
             .AddSingleton<IReplayEnvironmentSwitcher, ReplayEnvironmentSwitcher>()
-            .AddSingleton<IPersonalDataStore, PersonalDataStore.PersonalDataStore>()
+            .AddSingleton<IPersonalDataStore, PersonalDataStore>()
             .AddSingleton<IPersonalDataService, PersonalDataService>()
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IReplayService, ReplayService>()
@@ -63,8 +65,8 @@ public static class DependencyInjection
             .AddSingleton<IEntityUpgradeService, EntityUpgradeService>()
             .AddSingleton<IEventSequenceGenerator, EventSequenceGenerator>()
             .AddSingleton<IMongoDbService, MongoDbService>()
-            .AddSingleton<IEntityStore, EntityStore.EntityStore>()
-            .AddSingleton<IEventStore, EventStore.EventStore>()
+            .AddSingleton<IEntityStore, EntityStore>()
+            .AddSingleton<IEventStore, EventStore>()
             .AddSingleton(typeof(Repository<>))
             .AddSingleton<ISnapshotService, SnapshotService>()
             .AddScoped<ITransactionManager, TransactionManager>()

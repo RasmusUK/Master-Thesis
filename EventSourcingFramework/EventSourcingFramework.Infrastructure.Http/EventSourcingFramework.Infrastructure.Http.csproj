@@ -7,10 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
-      <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Abstractions\EventSourcingFramework.Infrastructure.Abstractions.csproj" />
-      <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj" />
     </ItemGroup>
 
 </Project>

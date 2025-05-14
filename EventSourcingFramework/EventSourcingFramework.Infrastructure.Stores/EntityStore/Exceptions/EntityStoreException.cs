@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.EntityStore.Exceptions;
+namespace EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 
 public class EntityStoreException : Exception
 {

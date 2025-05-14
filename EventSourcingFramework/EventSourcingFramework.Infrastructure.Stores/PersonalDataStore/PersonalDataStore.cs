@@ -1,12 +1,11 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
 using EventSourcing.Framework.Infrastructure.Shared.Models;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.PersonalDataStore;
+namespace EventSourcingFramework.Infrastructure.Stores.PersonalDataStore;
 
 public class PersonalDataStore : IPersonalDataStore
 {

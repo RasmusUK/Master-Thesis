@@ -1,14 +1,16 @@
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Models.Events;
+using EventSourcingFramework.Infrastructure.Http;
 
 namespace EventSourcingFramework.Application.Abstractions;
 
 public interface IGlobalReplayContext
 {
     ReplayMode ReplayMode { get; }
+    ApiReplayMode ApiReplayMode { get; }
     bool IsReplaying { get; }
     bool IsLoading { get; set; }
-    void StartReplay(ReplayMode mode = ReplayMode.Strict);
+    void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiMode = ApiReplayMode.CacheOnly);
     void StopReplay();
     IReadOnlyCollection<IEvent> GetEvents();
     void AddEvent(IEvent e);

@@ -1,10 +1,9 @@
-using EventSourcingFramework.Infrastructure.Abstractions;
 using EventSourcingFramework.Infrastructure.Abstractions.EventStore;
 using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.EventStore;
+namespace EventSourcingFramework.Infrastructure.Stores.EventStore;
 
 public class EventSequenceGenerator : IEventSequenceGenerator
 {
