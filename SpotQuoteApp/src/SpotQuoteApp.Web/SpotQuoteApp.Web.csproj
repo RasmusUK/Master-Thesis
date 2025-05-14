@@ -10,23 +10,4 @@
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="8.*" />
   </ItemGroup>
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
-    <ProjectReference Include="..\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj" />
-    <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <_ContentIncludedByDefault Remove="Data\Countries.json" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <None Include="Data\Countries.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
 </Project>

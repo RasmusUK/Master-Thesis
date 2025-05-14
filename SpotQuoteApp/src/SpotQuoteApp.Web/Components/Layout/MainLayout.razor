@@ -1,9 +1,4 @@
-﻿@using global::EventSourcingFramework.Core
-@using EventSourcingFramework.Application.Abstractions
-@using EventSourcingFramework.Application.Abstractions.ReplayContext
-@using EventSourcingFramework.Core.Enums
-@inherits LayoutComponentBase
-@inject IReplayContext ReplayContext
+﻿@inherits LayoutComponentBase
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
@@ -12,22 +7,12 @@
 <MudLayout>
     <MudAppBar Elevation="1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">Spot Quotes App</MudText>
+        <MudText Typo="Typo.h5" Class="ml-3">Application</MudText>
         <MudSpacer />
-        @if (ReplayContext.IsReplaying)
-        {
-            <MudText Color="Color.Warning">
-                @(ReplayContext.ReplayMode switch
-                {
-                    ReplayMode.Sandbox => "Sandbox",
-                    ReplayMode.Strict => "Strict",
-                    ReplayMode.Debug => "Debug",
-                    _ => "Unknown"})
-            </MudText>
-
-        }
+        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
+        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
     </MudAppBar>
-    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
+    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
         <NavMenu />
     </MudDrawer>
     <MudMainContent Class="pt-16 pa-4">
@@ -43,8 +28,8 @@
 </div>
 
 @code {
-    private bool _drawerOpen = false;
-    private bool _isDarkMode = false;
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = true;
     private MudTheme? _theme = null;
 
     protected override void OnInitialized()
