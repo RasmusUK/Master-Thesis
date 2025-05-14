@@ -1,9 +1,9 @@
 services:
-  mongodb.framework:
+  mongodb:
     image: mongodb/mongodb-community-server:latest
-    container_name: mongodb.framework
+    container_name: mongodb.dev
     ports:
-      - "27018:27017"
+      - "27019:27017"
     volumes:
       - mongo_data:/data/db
 

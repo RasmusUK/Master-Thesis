@@ -1,7 +1,7 @@
 services:
-  mongodb:
+  mongodb.prod:
     image: mongodb/mongodb-community-server:latest
-    container_name: mongodb
+    container_name: mongodb.prod
     ports:
       - "27017:27017"
     volumes:
@@ -17,7 +17,7 @@ services:
       - "443:443"
       - "8080:8080"      
     depends_on:
-      - mongodb
+      - mongodb.prod
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
     volumes:
