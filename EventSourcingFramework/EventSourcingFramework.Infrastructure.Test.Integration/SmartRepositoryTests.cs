@@ -5,6 +5,7 @@ using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Repositories;
+using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration;

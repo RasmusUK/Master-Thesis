@@ -1,9 +1,8 @@
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
 using Microsoft.Extensions.Options;
 
-namespace EventSourcing.Framework.Infrastructure.Shared.Configuration.Adapters;
+namespace EventSourcingFramework.Infrastructure.Snapshots.Config;
 
 public class SnapshotSettingsAdapter : ISnapshotSettings
 {

@@ -10,6 +10,7 @@ using EventSourcingFramework.Core.Models;
 using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Repositories;
 using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
+using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration;

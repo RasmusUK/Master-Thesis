@@ -1,5 +1,5 @@
 using EventSourcingFramework.Application.Abstractions.Migrations;
-using EventSourcingFramework.Infrastructure.Migrations;
+using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration;

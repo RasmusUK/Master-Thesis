@@ -1,8 +1,7 @@
 using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.Replay;
 
-namespace EventSourcingFramework.Infrastructure.MongoDb;
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public class ReplayEnvironmentSwitcher : IReplayEnvironmentSwitcher
 {

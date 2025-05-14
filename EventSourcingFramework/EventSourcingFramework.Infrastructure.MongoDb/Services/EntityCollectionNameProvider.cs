@@ -1,7 +1,7 @@
 using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions.Migrations;
 
-namespace EventSourcingFramework.Infrastructure.MongoDb;
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public class EntityCollectionNameProvider : IEntityCollectionNameProvider
 {

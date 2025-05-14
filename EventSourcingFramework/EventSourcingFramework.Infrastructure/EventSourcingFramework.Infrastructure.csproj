@@ -15,6 +15,7 @@
     <ItemGroup>
       <ProjectReference Include="..\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+      <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Http\EventSourcingFramework.Infrastructure.Http.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Migrations\EventSourcingFramework.Infrastructure.Migrations.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Infrastructure.MongoDb\EventSourcingFramework.Infrastructure.MongoDb.csproj" />
       <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Repositories\EventSourcingFramework.Infrastructure.Repositories.csproj" />

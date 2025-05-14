@@ -1,18 +1,16 @@
 using System.Reflection;
 using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
 using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Enums;
 using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.Snapshots;
+namespace EventSourcingFramework.Infrastructure.Snapshots.Services;
 
 public class SnapshotService : ISnapshotService
 {

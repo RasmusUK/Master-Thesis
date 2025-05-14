@@ -2,7 +2,7 @@ using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using MongoDB.Bson.Serialization;
 
-namespace EventSourcingFramework.Infrastructure.MongoDb;
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public static class MongoDbEventRegistration
 {

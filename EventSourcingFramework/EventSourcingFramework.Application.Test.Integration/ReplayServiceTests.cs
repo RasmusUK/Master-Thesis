@@ -1,5 +1,4 @@
-﻿using EventSourcing.Framework.Infrastructure.Shared.Configuration.Adapters;
-using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
+﻿using EventSourcing.Framework.Infrastructure.Shared.Configuration.Options;
 using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcing.Framework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Application.Abstractions;
@@ -10,6 +9,7 @@ using EventSourcingFramework.Application.UseCases.Replay;
 using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Infrastructure.Snapshots.Config;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.Options;
 

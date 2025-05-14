@@ -1,12 +1,10 @@
 using System.Linq.Expressions;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Core.Models;
 using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 
-namespace EventSourcingFramework.Infrastructure.Repositories;
+namespace EventSourcingFramework.Infrastructure.Repositories.Services;
 
 public class SmartRepository<T> : IRepository<T>
     where T : class, IEntity

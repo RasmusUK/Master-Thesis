@@ -6,7 +6,7 @@ using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Snapshots;
+using EventSourcingFramework.Infrastructure.Snapshots.Services;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Driver;
 

@@ -8,7 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Conventions;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.MongoDb;
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public class MongoDbService : IMongoDbService
 {

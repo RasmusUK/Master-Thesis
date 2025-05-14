@@ -1,9 +1,9 @@
 using EventSourcing.Framework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure;
-using EventSourcingFramework.Infrastructure.DependencyInjection;
-using EventSourcingFramework.Infrastructure.Migrations;
-using EventSourcingFramework.Infrastructure.MongoDb;
+using EventSourcingFramework.Infrastructure.DI;
+using EventSourcingFramework.Infrastructure.Migrations.Services;
+using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,37 +53,16 @@ public static class ServiceProvider
             .Build();
 
         var services = new ServiceCollection();
-        services.AddEventSourcing(configuration);
-
-        services.AddSingleton<ISchemaVersionRegistry>(_ =>
+        services.AddEventSourcing(configuration, (schema, migrations, migrator, collections) =>
         {
-            var registry = new SchemaVersionRegistry();
-            return registry;
-        });
+            schema.Register(typeof(TestEntity), 1);
 
-        services.AddSingleton<IMigrationTypeRegistry>(_ =>
-        {
-            var registry = new MigrationTypeRegistry();
-            return registry;
-        });
-
-        services.AddSingleton<IEntityMigrator>(_ =>
-        {
-            var migrator = new EntityMigrator();
-            return migrator;
-        });
-
-        services.AddSingleton<IEntityCollectionNameProvider>(sp =>
-        {
-            var registry = sp.GetRequiredService<IMigrationTypeRegistry>();
-            var collectionNameProvider = new EntityCollectionNameProvider(registry);
+            migrations.Register<TestEntity>(1, typeof(TestEntity));
 
             MongoDbEventRegistration.RegisterEvents(
-                collectionNameProvider,
+                collections,
                 (typeof(TestEntity), "TestEntity")
             );
-
-            return collectionNameProvider;
         });
 
         return services.BuildServiceProvider();

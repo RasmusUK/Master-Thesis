@@ -1,6 +1,6 @@
 using EventSourcingFramework.Application.Abstractions.Migrations;
 
-namespace EventSourcingFramework.Infrastructure.Migrations;
+namespace EventSourcingFramework.Infrastructure.Migrations.Services;
 
 public class MigrationTypeRegistry : IMigrationTypeRegistry
 {

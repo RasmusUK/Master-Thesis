@@ -1,11 +1,11 @@
 ﻿using System.Text;
 using System.Text.Json;
-using EventSourcingFramework.Application.Abstractions;
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
 
-namespace EventSourcingFramework.Infrastructure.Http;
+namespace EventSourcingFramework.Infrastructure.Http.Services;
 
 public class ApiGateway : IApiGateway
 {
@@ -23,7 +23,7 @@ public class ApiGateway : IApiGateway
     public async Task<T> GetAsync<T>(string url, Dictionary<string, string>? headers = null)
     {
         var key = $"GET:{url}";
-        return await HandleRequest<T>(() => BuildRequest<>(HttpMethod.Get, url, null, headers), key);
+        return await HandleRequest<T>(() => BuildRequest<T>(HttpMethod.Get, url, default, headers), key);
     }
 
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body, Dictionary<string, string>? headers = null)

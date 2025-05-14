@@ -1,4 +1,4 @@
-namespace EventSourcingFramework.Infrastructure.Http;
+namespace EventSourcingFramework.Application.Abstractions.ApiGateway;
 
 public interface IApiGateway
 {
