@@ -4,24 +4,26 @@ using MongoDB.Bson.Serialization;
 
 namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
-public static class MongoDbEventRegistration
+public class MongoDbRegistrationService : IMongoDbRegistrationService
 {
-    public static void RegisterEvents(
-        IEntityCollectionNameProvider collectionNameProvider,
+    private readonly List <(Type Type, string CollectionName)> registered = new();
+    
+    public void Register(
         params (Type Type, string CollectionName)[] entities
     )
     {
         foreach (var (entityType, collectionName) in entities)
         {
+            registered.Add((entityType, collectionName));
             RegisterGenericEvent(typeof(MongoCreateEvent<>), entityType);
             RegisterGenericEvent(typeof(MongoUpdateEvent<>), entityType);
             RegisterGenericEvent(typeof(MongoDeleteEvent<>), entityType);
-
-            collectionNameProvider.Register(entityType, collectionName);
         }
     }
 
-    private static void RegisterGenericEvent(Type genericEventType, Type entityType)
+    public List<(Type Type, string CollectionName)> GetRegistered() => registered;
+
+    private void RegisterGenericEvent(Type genericEventType, Type entityType)
     {
         var closedType = genericEventType.MakeGenericType(entityType);
 
@@ -36,3 +38,4 @@ public static class MongoDbEventRegistration
         BsonClassMap.RegisterClassMap(classMap);
     }
 }
+

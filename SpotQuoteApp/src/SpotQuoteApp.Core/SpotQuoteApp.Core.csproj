@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\EventSourcingFramework\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
+      <ProjectReference Include="..\..\EventSourcingFramework\src\EventSourcingFramework.Application\EventSourcingFramework.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>
