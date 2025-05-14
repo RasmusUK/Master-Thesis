@@ -1,7 +1,9 @@
 ﻿@using global::EventSourcingFramework.Core
 @using EventSourcingFramework.Application.Abstractions
+@using EventSourcingFramework.Application.Abstractions.ReplayContext
+@using EventSourcingFramework.Core.Enums
 @inherits LayoutComponentBase
-@inject IGlobalReplayContext GlobalReplayContext
+@inject IReplayContext ReplayContext
 
 <MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
 <MudPopoverProvider />
@@ -12,10 +14,10 @@
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Spot Quotes App</MudText>
         <MudSpacer />
-        @if (GlobalReplayContext.IsReplaying)
+        @if (ReplayContext.IsReplaying)
         {
             <MudText Color="Color.Warning">
-                @(GlobalReplayContext.ReplayMode switch
+                @(ReplayContext.ReplayMode switch
                 {
                     ReplayMode.Sandbox => "Sandbox",
                     ReplayMode.Strict => "Strict",

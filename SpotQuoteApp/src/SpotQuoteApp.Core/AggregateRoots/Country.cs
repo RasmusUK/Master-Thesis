@@ -1,4 +1,4 @@
-using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 
 namespace SpotQuoteApp.Core.AggregateRoots;
 

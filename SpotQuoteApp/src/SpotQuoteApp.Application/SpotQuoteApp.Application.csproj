@@ -7,14 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\EventSourcingFramework\src\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+      <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+        <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\EventSourcingFramework.Infrastructure.Repositories.csproj" />
       <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="EventSourcingFramework.Infrastructure.Repositories">
-        <HintPath>..\..\EventSourcingFramework\EventSourcingFramework.Infrastructure.Repositories\bin\Debug\net9.0\EventSourcingFramework.Infrastructure.Repositories.dll</HintPath>
-      </Reference>
     </ItemGroup>
 
 </Project>

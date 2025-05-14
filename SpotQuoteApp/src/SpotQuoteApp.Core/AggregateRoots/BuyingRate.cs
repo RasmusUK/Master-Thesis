@@ -1,4 +1,4 @@
-using EventSourcingFramework.Core.Models;
+using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 

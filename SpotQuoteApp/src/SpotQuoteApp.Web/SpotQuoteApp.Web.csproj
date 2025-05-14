@@ -13,7 +13,7 @@
 
 
   <ItemGroup>
-    <ProjectReference Include="..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
     <ProjectReference Include="..\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj" />
     <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
   </ItemGroup>

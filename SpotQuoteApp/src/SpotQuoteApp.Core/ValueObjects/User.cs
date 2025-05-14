@@ -1,4 +1,4 @@
-using EventSourcingFramework.Core;
+using EventSourcingFramework.Core.Attributes;
 
 namespace SpotQuoteApp.Core.ValueObjects;
 

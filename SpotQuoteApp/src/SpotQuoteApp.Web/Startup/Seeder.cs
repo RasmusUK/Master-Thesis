@@ -1,5 +1,5 @@
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Infrastructure.Abstractions.MongoDb;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
