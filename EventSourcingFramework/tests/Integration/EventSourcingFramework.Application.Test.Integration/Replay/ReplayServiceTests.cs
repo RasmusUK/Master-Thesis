@@ -11,7 +11,7 @@ using EventSourcingFramework.Infrastructure.Snapshots.Config;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.Options;
 
-namespace EventSourcingFramework.Application.Test.Integration;
+namespace EventSourcingFramework.Application.Test.Integration.Replay;
 
 [Collection("Integration")]
 public class ReplayServiceTests : MongoIntegrationTestBase

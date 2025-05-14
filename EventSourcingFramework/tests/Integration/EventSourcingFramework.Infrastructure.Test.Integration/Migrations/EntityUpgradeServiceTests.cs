@@ -6,7 +6,7 @@ using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
 
 [Collection("Integration")]
 public class EntityUpgradeServiceTests

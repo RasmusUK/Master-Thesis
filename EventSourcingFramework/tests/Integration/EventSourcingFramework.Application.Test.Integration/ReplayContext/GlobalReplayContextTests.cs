@@ -1,11 +1,9 @@
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Application.Test.Integration;
+namespace EventSourcingFramework.Application.Test.Integration.ReplayContext;
 
 [Collection("Integration")]
 public class GlobalReplayContextTests : MongoIntegrationTestBase

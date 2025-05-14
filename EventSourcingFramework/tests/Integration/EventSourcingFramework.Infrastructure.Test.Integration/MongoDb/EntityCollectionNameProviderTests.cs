@@ -4,7 +4,7 @@ using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;
 
 [Collection("Integration")]
 public class EntityCollectionNameProviderTests : MongoIntegrationTestBase

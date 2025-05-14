@@ -5,7 +5,7 @@ using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Application.Test.Integration;
+namespace EventSourcingFramework.Application.Test.Integration.EntityHistory;
 
 [Collection("Integration")]
 public class EntityHistoryServiceTests : MongoIntegrationTestBase

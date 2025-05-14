@@ -9,7 +9,7 @@ using EventSourcingFramework.Infrastructure.Snapshots.Services;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Snapshots;
 
 [Collection("Integration")]
 public class SnapshotServiceTests : MongoIntegrationTestBase

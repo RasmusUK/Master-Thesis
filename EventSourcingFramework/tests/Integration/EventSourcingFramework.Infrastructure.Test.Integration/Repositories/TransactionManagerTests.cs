@@ -3,7 +3,7 @@ using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 
 public class TransactionManagerTests
 {

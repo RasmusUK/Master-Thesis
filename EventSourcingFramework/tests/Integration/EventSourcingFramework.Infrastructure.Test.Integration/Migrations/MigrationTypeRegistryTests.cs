@@ -2,7 +2,7 @@ using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
 
 public class MigrationTypeRegistryTests
 {

@@ -1,4 +1,3 @@
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
@@ -9,7 +8,7 @@ using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 
 [Collection("Integration")]
 public class EntityStoreTests : MongoIntegrationTestBase

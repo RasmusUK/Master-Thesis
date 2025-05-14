@@ -1,11 +1,10 @@
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;
 
 [Collection("Integration")]
 public class MongoDbServiceTests : MongoIntegrationTestBase

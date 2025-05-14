@@ -3,7 +3,7 @@ using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 
 [Collection("Integration")]
 public class PersonalDataStoreTests : MongoIntegrationTestBase

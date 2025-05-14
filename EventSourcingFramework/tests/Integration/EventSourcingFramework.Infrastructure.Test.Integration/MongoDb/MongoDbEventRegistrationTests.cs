@@ -4,7 +4,7 @@ using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson.Serialization;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;
 
 public class MongoDbEventRegistrationTests
 {

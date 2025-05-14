@@ -9,7 +9,7 @@ using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Infrastructure.Stores.EventStore;
 using EventSourcingFramework.Test.Utilities;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 
 [Collection("Integration")]
 public class EventStoreTests : MongoIntegrationTestBase

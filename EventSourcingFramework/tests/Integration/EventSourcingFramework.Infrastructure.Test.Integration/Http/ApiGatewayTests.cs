@@ -3,20 +3,18 @@ using System.Text;
 using System.Text.Json;
 using EventSourcingFramework.Application.Abstractions.ApiGateway;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
-using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Http.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models;
-using EventSourcingFramework.Infrastructure.Stores.ApiResponseStore;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Moq;
 using Moq.Protected;
 
-namespace EventSourcingFramework.Infrastructure.Test.Integration;
+namespace EventSourcingFramework.Infrastructure.Test.Integration.Http;
 
 [Collection("Integration")]
 public class ApiGatewayTests : MongoIntegrationTestBase
