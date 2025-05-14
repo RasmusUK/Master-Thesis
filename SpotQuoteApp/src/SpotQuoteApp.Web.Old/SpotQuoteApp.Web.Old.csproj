@@ -4,24 +4,30 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SpotQuoteApp.Web</RootNamespace>
   </PropertyGroup>
 
 
   <ItemGroup>
     <PackageReference Include="MudBlazor" Version="8.*" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
     <ProjectReference Include="..\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj" />
     <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
   </ItemGroup>
 
 
   <ItemGroup>
-    <Reference Include="EventSourcingFramework.Infrastructure">
-      <HintPath>..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\bin\Debug\net9.0\EventSourcingFramework.Infrastructure.dll</HintPath>
-    </Reference>
+    <_ContentIncludedByDefault Remove="Data\Countries.json" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <None Include="Data\Countries.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

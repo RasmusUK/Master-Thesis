@@ -1,3 +1,4 @@
+using System.Globalization;
 using EventSourcingFramework.Infrastructure.DI;
 using MudBlazor.Services;
 using SpotQuoteApp.Application;
@@ -7,14 +8,13 @@ using SpotQuoteApp.Core.Validators;
 using SpotQuoteApp.Web.Components;
 using SpotQuoteApp.Web.Data;
 using SpotQuoteApp.Web.Startup;
-using Country = SpotQuoteApp.Web.Data.Country;
+using Country = SpotQuoteApp.Core.AggregateRoots.Country;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddMudServices();
 
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 builder.Services.AddEventSourcing(builder.Configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
 {
@@ -40,21 +40,26 @@ builder.Services.AddScoped<SpotQuoteValidator, SpotQuoteValidator>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
+}
+else
+{
+    using var scope = app.Services.CreateScope();
+    var seeder = scope.ServiceProvider.GetRequiredService<ISeeder>();
+    await seeder.Seed();
 }
 
 app.UseHttpsRedirection();
 
-
 app.UseAntiforgery();
 
 app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
 
 app.Run();
