@@ -1,0 +1,28 @@
+services:
+  mongodb:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  spotquoteapp.web:
+    image: spotquoteapp.web
+    build:
+      context: .
+      dockerfile: SpotQuoteApp/src/SpotQuoteApp.Web/Dockerfile
+    container_name: spotquoteapp.web
+    ports:
+      - "443:443"
+      - "8080:8080"      
+    depends_on:
+      - mongodb
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+    volumes:
+      - data_protection_keys:/var/keys
+
+volumes:
+  mongo_data:
+  data_protection_keys:
