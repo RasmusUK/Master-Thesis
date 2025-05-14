@@ -7,8 +7,15 @@ services:
     volumes:
       - mongo_data:/data/db
 
+  mockapi.web:
+    build:
+      context: ./Mock-api
+      dockerfile: Dockerfile
+    container_name:  mockapi.web
+    ports:
+      - "3000:3000"  
+
   spotquoteapp.web:
-    image: spotquoteapp.web
     build:
       context: .
       dockerfile: SpotQuoteApp/src/SpotQuoteApp.Web/Dockerfile
@@ -18,8 +25,11 @@ services:
       - "8080:8080"      
     depends_on:
       - mongodb.web
+      - mockapi.web
     environment:
       - ASPNETCORE_ENVIRONMENT=Docker
+
+
 
 volumes:
   mongo_data:

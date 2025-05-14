@@ -1,16 +1,26 @@
 # EventSourcingFramework
 
-## Local Development
+## Spot Quote App
 
-For local development, you can start the MongoDB container manually:
+You can start the app with:
 
 ```powershell
-docker compose up -d
+./Start.ps1
 ```
 
-This will start MongoDB in the background.
+You can access the Spot Quote App on <localhost:8080>.
 
-You can clean up by shutting down the MongoDB container:
+## Local Development
+
+For local development, you can start the MongoDB and Mock-api manually:
+
+```powershell
+./DevUp.ps1
+```
+
+This will start MongoDB and the Mock-api in the background.
+
+You can clean up by shutting down the containers:
 
 ```powershell
 docker compose down
@@ -18,5 +28,6 @@ docker compose down
 
 ### Requirements
 
+- Powershell
 - Docker & Docker Compose
 - .NET 9 SDK

@@ -5,7 +5,7 @@
 For local development, you can start the MongoDB container manually:
 
 ```powershell
-docker compose up -d --build
+./Start.ps1
 ```
 
 This will start:
@@ -24,4 +24,5 @@ You can access the Spot Quote App on <localhost:8080>.
 
 ### Requirements
 
+- Powershell
 - Docker & Docker Compose
