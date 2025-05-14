@@ -26,7 +26,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
 
     public ReplayServiceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         IReplayService replayService,
         IEventStore eventStore,
         IEntityStore entityStore,

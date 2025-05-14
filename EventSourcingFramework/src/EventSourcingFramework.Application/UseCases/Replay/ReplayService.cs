@@ -12,7 +12,7 @@ public class ReplayService : IReplayService
 {
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
-    private readonly IGlobalReplayContext replayContext;
+    private readonly IReplayContext replayContext;
     private readonly IReplayEnvironmentSwitcher replayEnvironmentSwitcher;
     private readonly ISnapshotService snapshotService;
     private readonly ISnapshotSettings snapshotSettings;
@@ -20,7 +20,7 @@ public class ReplayService : IReplayService
     public ReplayService(
         IEventStore eventStore,
         IEntityStore entityStore,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         ISnapshotService snapshotService,
         IReplayEnvironmentSwitcher replayEnvironmentSwitcher, ISnapshotSettings snapshotSettings)
     {

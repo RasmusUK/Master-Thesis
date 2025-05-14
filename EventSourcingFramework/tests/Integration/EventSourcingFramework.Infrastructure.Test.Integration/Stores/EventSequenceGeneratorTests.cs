@@ -12,7 +12,7 @@ public class EventSequenceGeneratorTests : MongoIntegrationTestBase
 
     public EventSequenceGeneratorTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         IEventSequenceGenerator generator
     )
         : base(mongoDbService, replayContext)

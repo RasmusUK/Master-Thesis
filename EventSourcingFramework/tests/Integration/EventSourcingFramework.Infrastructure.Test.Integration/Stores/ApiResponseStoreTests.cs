@@ -10,7 +10,7 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
 {
     private readonly IApiResponseStore store;
 
-    public ApiResponseStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext,
+    public ApiResponseStoreTests(IMongoDbService mongoDbService, IReplayContext replayContext,
         IApiResponseStore store)
         : base(mongoDbService, replayContext)
     {

@@ -7,11 +7,11 @@ using EventSourcingFramework.Test.Utilities.Models;
 namespace EventSourcingFramework.Application.Test.Integration.ReplayContext;
 
 [Collection("Integration")]
-public class GlobalReplayContextTests : MongoIntegrationTestBase
+public class ReplayContextTests : MongoIntegrationTestBase
 {
-    private readonly IGlobalReplayContext context;
+    private readonly IReplayContext context;
 
-    public GlobalReplayContextTests(IMongoDbService mongoDbService, IGlobalReplayContext context)
+    public ReplayContextTests(IMongoDbService mongoDbService, IReplayContext context)
         : base(mongoDbService, context)
     {
         this.context = context;

@@ -12,7 +12,7 @@ public class ReplayEnvironmentSwitcherTests : MongoIntegrationTestBase
 {
     private readonly ReplayEnvironmentSwitcher switcher;
 
-    public ReplayEnvironmentSwitcherTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext)
+    public ReplayEnvironmentSwitcherTests(IMongoDbService mongoDbService, IReplayContext replayContext)
         : base(mongoDbService, replayContext)
     {
         switcher = new ReplayEnvironmentSwitcher(mongoDbService);

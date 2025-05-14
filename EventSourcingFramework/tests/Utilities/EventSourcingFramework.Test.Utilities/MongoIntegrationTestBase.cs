@@ -6,11 +6,11 @@ namespace EventSourcingFramework.Test.Utilities;
 public class MongoIntegrationTestBase : IAsyncLifetime
 {
     protected readonly IMongoDbService MongoDbService;
-    protected readonly IGlobalReplayContext ReplayContext;
+    protected readonly IReplayContext ReplayContext;
 
     protected MongoIntegrationTestBase(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext
+        IReplayContext replayContext
     )
     {
         MongoDbService = mongoDbService;

@@ -12,7 +12,7 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
 {
     public RepositoryPerformanceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext
+        IReplayContext replayContext
     )
         : base(mongoDbService, replayContext)
     {

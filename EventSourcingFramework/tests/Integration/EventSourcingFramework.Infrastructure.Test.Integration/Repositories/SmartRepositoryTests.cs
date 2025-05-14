@@ -18,7 +18,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
     public SmartRepositoryTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         Repository<TestEntity> repository,
         IEventStore eventStore,
         IEntityStore entityStore
@@ -60,7 +60,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var repo = new FailingRepository(
             entityStore,
             eventStore,
-            new GlobalReplayContext(),
+            new ReplayContext(),
             nameof(Repository<TestEntity>.UpdateAsync)
         );
 
@@ -94,7 +94,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var repo = new FailingRepository(
             entityStore,
             eventStore,
-            new GlobalReplayContext(),
+            new ReplayContext(),
             nameof(Repository<TestEntity>.UpdateAsync)
         );
 
@@ -179,7 +179,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var repo = new FailingRepository(
             entityStore,
             eventStore,
-            new GlobalReplayContext(),
+            new ReplayContext(),
             nameof(Repository<TestEntity>.DeleteAsync)
         );
 
@@ -231,7 +231,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var repo = new FailingRepository(
             entityStore,
             eventStore,
-            new GlobalReplayContext(),
+            new ReplayContext(),
             nameof(Repository<TestEntity>.DeleteAsync)
         );
 
@@ -539,7 +539,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         public FailingRepository(
             IEntityStore entityStore,
             IEventStore eventStore,
-            IGlobalReplayContext replayContext,
+            IReplayContext replayContext,
             string failOnMethod
         )
             : base(entityStore, eventStore, replayContext)

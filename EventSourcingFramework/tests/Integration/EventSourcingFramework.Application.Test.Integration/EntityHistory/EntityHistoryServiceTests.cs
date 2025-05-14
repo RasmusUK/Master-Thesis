@@ -16,7 +16,7 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
 
     public EntityHistoryServiceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         IEntityHistoryService entityHistoryService,
         IEventStore eventStore
     )

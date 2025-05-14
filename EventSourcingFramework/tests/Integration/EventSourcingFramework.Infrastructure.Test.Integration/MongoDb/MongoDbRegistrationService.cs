@@ -14,7 +14,7 @@ public class MongoDbRegistrationService : MongoIntegrationTestBase
     
     public MongoDbRegistrationService(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext, IMongoDbRegistrationService mongoDbRegistrationService)
+        IReplayContext replayContext, IMongoDbRegistrationService mongoDbRegistrationService)
         : base(mongoDbService, replayContext)
     {
         this.mongoDbRegistrationService = mongoDbRegistrationService;

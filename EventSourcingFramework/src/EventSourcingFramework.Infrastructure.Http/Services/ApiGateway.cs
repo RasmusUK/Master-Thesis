@@ -10,10 +10,10 @@ namespace EventSourcingFramework.Infrastructure.Http.Services;
 public class ApiGateway : IApiGateway
 {
     private readonly HttpClient httpClient;
-    private readonly IGlobalReplayContext replayContext;
+    private readonly IReplayContext replayContext;
     private readonly IApiResponseStore responseStore;
 
-    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IGlobalReplayContext replayContext)
+    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext)
     {
         this.httpClient = httpClient;
         this.responseStore = responseStore;

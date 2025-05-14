@@ -18,7 +18,7 @@ public class SnapshotService : ISnapshotService
     private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
     private readonly IEventSequenceGenerator eventSequenceGenerator;
-    private readonly IGlobalReplayContext globalReplayContext;
+    private readonly IReplayContext replayContext;
 
     private readonly IMongoDbService mongoDbService;
     private readonly object snapshotCacheLock = new();
@@ -29,20 +29,20 @@ public class SnapshotService : ISnapshotService
         IMongoDbService mongoDbService,
         IEventSequenceGenerator eventSequenceGenerator,
         IEntityCollectionNameProvider entityCollectionNameProvider,
-        IGlobalReplayContext globalReplayContext,
+        IReplayContext replayContext,
         IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.mongoDbService = mongoDbService;
         this.eventSequenceGenerator = eventSequenceGenerator;
         this.entityCollectionNameProvider = entityCollectionNameProvider;
-        this.globalReplayContext = globalReplayContext;
+        this.replayContext = replayContext;
         snapshotOptions = eventSourcingOptions.Value.Snapshot;
     }
 
     public async Task TakeSnapshotIfNeededAsync(long currentEventNumber)
     {
-        if (!snapshotOptions.Enabled || globalReplayContext.IsReplaying)
+        if (!snapshotOptions.Enabled || replayContext.IsReplaying)
             return;
 
         SnapshotMetadata? lastSnapshot;
@@ -104,7 +104,7 @@ public class SnapshotService : ISnapshotService
         await SnapshotLock.WaitAsync();
         try
         {
-            if (globalReplayContext is { IsReplaying: true, IsLoading: false })
+            if (replayContext is { IsReplaying: true, IsLoading: false })
                 throw new InvalidOperationException(
                     "Cannot take a snapshot while in replay mode. Please stop the replay first."
                 );
@@ -155,9 +155,9 @@ public class SnapshotService : ISnapshotService
     public async Task RestoreSnapshotAsync(string snapshotId)
     {
         ThrowIfSnapshotDisabled();
-        if (!globalReplayContext.IsReplaying)
+        if (!replayContext.IsReplaying)
         {
-            globalReplayContext.StartReplay(ReplayMode.Debug);
+            replayContext.StartReplay(ReplayMode.Debug);
             await mongoDbService.UseDebugEntityDatabase();
         }
 
@@ -169,7 +169,7 @@ public class SnapshotService : ISnapshotService
 
             try
             {
-                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
+                if (replayContext.ReplayMode != ReplayMode.Debug)
                     foreach (var (_, originalName) in registered)
                     {
                         var backupName = $"{originalName}_backup";
@@ -203,7 +203,7 @@ public class SnapshotService : ISnapshotService
                         genericMethod.Invoke(this, new object[] { originalName, snapshotId })!;
                 }
 
-                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
+                if (replayContext.ReplayMode != ReplayMode.Debug)
                     foreach (var originalName in renamedBackups)
                     {
                         var backupName = $"{originalName}_backup";
@@ -218,7 +218,7 @@ public class SnapshotService : ISnapshotService
             }
             catch (Exception ex)
             {
-                if (globalReplayContext.ReplayMode != ReplayMode.Debug)
+                if (replayContext.ReplayMode != ReplayMode.Debug)
                 {
                     try
                     {
@@ -381,12 +381,12 @@ public class SnapshotService : ISnapshotService
         var source = mongoDbService.GetCollection<T>(snapshotName, true);
         var target = mongoDbService.GetCollection<T>(
             originalCollectionName,
-            globalReplayContext.ReplayMode != ReplayMode.Debug
+            replayContext.ReplayMode != ReplayMode.Debug
         );
 
         var docs = await source.Find(_ => true).ToListAsync();
         await mongoDbService
-            .GetEntityDatabase(globalReplayContext.ReplayMode != ReplayMode.Debug)
+            .GetEntityDatabase(replayContext.ReplayMode != ReplayMode.Debug)
             .DropCollectionAsync(originalCollectionName);
 
         if (docs.Count == 0)

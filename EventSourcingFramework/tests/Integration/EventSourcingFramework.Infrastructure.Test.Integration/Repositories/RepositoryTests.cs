@@ -17,7 +17,7 @@ public class RepositoryTests : MongoIntegrationTestBase
 {
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
-    private readonly IGlobalReplayContext replayContext;
+    private readonly IReplayContext replayContext;
     private readonly IRepository<TestEntity> repository;
 
     public RepositoryTests(
@@ -25,7 +25,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         IRepository<TestEntity> repository,
         IEventStore eventStore,
         IEntityStore entityStore,
-        IGlobalReplayContext replayContext
+        IReplayContext replayContext
     )
         : base(mongoDbService, replayContext)
     {

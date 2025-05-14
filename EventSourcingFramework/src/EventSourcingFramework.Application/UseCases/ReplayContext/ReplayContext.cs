@@ -4,7 +4,7 @@ using EventSourcingFramework.Core.Models.Events;
 
 namespace EventSourcingFramework.Application.UseCases.ReplayContext;
 
-public class GlobalReplayContext : IGlobalReplayContext
+public class ReplayContext : IReplayContext
 {
     private static readonly object LockObj = new();
     private readonly List<IEvent> events = new();

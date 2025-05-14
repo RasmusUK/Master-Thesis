@@ -21,7 +21,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     private readonly IPersonalDataService personalDataService;
     private readonly ISnapshotService snapshotService;
 
-    public EventStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IEventStore eventStore,
+    public EventStoreTests(IMongoDbService mongoDbService, IReplayContext replayContext, IEventStore eventStore,
         IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService,
         ISnapshotService snapshotService) : base(mongoDbService, replayContext)
     {

@@ -3,7 +3,7 @@ using EventSourcingFramework.Core.Models.Events;
 
 namespace EventSourcingFramework.Application.Abstractions.ReplayContext;
 
-public interface IGlobalReplayContext
+public interface IReplayContext
 {
     ReplayMode ReplayMode { get; }
     ApiReplayMode ApiReplayMode { get; }

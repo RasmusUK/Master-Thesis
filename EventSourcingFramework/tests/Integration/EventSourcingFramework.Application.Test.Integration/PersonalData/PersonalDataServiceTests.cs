@@ -18,11 +18,11 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
 
     public PersonalDataServiceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext globalReplayContext,
+        IReplayContext replayContext,
         IPersonalDataService personalDataService,
         IPersonalDataStore personalDataStore
     )
-        : base(mongoDbService, globalReplayContext)
+        : base(mongoDbService, replayContext)
     {
         this.personalDataService = personalDataService;
         this.personalDataStore = personalDataStore;
