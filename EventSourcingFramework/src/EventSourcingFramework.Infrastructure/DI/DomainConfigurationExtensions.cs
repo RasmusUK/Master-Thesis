@@ -8,7 +8,8 @@ namespace EventSourcingFramework.Infrastructure.DI;
 
 public static class DomainConfigurationExtensions
 {
-    public static IServiceCollection AddDomainConfiguration(this IServiceCollection services, DomainConfigurator configureDomain)
+    public static IServiceCollection AddDomainConfiguration(this IServiceCollection services,
+        DomainConfigurator configureDomain)
     {
         var schemaRegistry = new SchemaVersionRegistry();
         var migrationRegistry = new MigrationTypeRegistry();

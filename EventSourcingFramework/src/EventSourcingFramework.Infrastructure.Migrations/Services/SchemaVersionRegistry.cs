@@ -16,5 +16,8 @@ public class SchemaVersionRegistry : ISchemaVersionRegistry
         return versions.TryGetValue(type, out var v) ? v : 1;
     }
 
-    public int GetVersion<T>() => GetVersion(typeof(T));
+    public int GetVersion<T>()
+    {
+        return GetVersion(typeof(T));
+    }
 }

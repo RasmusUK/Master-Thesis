@@ -13,13 +13,16 @@ public interface IEventStore
 
     Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdAsync(Guid entityId);
     Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdUntilAsync(Guid entityId, DateTime until);
+
     Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdFromUntilAsync(
         Guid entityId,
         DateTime from,
         DateTime until
     );
+
     Task<IReadOnlyCollection<IEvent>> GetEventsFromAsync(long fromEventNumber);
     Task<IReadOnlyCollection<IEvent>> GetEventsUntilAsync(long untilEventNumber);
+
     Task<IReadOnlyCollection<IEvent>> GetEventsFromUntilAsync(
         long fromEventNumber,
         long untilEventNumber

@@ -12,22 +12,18 @@ namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public class MongoDbService : IMongoDbService
 {
-    public IMongoCollection<MongoEventBase> EventCollection { get; }
-    public IMongoCollection<MongoPersonalData> PersonalDataCollection { get; }
-    public IMongoCollection<MongoApiResponse> ApiResponseCollection { get; }
-    public IMongoCollection<BsonDocument> CounterCollection { get; }
-    private IMongoDatabase entityDatabase;
-    private readonly IMongoDatabase eventDatabase;
-    private readonly IMongoDatabase productionEntityDatabase;
-    private readonly IMongoDatabase debugEntityDatabase;
-    private readonly IMongoDatabase personalDataDatabase;
-    private readonly IMongoDatabase apiResponseDatabase;
-    private readonly MongoClient eventClient;
-    private readonly MongoClient productionEntityClient;
-    private readonly MongoClient debugEntityClient;
-    private readonly MongoClient personalDataClient;
     private readonly MongoClient apiResponseClient;
+    private readonly IMongoDatabase apiResponseDatabase;
+    private readonly MongoClient debugEntityClient;
+    private readonly IMongoDatabase debugEntityDatabase;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
+    private readonly MongoClient eventClient;
+    private readonly IMongoDatabase eventDatabase;
+    private readonly MongoClient personalDataClient;
+    private readonly IMongoDatabase personalDataDatabase;
+    private readonly MongoClient productionEntityClient;
+    private readonly IMongoDatabase productionEntityDatabase;
+    private IMongoDatabase entityDatabase;
 
     public MongoDbService(
         IOptions<MongoDbOptions> mongoDbOptions,
@@ -55,19 +51,30 @@ public class MongoDbService : IMongoDbService
         EnsureEventIndexesAsync().GetAwaiter().GetResult();
     }
 
-    public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName) =>
-        entityDatabase.GetCollection<TEntity>(collectionName);
+    public IMongoCollection<MongoEventBase> EventCollection { get; }
+    public IMongoCollection<MongoPersonalData> PersonalDataCollection { get; }
+    public IMongoCollection<MongoApiResponse> ApiResponseCollection { get; }
+    public IMongoCollection<BsonDocument> CounterCollection { get; }
+
+    public IMongoCollection<TEntity> GetEntityCollection<TEntity>(string collectionName)
+    {
+        return entityDatabase.GetCollection<TEntity>(collectionName);
+    }
 
     public IMongoCollection<T> GetCollection<T>(
         string collectionName,
         bool alwaysProduction = false
-    ) =>
-        alwaysProduction
+    )
+    {
+        return alwaysProduction
             ? productionEntityDatabase.GetCollection<T>(collectionName)
             : entityDatabase.GetCollection<T>(collectionName);
+    }
 
-    public IMongoDatabase GetEntityDatabase(bool alwaysProduction = false) =>
-        alwaysProduction ? productionEntityDatabase : entityDatabase;
+    public IMongoDatabase GetEntityDatabase(bool alwaysProduction = false)
+    {
+        return alwaysProduction ? productionEntityDatabase : entityDatabase;
+    }
 
     public async Task CleanUpAsync()
     {

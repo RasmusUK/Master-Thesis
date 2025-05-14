@@ -12,9 +12,9 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 [Collection("Integration")]
 public class SmartRepositoryTests : MongoIntegrationTestBase
 {
-    private readonly Repository<TestEntity> repository;
-    private readonly IEventStore eventStore;
     private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
+    private readonly Repository<TestEntity> repository;
 
     public SmartRepositoryTests(
         IMongoDbService mongoDbService,
@@ -61,7 +61,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new GlobalReplayContext(),
-            failOnMethod: nameof(Repository<TestEntity>.UpdateAsync)
+            nameof(Repository<TestEntity>.UpdateAsync)
         );
 
         var transactionManager = new TransactionManager();
@@ -69,7 +69,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
         transactionManager.Begin();
 
-        await smartRepo.CreateAsync(entity); 
+        await smartRepo.CreateAsync(entity);
         await smartRepo.UpdateAsync(entity);
 
         // Act
@@ -83,7 +83,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         Assert.Contains(events, e => e is MongoCreateEvent<TestEntity>);
         Assert.Contains(events, e => e is MongoDeleteEvent<TestEntity> de && de.Compensation);
     }
-    
+
     [Fact]
     public async Task CreateSucceeds_UpdateFails_TriggersCompensationCreate()
     {
@@ -95,16 +95,16 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new GlobalReplayContext(),
-            failOnMethod: nameof(Repository<TestEntity>.UpdateAsync)
+            nameof(Repository<TestEntity>.UpdateAsync)
         );
 
         await repo.CreateAsync(entity1);
-        
+
         var transactionManager = new TransactionManager();
         var smartRepo = new SmartRepository<TestEntity>(repo, transactionManager);
-        
+
         transactionManager.Begin();
-        
+
         await smartRepo.DeleteAsync(entity1);
         await smartRepo.CreateAsync(entity2);
         await smartRepo.UpdateAsync(entity2);
@@ -180,7 +180,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new GlobalReplayContext(),
-            failOnMethod: nameof(Repository<TestEntity>.DeleteAsync)
+            nameof(Repository<TestEntity>.DeleteAsync)
         );
 
         var transactionManager = new TransactionManager();
@@ -232,7 +232,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new GlobalReplayContext(),
-            failOnMethod: nameof(Repository<TestEntity>.DeleteAsync)
+            nameof(Repository<TestEntity>.DeleteAsync)
         );
 
         var transactionManager = new TransactionManager();
@@ -371,7 +371,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         Assert.Null(projection);
     }
-    
+
     [Fact]
     public async Task ReadAllByFilterAsync_RespectsTransactionState()
     {
@@ -412,7 +412,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         Assert.Contains("ProjAll", projections);
     }
-    
+
     [Fact]
     public async Task ReadAllProjectionsByFilterAsync_ReturnsExpectedFilteredProjections()
     {
@@ -434,7 +434,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         Assert.Single(results);
         Assert.Equal("ProjFilter", results.First());
     }
-    
+
     [Fact]
     public async Task ReadProjectionByIdAsync_ReturnsProjectionForUpsertedEntity()
     {
@@ -449,7 +449,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
         Assert.Equal("Projected", result);
     }
-    
+
     [Fact]
     public async Task ReadProjectionByFilterAsync_ReturnsNullForDeletedEntity()
     {
@@ -469,7 +469,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
         Assert.Null(result);
     }
-    
+
     [Fact]
     public async Task ReadAllByFilterAsync_ExcludesDeletedEntities()
     {

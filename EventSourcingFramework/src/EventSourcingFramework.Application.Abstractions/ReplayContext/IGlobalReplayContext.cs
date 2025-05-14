@@ -1,4 +1,3 @@
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Models.Events;
 

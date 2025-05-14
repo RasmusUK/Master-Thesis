@@ -1,8 +1,6 @@
 using System.Linq.Expressions;
 using EventSourcingFramework.Application.Abstractions.Migrations;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Core.Models;
 using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
@@ -16,12 +14,12 @@ namespace EventSourcingFramework.Infrastructure.Stores.EntityStore;
 
 public class EntityStore : IEntityStore
 {
-    private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
-    private readonly ISchemaVersionRegistry schemaVersionRegistry;
     private readonly IEntityMigrator entityMigrator;
-    private readonly IMigrationTypeRegistry migrationTypeRegistry;
     private readonly EventSourcingOptions eventSourcingOptions;
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
+    private readonly IMongoDbService mongoDbService;
+    private readonly ISchemaVersionRegistry schemaVersionRegistry;
 
     public EntityStore(
         IMongoDbService mongoDbService,
@@ -132,7 +130,7 @@ public class EntityStore : IEntityStore
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiled = predicate.Compile();
 
-        return Enumerable.FirstOrDefault<TEntity>(docs.Select(MigrateEntity<TEntity>), compiled);
+        return docs.Select(MigrateEntity<TEntity>).FirstOrDefault(compiled);
     }
 
     public async Task<IReadOnlyCollection<TEntity>> GetAllAsync<TEntity>()
@@ -143,7 +141,7 @@ public class EntityStore : IEntityStore
 
         var collection = GetBsonCollection(typeof(TEntity));
         var docs = await collection.Find(_ => true).ToListAsync();
-        return Enumerable.ToList<TEntity>(docs.Select(MigrateEntity<TEntity>));
+        return docs.Select(MigrateEntity<TEntity>).ToList();
     }
 
     public async Task<IReadOnlyCollection<TEntity>> GetAllByFilterAsync<TEntity>(
@@ -158,7 +156,7 @@ public class EntityStore : IEntityStore
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiled = predicate.Compile();
 
-        return Enumerable.Where(docs.Select(MigrateEntity<TEntity>), compiled).ToList();
+        return docs.Select(MigrateEntity<TEntity>).Where(compiled).ToList();
     }
 
     public async Task<TProjection?> GetProjectionByFilterAsync<TEntity, TProjection>(
@@ -178,7 +176,7 @@ public class EntityStore : IEntityStore
         var compiledFilter = filter.Compile();
         var compiledProjection = projection.Compile();
 
-        return Enumerable.Where(docs.Select(MigrateEntity<TEntity>), compiledFilter)
+        return docs.Select(MigrateEntity<TEntity>).Where(compiledFilter)
             .Select(compiledProjection)
             .FirstOrDefault();
     }
@@ -196,7 +194,7 @@ public class EntityStore : IEntityStore
         var docs = await collection.Find(_ => true).ToListAsync();
         var compiledProjection = projection.Compile();
 
-        return Enumerable.Select(docs.Select(MigrateEntity<TEntity>), compiledProjection).ToList();
+        return docs.Select(MigrateEntity<TEntity>).Select(compiledProjection).ToList();
     }
 
     public async Task<IReadOnlyCollection<TProjection>> GetAllProjectionsByFilterAsync<
@@ -213,7 +211,7 @@ public class EntityStore : IEntityStore
         var compiledFilter = filter.Compile();
         var compiledProjection = projection.Compile();
 
-        return Enumerable.Where(docs.Select(MigrateEntity<TEntity>), compiledFilter)
+        return docs.Select(MigrateEntity<TEntity>).Where(compiledFilter)
             .Select(compiledProjection)
             .ToList();
     }

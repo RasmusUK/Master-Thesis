@@ -5,5 +5,5 @@ public enum SnapshotFrequency
     Day,
     Week,
     Month,
-    Year,
+    Year
 }

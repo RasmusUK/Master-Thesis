@@ -7,6 +7,7 @@ using EventSourcingFramework.Infrastructure.Stores.EntityStore;
 using EventSourcingFramework.Infrastructure.Stores.EntityStore.Exceptions;
 using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
@@ -14,18 +15,19 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 [Collection("Integration")]
 public class EntityStoreTests : MongoIntegrationTestBase
 {
-    private readonly IEntityStore store;
+    private readonly IEntityMigrator entityMigrator;
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
     private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider nameProvider;
-    private readonly IEntityMigrator entityMigrator;
     private readonly ISchemaVersionRegistry schemaVersionRegistry;
-    private readonly IMigrationTypeRegistry migrationTypeRegistry;
+    private readonly IEntityStore store;
 
     public EntityStoreTests(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext,
         IEntityStore store,
-        IEntityCollectionNameProvider nameProvider, IEntityMigrator entityMigrator, ISchemaVersionRegistry schemaVersionRegistry, IMigrationTypeRegistry migrationTypeRegistry)
+        IEntityCollectionNameProvider nameProvider, IEntityMigrator entityMigrator,
+        ISchemaVersionRegistry schemaVersionRegistry, IMigrationTypeRegistry migrationTypeRegistry)
         : base(mongoDbService, replayContext)
     {
         this.store = store;
@@ -78,7 +80,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             Name = "BeforeUpdate",
-            ConcurrencyVersion = 0,
+            ConcurrencyVersion = 0
         };
         await store.InsertEntityAsync(entity);
 
@@ -100,7 +102,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             Name = "Conflicted",
-            ConcurrencyVersion = 0,
+            ConcurrencyVersion = 0
         };
         await store.InsertEntityAsync(entity);
 
@@ -108,7 +110,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = entity.Id,
             Name = "Stale",
-            ConcurrencyVersion = 0,
+            ConcurrencyVersion = 0
         };
 
         // Act & Assert
@@ -124,7 +126,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             Name = "DeleteMe",
-            ConcurrencyVersion = 0,
+            ConcurrencyVersion = 0
         };
         await store.InsertEntityAsync(entity);
 
@@ -144,7 +146,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             Name = "DeleteFail",
-            ConcurrencyVersion = 0,
+            ConcurrencyVersion = 0
         };
         await store.InsertEntityAsync(entity);
 
@@ -248,7 +250,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Jane",
-            LastName = "Doe",
+            LastName = "Doe"
         };
         var doc = old.ToBsonDocument();
         var collection = mongoDbService.GetEntityCollection<BsonDocument>(
@@ -273,7 +275,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Filter",
-            LastName = "Check",
+            LastName = "Check"
         };
         var doc = old.ToBsonDocument();
         var collection = mongoDbService.GetEntityCollection<BsonDocument>(
@@ -297,7 +299,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "All",
-            LastName = "Old",
+            LastName = "Old"
         };
         var e2 = new TestEntity { Id = Guid.NewGuid(), Name = "All New" };
 
@@ -324,13 +326,13 @@ public class EntityStoreTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Filter",
-            LastName = "Match",
+            LastName = "Match"
         };
         var v2 = new TestEntity1
         {
             Id = Guid.NewGuid(),
             FirstName = "Filter",
-            LastName = "Ignore",
+            LastName = "Ignore"
         };
 
         var collection = mongoDbService.GetEntityCollection<BsonDocument>(
@@ -345,7 +347,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         Assert.Single(results);
         Assert.Equal("Filter - Match", results.First().Name);
     }
-    
+
     [Fact]
     public async Task GetAllProjectionsAsync_MigratesAndProjectsEntities()
     {
@@ -410,14 +412,14 @@ public class EntityStoreTests : MongoIntegrationTestBase
         Assert.Equal("Project - Keep", projections.First());
     }
 
-    
+
     [Fact]
     public async Task InsertEntityAsync_DoesNothing_WhenEntityStoreIsDisabled()
     {
         // Arrange
         var entityStore = new EntityStore(
             MongoDbService, nameProvider, entityMigrator, schemaVersionRegistry, migrationTypeRegistry,
-            Microsoft.Extensions.Options.Options.Create(new EventSourcingOptions
+            Options.Create(new EventSourcingOptions
             {
                 EnableEntityStore = false
             }));

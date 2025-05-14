@@ -15,7 +15,7 @@ public static class StoresExtensions
             .AddSingleton<IEventStore, EventStore.EventStore>()
             .AddSingleton<IPersonalDataStore, PersonalDataStore.PersonalDataStore>()
             .AddSingleton<IApiResponseStore, ApiResponseStore.ApiResponseStore>();
-        
+
         return services;
     }
 }

@@ -12,7 +12,7 @@ public class SnapshotSettingsAdapter : ISnapshotSettings
     {
         this.options = options.Value.Snapshot;
     }
-    
+
     public bool Enabled => options.Enabled;
     public SnapshotTriggerMode Mode => options.Trigger.Mode;
     public SnapshotFrequency Frequency => options.Trigger.Frequency;

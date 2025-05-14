@@ -12,18 +12,12 @@ public static class CsvLogger
     static CsvLogger()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir != null && dir.Name != "bin")
-        {
-            dir = dir.Parent;
-        }
+        while (dir != null && dir.Name != "bin") dir = dir.Parent;
 
         var projectRoot = dir?.Parent?.Parent?.FullName ?? Directory.GetCurrentDirectory();
         TestResultsDir = Path.Combine(projectRoot, "TestResults");
 
-        if (!Directory.Exists(TestResultsDir))
-        {
-            Directory.CreateDirectory(TestResultsDir);
-        }
+        if (!Directory.Exists(TestResultsDir)) Directory.CreateDirectory(TestResultsDir);
     }
 
     public static void LogRepo(
@@ -54,13 +48,11 @@ public static class CsvLogger
             if (!initializedFiles.Contains(fullPath))
             {
                 if (!File.Exists(fullPath))
-                {
                     File.WriteAllText(
                         fullPath,
                         "TestName;SizeName;Size (mb);Count;Nodes;Props;EventStoreEnabled;EntityStoreEnabled;PersonalDataStoreEnabled;Time (ms)\n",
                         Encoding.UTF8
                     );
-                }
 
                 initializedFiles.Add(fullPath);
             }

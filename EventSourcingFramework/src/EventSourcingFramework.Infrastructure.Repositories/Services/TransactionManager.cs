@@ -7,11 +7,11 @@ namespace EventSourcingFramework.Infrastructure.Repositories.Services;
 public class TransactionManager : ITransactionManager
 {
     private Queue<(Func<Task> commit, Func<Task> rollback)>? actions;
+    private Queue<Func<Task>>? rollbackActions;
+    private Dictionary<Type, List<object>>? trackedDeletedEntities;
+    private Dictionary<Type, List<object>>? trackedUpsertedEntities;
     public bool IsActive => actions is not null;
     public Guid TransactionId { get; private set; } = Guid.NewGuid();
-    private Queue<Func<Task>>? rollbackActions;
-    private Dictionary<Type, List<object>>? trackedUpsertedEntities;
-    private Dictionary<Type, List<object>>? trackedDeletedEntities;
 
     public void Begin()
     {

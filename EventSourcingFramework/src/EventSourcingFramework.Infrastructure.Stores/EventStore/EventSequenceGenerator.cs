@@ -22,7 +22,7 @@ public class EventSequenceGenerator : IEventSequenceGenerator
         var options = new FindOneAndUpdateOptions<BsonDocument>
         {
             IsUpsert = true,
-            ReturnDocument = ReturnDocument.After,
+            ReturnDocument = ReturnDocument.After
         };
 
         var result = await counters.FindOneAndUpdateAsync(filter, update, options);

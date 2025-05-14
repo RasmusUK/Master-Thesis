@@ -7,5 +7,8 @@ namespace EventSourcingFramework.Infrastructure.Shared.Models.Events;
 public record MongoCreateEvent<T>(T Entity) : MongoEventBase(Entity.Id), IMongoCreateEvent<T>
     where T : IEntity
 {
-    public override string ToString() => JsonConvert.SerializeObject(Entity, Formatting.Indented);
+    public override string ToString()
+    {
+        return JsonConvert.SerializeObject(Entity, Formatting.Indented);
+    }
 }

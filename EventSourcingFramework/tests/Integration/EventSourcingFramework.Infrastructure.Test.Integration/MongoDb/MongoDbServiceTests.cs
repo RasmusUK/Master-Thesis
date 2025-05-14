@@ -51,7 +51,7 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
 
         var prodCollection = mongoDbService.GetCollection<TestEntity>(
             collectionName,
-            alwaysProduction: true
+            true
         );
         await prodCollection.InsertOneAsync(
             new TestEntity { Id = Guid.NewGuid(), Name = "ProdEntity" }
@@ -75,7 +75,7 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
 
         // Act
         await mongoDbService.UseProductionEntityDatabase();
-        var debugDb = mongoDbService.GetEntityDatabase(alwaysProduction: false);
+        var debugDb = mongoDbService.GetEntityDatabase(false);
         var debugCollections = await debugDb.ListCollectionNames().ToListAsync();
 
         // Assert

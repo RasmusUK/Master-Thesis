@@ -5,22 +5,16 @@ using EventSourcingFramework.Test.Utilities;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 
-
 [Collection("Integration")]
 public class ApiResponseStoreTests : MongoIntegrationTestBase
 {
     private readonly IApiResponseStore store;
-    
-    public ApiResponseStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IApiResponseStore store)
+
+    public ApiResponseStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext,
+        IApiResponseStore store)
         : base(mongoDbService, replayContext)
     {
         this.store = store;
-    }
-
-    private class SampleResponse
-    {
-        public string Message { get; set; } = string.Empty;
-        public int Value { get; set; }
     }
 
     [Fact]
@@ -51,5 +45,11 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
 
         // Assert
         Assert.Null(result);
+    }
+
+    private class SampleResponse
+    {
+        public string Message { get; set; } = string.Empty;
+        public int Value { get; set; }
     }
 }

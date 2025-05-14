@@ -9,18 +9,21 @@ using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Infrastructure.Stores.EventStore;
 using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
+using Microsoft.Extensions.Options;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Stores;
 
 [Collection("Integration")]
 public class EventStoreTests : MongoIntegrationTestBase
 {
-    private readonly IEventStore eventStore;
     private readonly IEventSequenceGenerator eventSequenceGenerator;
+    private readonly IEventStore eventStore;
     private readonly IPersonalDataService personalDataService;
     private readonly ISnapshotService snapshotService;
 
-    public EventStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IEventStore eventStore, IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService, ISnapshotService snapshotService) : base(mongoDbService, replayContext)
+    public EventStoreTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IEventStore eventStore,
+        IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService,
+        ISnapshotService snapshotService) : base(mongoDbService, replayContext)
     {
         this.eventStore = eventStore;
         this.eventSequenceGenerator = eventSequenceGenerator;
@@ -162,12 +165,13 @@ public class EventStoreTests : MongoIntegrationTestBase
             eventSequenceGenerator,
             personalDataService,
             snapshotService,
-            Microsoft.Extensions.Options.Options.Create(new EventSourcingOptions
+            Options.Create(new EventSourcingOptions
             {
                 EnableEventStore = false
             }));
 
-        var MongoCreateEvent = new MongoCreateEvent<TestEntity>(new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" });
+        var MongoCreateEvent =
+            new MongoCreateEvent<TestEntity>(new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" });
 
         // Act
         await store.InsertEventAsync(MongoCreateEvent);

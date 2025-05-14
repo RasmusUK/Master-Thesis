@@ -1,6 +1,5 @@
 using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Migrations.Services;
-using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
@@ -20,7 +19,7 @@ public class EntityMigratorTests
                 Id = e.Id,
                 FirstName = e.FirstName,
                 SurName = e.LastName,
-                Age = 0,
+                Age = 0
             }
         );
 
@@ -28,7 +27,7 @@ public class EntityMigratorTests
         {
             Id = Guid.NewGuid(),
             FirstName = "John",
-            LastName = "Doe",
+            LastName = "Doe"
         };
 
         // Act
@@ -55,7 +54,7 @@ public class EntityMigratorTests
             Id = Guid.NewGuid(),
             FirstName = "Jane",
             SurName = "Smith",
-            Age = 30,
+            Age = 30
         };
 
         // Act
@@ -88,7 +87,7 @@ public class EntityMigratorTests
         {
             Id = Guid.NewGuid(),
             FirstName = "A",
-            LastName = "B",
+            LastName = "B"
         };
 
         // Act & Assert
@@ -109,7 +108,7 @@ public class EntityMigratorTests
                 Id = e.Id,
                 FirstName = e.FirstName,
                 SurName = e.LastName,
-                Age = 0,
+                Age = 0
             }
         );
 
@@ -122,7 +121,7 @@ public class EntityMigratorTests
         {
             Id = Guid.NewGuid(),
             FirstName = "Alice",
-            LastName = "Wonder",
+            LastName = "Wonder"
         };
 
         // Act

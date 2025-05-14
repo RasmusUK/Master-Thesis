@@ -44,6 +44,8 @@ public class EntityCollectionNameProvider : IEntityCollectionNameProvider
         return name;
     }
 
-    public IReadOnlyCollection<(Type Type, string CollectionName)> GetAllRegistered() =>
-        collectionNames.Select(kvp => (kvp.Key, kvp.Value)).ToList();
+    public IReadOnlyCollection<(Type Type, string CollectionName)> GetAllRegistered()
+    {
+        return collectionNames.Select(kvp => (kvp.Key, kvp.Value)).ToList();
+    }
 }

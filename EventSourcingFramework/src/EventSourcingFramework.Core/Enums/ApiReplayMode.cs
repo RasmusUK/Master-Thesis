@@ -4,5 +4,5 @@ public enum ApiReplayMode
 {
     CacheOnly,
     ExternalOnly,
-    CacheThenExternal,
+    CacheThenExternal
 }

@@ -1,4 +1,3 @@
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
@@ -15,10 +14,10 @@ namespace EventSourcingFramework.Infrastructure.Stores.EventStore;
 public class EventStore : IEventStore
 {
     private readonly IMongoCollection<MongoEventBase> collection;
-    private readonly IEventSequenceGenerator sequenceGenerator;
-    private readonly IPersonalDataService personalDataService;
-    private readonly ISnapshotService snapshotService;
     private readonly EventSourcingOptions eventSourcingOptions;
+    private readonly IPersonalDataService personalDataService;
+    private readonly IEventSequenceGenerator sequenceGenerator;
+    private readonly ISnapshotService snapshotService;
 
     public EventStore(
         IMongoDbService mongoDbService,
@@ -66,21 +65,21 @@ public class EventStore : IEventStore
     public async Task<IReadOnlyCollection<IEvent>> GetEventsAsync()
     {
         var events = await collection.Find(_ => true).ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
     public async Task<IReadOnlyCollection<IEvent>> GetEventsUntilAsync(DateTime until)
     {
         var events = await collection.Find(e => e.Timestamp <= until).ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
     public async Task<IReadOnlyCollection<IEvent>> GetEventsFromAsync(DateTime from)
     {
         var events = await collection.Find(e => e.Timestamp >= from).ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -92,14 +91,14 @@ public class EventStore : IEventStore
         var events = await collection
             .Find(e => e.Timestamp >= from && e.Timestamp <= until)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
     public async Task<IReadOnlyCollection<IEvent>> GetEventsByEntityIdAsync(Guid entityId)
     {
         var events = await collection.Find(e => e.EntityId == entityId).ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -111,7 +110,7 @@ public class EventStore : IEventStore
         var events = await collection
             .Find(e => e.EntityId == entityId && e.Timestamp <= until)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -124,7 +123,7 @@ public class EventStore : IEventStore
         var events = await collection
             .Find(e => e.EntityId == entityId && e.Timestamp >= from && e.Timestamp <= until)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -134,7 +133,7 @@ public class EventStore : IEventStore
             .Find(e => e.EventNumber >= fromEventNumber)
             .SortBy(e => e.EventNumber)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -144,7 +143,7 @@ public class EventStore : IEventStore
             .Find(e => e.EventNumber <= untilEventNumber)
             .SortBy(e => e.EventNumber)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
@@ -157,10 +156,12 @@ public class EventStore : IEventStore
             .Find(e => e.EventNumber >= fromEventNumber && e.EventNumber <= untilEventNumber)
             .SortBy(e => e.EventNumber)
             .ToListAsync();
-        await Task.WhenAll(Enumerable.Select(events, e => personalDataService.RestoreAsync(e)));
+        await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
 
-    private Task<bool> EventExistsAsync(MongoEventBase e) =>
-        collection.Find(x => x.Id == e.Id).AnyAsync();
+    private Task<bool> EventExistsAsync(MongoEventBase e)
+    {
+        return collection.Find(x => x.Id == e.Id).AnyAsync();
+    }
 }

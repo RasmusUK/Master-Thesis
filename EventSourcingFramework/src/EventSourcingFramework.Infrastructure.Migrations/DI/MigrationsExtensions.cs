@@ -12,7 +12,7 @@ public static class MigrationsExtensions
             .AddSingleton<IMigrationTypeRegistry, MigrationTypeRegistry>()
             .AddSingleton<IEntityMigrator, EntityMigrator>()
             .AddSingleton<IEntityUpgradeService, EntityUpgradeService>();
-        
+
         return services;
     }
 }

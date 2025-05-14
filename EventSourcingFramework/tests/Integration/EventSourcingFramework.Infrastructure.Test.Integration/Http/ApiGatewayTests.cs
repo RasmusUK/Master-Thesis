@@ -20,10 +20,11 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Http;
 public class ApiGatewayTests : MongoIntegrationTestBase
 {
     private readonly IApiGateway apiGateway;
-    private readonly IGlobalReplayContext replayContext;
     private readonly IMongoCollection<MongoApiResponse> collection;
+    private readonly IGlobalReplayContext replayContext;
 
-    public ApiGatewayTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext, IApiResponseStore responseStore)
+    public ApiGatewayTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext,
+        IApiResponseStore responseStore)
         : base(mongoDbService, replayContext)
     {
         this.replayContext = replayContext;
@@ -60,12 +61,6 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         apiGateway = new ApiGateway(httpClient, responseStore, replayContext);
     }
 
-    private class SampleResponse
-    {
-        public string Message { get; set; } = string.Empty;
-        public int Value { get; set; }
-    }
-    
     [Fact]
     public async Task GetAsync_NoReplay_CallsHttpAndStoresResponse()
     {
@@ -73,7 +68,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         var url = "https://fake.api/test";
         var key = $"GET:{url}";
         await collection.DeleteManyAsync(x => x.Key == key);
-        
+
         // Act
         var result = await apiGateway.GetAsync<SampleResponse>(url);
 
@@ -93,9 +88,9 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         var url = "https://fake.api/test";
         var key = $"GET:{url}";
         await collection.DeleteManyAsync(x => x.Key == key);
-        
+
         replayContext.StartReplay(ReplayMode.Strict, ApiReplayMode.ExternalOnly);
-        
+
         // Act
         var result = await apiGateway.GetAsync<SampleResponse>(url);
 
@@ -123,7 +118,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
             CreatedAt = DateTime.UtcNow
         });
 
-        replayContext.StartReplay(ReplayMode.Strict, ApiReplayMode.CacheOnly);
+        replayContext.StartReplay();
 
         // Act
         var result = await apiGateway.GetAsync<SampleResponse>(url);
@@ -141,7 +136,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         var key = $"GET:{url}";
         await collection.DeleteManyAsync(x => x.Key == key);
 
-        replayContext.StartReplay(ReplayMode.Strict, ApiReplayMode.CacheOnly);
+        replayContext.StartReplay();
 
         // Act & Assert
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() =>
@@ -194,7 +189,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
         Assert.NotNull(stored);
     }
-    
+
     [Fact]
     public async Task PostAsync_CallsHttpClient_AndStoresResponse()
     {
@@ -244,4 +239,9 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         Assert.NotNull(stored);
     }
 
+    private class SampleResponse
+    {
+        public string Message { get; set; } = string.Empty;
+        public int Value { get; set; }
+    }
 }

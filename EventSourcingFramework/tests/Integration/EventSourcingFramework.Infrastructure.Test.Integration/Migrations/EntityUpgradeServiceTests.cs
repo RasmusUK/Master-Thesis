@@ -1,7 +1,6 @@
 using System.Collections;
 using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
-using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -12,10 +11,10 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
 [Collection("Integration")]
 public class EntityUpgradeServiceTests
 {
-    private readonly IEntityUpgradeService upgradeService;
-    private readonly IMongoDbService mongoDbService;
     private readonly IEntityCollectionNameProvider collectionNameProvider;
+    private readonly IMongoDbService mongoDbService;
     private readonly ISchemaVersionRegistry schemaRegistry;
+    private readonly IEntityUpgradeService upgradeService;
 
     public EntityUpgradeServiceTests(
         IEntityUpgradeService upgradeService,
@@ -38,7 +37,7 @@ public class EntityUpgradeServiceTests
         {
             Id = Guid.NewGuid(),
             FirstName = "John",
-            LastName = "Doe",
+            LastName = "Doe"
         };
 
         var collectionName = collectionNameProvider.GetCollectionName(typeof(TestEntity));
@@ -69,7 +68,7 @@ public class EntityUpgradeServiceTests
         {
             Id = Guid.NewGuid(),
             FirstName = "Alice",
-            LastName = "Smith",
+            LastName = "Smith"
         };
 
         var collectionName = collectionNameProvider.GetCollectionName(typeof(TestEntity));
@@ -100,7 +99,7 @@ public class EntityUpgradeServiceTests
         {
             Id = Guid.NewGuid(),
             Name = "Latest",
-            SchemaVersion = 3,
+            SchemaVersion = 3
         };
 
         var collectionName = collectionNameProvider.GetCollectionName(typeof(TestEntity));

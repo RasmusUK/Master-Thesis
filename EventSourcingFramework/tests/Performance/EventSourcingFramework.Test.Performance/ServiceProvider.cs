@@ -34,14 +34,12 @@ public static class ServiceProvider
             ["MongoDb:DebugEntityStore:DatabaseName"] = "EntityStore_debug",
 
             ["MongoDb:PersonalDataStore:ConnectionString"] = "mongodb://localhost:27018",
-            ["MongoDb:PersonalDataStore:DatabaseName"] = "PersonalDataStore",
+            ["MongoDb:PersonalDataStore:DatabaseName"] = "PersonalDataStore"
         };
 
         if (overrides != null)
-        {
             foreach (var (key, value) in overrides)
                 defaultSettings[key] = value;
-        }
 
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(defaultSettings)

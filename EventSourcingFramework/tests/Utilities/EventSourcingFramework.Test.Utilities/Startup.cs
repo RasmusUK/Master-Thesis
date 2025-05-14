@@ -12,7 +12,7 @@ public class Startup
     {
         var configuration = new ConfigurationBuilder()
             .SetBasePath(Directory.GetCurrentDirectory())
-            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.json", false, true)
             .Build();
 
         services.AddEventSourcing(configuration, (schema, migrations, migrator, collections) =>
@@ -27,7 +27,7 @@ public class Startup
             {
                 Id = v1.Id,
                 FirstName = v1.FirstName,
-                SurName = v1.LastName,
+                SurName = v1.LastName
             });
 
             migrator.Register<TestEntity2, TestEntity>(2, v2 => new TestEntity
@@ -42,6 +42,5 @@ public class Startup
                 (typeof(PersonEntity), "PersonEntity")
             );
         });
-
     }
 }

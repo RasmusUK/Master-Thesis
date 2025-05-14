@@ -5,5 +5,5 @@ public enum SnapshotTriggerMode
     Time,
     EventCount,
     Either,
-    Both,
+    Both
 }

@@ -21,11 +21,11 @@ public static class MongoDbExtensions
             if (!e.Message.Contains("There is already a serializer registered for type Guid"))
                 throw;
         }
-        
+
         services
             .AddSingleton<IMongoDbService, MongoDbService>()
             .AddSingleton<IReplayEnvironmentSwitcher, ReplayEnvironmentSwitcher>();
-        
+
         return services;
     }
 }

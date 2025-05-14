@@ -1,4 +1,6 @@
 namespace EventSourcingFramework.Core.Attributes;
 
 [AttributeUsage(AttributeTargets.Property)]
-public class PersonalDataAttribute : Attribute { }
+public class PersonalDataAttribute : Attribute
+{
+}

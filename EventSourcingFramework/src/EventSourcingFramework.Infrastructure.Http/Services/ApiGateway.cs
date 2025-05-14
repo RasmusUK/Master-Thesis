@@ -10,8 +10,8 @@ namespace EventSourcingFramework.Infrastructure.Http.Services;
 public class ApiGateway : IApiGateway
 {
     private readonly HttpClient httpClient;
-    private readonly IApiResponseStore responseStore;
     private readonly IGlobalReplayContext replayContext;
+    private readonly IApiResponseStore responseStore;
 
     public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IGlobalReplayContext replayContext)
     {
@@ -26,7 +26,8 @@ public class ApiGateway : IApiGateway
         return await HandleRequest<T>(() => BuildRequest<T>(HttpMethod.Get, url, default, headers), key);
     }
 
-    public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body, Dictionary<string, string>? headers = null)
+    public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body,
+        Dictionary<string, string>? headers = null)
     {
         var key = $"POST:{url}:{JsonSerializer.Serialize(body)}";
         return await HandleRequest<TResponse>(() => BuildRequest(HttpMethod.Post, url, body, headers), key);
@@ -34,8 +35,8 @@ public class ApiGateway : IApiGateway
 
     public async Task<TResponse> SendAsync<TResponse>(HttpRequestMessage request)
     {
-        var content = request.Content is not null 
-            ? await request.Content.ReadAsStringAsync() 
+        var content = request.Content is not null
+            ? await request.Content.ReadAsStringAsync()
             : "";
         var key = $"{request.Method}:{request.RequestUri}:{content}";
         return await HandleRequest<TResponse>(() => Task.FromResult(request), key);
@@ -44,52 +45,51 @@ public class ApiGateway : IApiGateway
     private async Task<T> HandleRequest<T>(Func<Task<HttpRequestMessage>> buildRequest, string key)
     {
         if (replayContext.IsReplaying)
-        {
             switch (replayContext.ApiReplayMode)
             {
                 case ApiReplayMode.CacheOnly:
-                    {
-                        var cached = await responseStore.GetAsync<T>(key);
-                        if (cached is not null)
-                            return cached;
+                {
+                    var cached = await responseStore.GetAsync<T>(key);
+                    if (cached is not null)
+                        return cached;
 
-                        throw new InvalidOperationException($"No cached response found for key '{key}' during replay with StorageOnly mode.");
-                    }
+                    throw new InvalidOperationException(
+                        $"No cached response found for key '{key}' during replay with StorageOnly mode.");
+                }
 
                 case ApiReplayMode.ExternalOnly:
-                    {
-                        var request = await buildRequest();
-                        var response = await httpClient.SendAsync(request);
-                        response.EnsureSuccessStatusCode();
+                {
+                    var request = await buildRequest();
+                    var response = await httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
 
-                        var json = await response.Content.ReadAsStringAsync();
-                        var result = JsonSerializer.Deserialize<T>(json);
+                    var json = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<T>(json);
 
-                        await responseStore.SaveAsync(key, result!);
-                        return result!;
-                    }
+                    await responseStore.SaveAsync(key, result!);
+                    return result!;
+                }
 
                 case ApiReplayMode.CacheThenExternal:
-                    {
-                        var cached = await responseStore.GetAsync<T>(key);
-                        if (cached is not null)
-                            return cached;
+                {
+                    var cached = await responseStore.GetAsync<T>(key);
+                    if (cached is not null)
+                        return cached;
 
-                        var request = await buildRequest();
-                        var response = await httpClient.SendAsync(request);
-                        response.EnsureSuccessStatusCode();
+                    var request = await buildRequest();
+                    var response = await httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
 
-                        var json = await response.Content.ReadAsStringAsync();
-                        var result = JsonSerializer.Deserialize<T>(json);
+                    var json = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<T>(json);
 
-                        await responseStore.SaveAsync(key, result!);
-                        return result!;
-                    }
+                    await responseStore.SaveAsync(key, result!);
+                    return result!;
+                }
 
                 default:
                     throw new InvalidOperationException($"Unsupported replay mode: {replayContext.ReplayMode}");
             }
-        }
 
         var liveRequest = await buildRequest();
         var liveResponse = await httpClient.SendAsync(liveRequest);
@@ -102,7 +102,8 @@ public class ApiGateway : IApiGateway
         return liveResult!;
     }
 
-    private Task<HttpRequestMessage> BuildRequest<T>(HttpMethod method, string url, T? body, Dictionary<string, string>? headers)
+    private Task<HttpRequestMessage> BuildRequest<T>(HttpMethod method, string url, T? body,
+        Dictionary<string, string>? headers)
     {
         var request = new HttpRequestMessage(method, url);
 
@@ -111,7 +112,7 @@ public class ApiGateway : IApiGateway
                 request.Headers.Add(kv.Key, kv.Value);
 
         if (body == null) return Task.FromResult(request);
-        
+
         var json = JsonSerializer.Serialize(body);
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 

@@ -17,12 +17,12 @@ namespace EventSourcingFramework.Application.Test.Integration.Replay;
 [Collection("Integration")]
 public class ReplayServiceTests : MongoIntegrationTestBase
 {
-    private readonly IReplayService replayService;
-    private readonly IEventStore eventStore;
     private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
+    private readonly IReplayEnvironmentSwitcher replayEnvironmentSwitcher;
+    private readonly IReplayService replayService;
     private readonly IRepository<TestEntity> repository;
     private readonly ISnapshotService snapshotService;
-    private readonly IReplayEnvironmentSwitcher replayEnvironmentSwitcher;
 
     public ReplayServiceTests(
         IMongoDbService mongoDbService,
@@ -87,8 +87,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayFromUntilAsync(
             start,
             DateTime.UtcNow,
-            autoStop: true,
-            useSnapshot: true
+            true,
+            true
         );
 
         // Assert
@@ -113,8 +113,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayFromUntilEventNumberAsync(
             update.EventNumber,
             update.EventNumber,
-            autoStop: true,
-            useSnapshot: true
+            true,
+            true
         );
 
         // Assert
@@ -136,7 +136,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayEntityAsync(entity.Id, autoStop: true, useSnapshot: true);
+        await replayService.ReplayEntityAsync(entity.Id, true, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -157,7 +157,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayEventAsync(evt, autoStop: true);
+        await replayService.ReplayEventAsync(evt, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -170,12 +170,12 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "NoSnapYet" };
-        await eventStore.InsertEventAsync( new MongoCreateEvent<TestEntity>(entity));
+        await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity>(entity));
         await eventStore.InsertEventAsync(new MongoDeleteEvent<TestEntity>(entity));
-        await eventStore.InsertEventAsync( new MongoCreateEvent<TestEntity>(entity));
+        await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity>(entity));
 
         // Act
-        await replayService.ReplayAllAsync(autoStop: true, useSnapshot: true);
+        await replayService.ReplayAllAsync(true, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -197,7 +197,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayUntilAsync(cutoff, autoStop: false, useSnapshot: true);
+        await replayService.ReplayUntilAsync(cutoff, false, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -219,7 +219,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayUntilAsync(cutoff, autoStop: true, useSnapshot: true);
+        await replayService.ReplayUntilAsync(cutoff, true, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -242,8 +242,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayFromEventNumberAsync(
             update.EventNumber,
-            autoStop: false,
-            useSnapshot: true
+            false,
+            true
         );
 
         // Assert
@@ -268,8 +268,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayEntityUntilAsync(
             entity.Id,
             until,
-            autoStop: false,
-            useSnapshot: true
+            false,
+            true
         );
 
         // Assert
@@ -298,8 +298,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
             entity.Id,
             from,
             DateTime.UtcNow,
-            autoStop: true,
-            useSnapshot: true
+            true,
+            true
         );
 
         // Assert
@@ -325,8 +325,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayUntilEventNumberAsync(
             stopNumber,
-            autoStop: true,
-            useSnapshot: true
+            true,
+            true
         );
 
         // Assert
@@ -343,14 +343,14 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Migrated",
-            LastName = "Entity",
+            LastName = "Entity"
         };
 
         var create = new MongoCreateEvent<TestEntity1>(legacyEntity);
         await eventStore.InsertEventAsync(create);
 
         // Act
-        await replayService.ReplayAllAsync(autoStop: true, useSnapshot: false);
+        await replayService.ReplayAllAsync(true, false);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(legacyEntity.Id);
@@ -367,13 +367,13 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Chain",
-            LastName = "Test",
+            LastName = "Test"
         };
 
         await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity1>(v1));
 
         // Act
-        await replayService.ReplayAllAsync(autoStop: true, useSnapshot: false);
+        await replayService.ReplayAllAsync(true, false);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(v1.Id);
@@ -389,13 +389,13 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Project",
-            LastName = "AfterMigration",
+            LastName = "AfterMigration"
         };
 
         await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity1>(v1));
 
         // Act
-        await replayService.ReplayAllAsync(autoStop: true, useSnapshot: false);
+        await replayService.ReplayAllAsync(true, false);
 
         // Assert
         var projection = await entityStore.GetProjectionByFilterAsync<TestEntity, string>(
@@ -414,13 +414,13 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "Legacy",
-            LastName = "One",
+            LastName = "One"
         };
 
         await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity1>(v1));
 
         // Act
-        await replayService.ReplayEntityAsync(v1.Id, autoStop: true, useSnapshot: false);
+        await replayService.ReplayEntityAsync(v1.Id, true, false);
 
         // Assert
         var entity = await entityStore.GetEntityByIdAsync<TestEntity>(v1.Id);
@@ -442,7 +442,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayAllAsync(autoStop: true, useSnapshot: true);
+        await replayService.ReplayAllAsync(true, true);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -458,7 +458,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = Guid.NewGuid(),
             FirstName = "John",
-            LastName = "Doe",
+            LastName = "Doe"
         };
         await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity1>(v1));
 
@@ -467,7 +467,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
             Id = v1.Id,
             FirstName = "John",
             SurName = "Doe",
-            Age = 30,
+            Age = 30
         };
         var updateV2 = new MongoUpdateEvent<TestEntity2>(v2);
         await eventStore.InsertEventAsync(updateV2);
@@ -477,8 +477,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayUntilEventNumberAsync(
             updateV2.EventNumber,
-            autoStop: false,
-            useSnapshot: false
+            false,
+            false
         );
 
         // Assert
@@ -498,7 +498,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         {
             Id = id,
             FirstName = "Partial",
-            LastName = "Migration",
+            LastName = "Migration"
         };
         var e1 = new MongoCreateEvent<TestEntity1>(v1);
         await eventStore.InsertEventAsync(e1);
@@ -508,7 +508,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
             Id = id,
             FirstName = "Partial",
             SurName = "Migration",
-            Age = 40,
+            Age = 40
         };
         var e2 = new MongoUpdateEvent<TestEntity2>(v2);
         await eventStore.InsertEventAsync(e2);
@@ -523,8 +523,8 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayFromUntilEventNumberAsync(
             e1.EventNumber,
             e2.EventNumber,
-            autoStop: false,
-            useSnapshot: false
+            false,
+            false
         );
 
         // Assert
@@ -533,7 +533,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         Assert.Equal("Partial - Migration", result.Name);
         Assert.Equal(3, result.SchemaVersion);
     }
-    
+
     [Fact]
     public async Task ReplayService_DebugMode_CapturesSimulatedEventsAndSwitchesDatabases()
     {
@@ -549,16 +549,15 @@ public class ReplayServiceTests : MongoIntegrationTestBase
 
         // Act
         var simulated = replayService.GetSimulatedEvents();
-        
+
         // Assert
         Assert.NotNull(simulated);
         Assert.Equal(3, simulated.Count);
         Assert.Contains(simulated, e => e is MongoCreateEvent<TestEntity>);
         Assert.Contains(simulated, e => e is MongoUpdateEvent<TestEntity>);
         Assert.Contains(simulated, e => e is MongoDeleteEvent<TestEntity>);
-        
     }
-    
+
     [Fact]
     public async Task StartReplay_SetsReplayModeToRunning()
     {
@@ -568,7 +567,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Assert
         Assert.True(replayService.IsRunning());
     }
-    
+
     [Fact]
     public async Task ReplayFromAsync_RehydratesEntityStateFromGivenTimestamp()
     {
@@ -584,14 +583,14 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayFromAsync(from, autoStop: true, useSnapshot: false);
+        await replayService.ReplayFromAsync(from, true, false);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
         Assert.NotNull(result);
         Assert.Equal("AfterReplay", result!.Name);
     }
-    
+
     [Fact]
     public async Task ReplayService_DoesNotUseSnapshots_WhenSnapshotsDisabled()
     {
@@ -607,13 +606,13 @@ public class ReplayServiceTests : MongoIntegrationTestBase
             snapshotService,
             replayEnvironmentSwitcher,
             new SnapshotSettingsAdapter(
-            Options.Create(new EventSourcingOptions
-            {
-                Snapshot = new SnapshotOptions
+                Options.Create(new EventSourcingOptions
                 {
-                    Enabled = false 
-                }
-            }))
+                    Snapshot = new SnapshotOptions
+                    {
+                        Enabled = false
+                    }
+                }))
         );
 
         // Act

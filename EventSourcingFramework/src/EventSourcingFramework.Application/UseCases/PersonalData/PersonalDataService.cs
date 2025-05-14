@@ -1,8 +1,6 @@
 using System.Reflection;
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Events;
@@ -11,8 +9,8 @@ namespace EventSourcingFramework.Application.UseCases.PersonalData;
 
 public class PersonalDataService : IPersonalDataService
 {
-    private readonly IPersonalDataStore personalDataStore;
     private readonly IEventSourcingSettings eventSourcingSettings;
+    private readonly IPersonalDataStore personalDataStore;
 
     public PersonalDataService(
         IPersonalDataStore store, IEventSourcingSettings eventSourcingSettings)
@@ -98,10 +96,7 @@ public class PersonalDataService : IPersonalDataService
             else
             {
                 var subObj = prop.GetValue(obj);
-                if (subObj != null && !IsPrimitive(prop.PropertyType))
-                {
-                    RestorePersonalData(subObj, dict, propPath);
-                }
+                if (subObj != null && !IsPrimitive(prop.PropertyType)) RestorePersonalData(subObj, dict, propPath);
             }
         }
     }
@@ -109,9 +104,9 @@ public class PersonalDataService : IPersonalDataService
     private bool IsPrimitive(Type type)
     {
         return type.IsPrimitive
-            || type.IsEnum
-            || type == typeof(string)
-            || type == typeof(Guid)
-            || type == typeof(DateTime);
+               || type.IsEnum
+               || type == typeof(string)
+               || type == typeof(Guid)
+               || type == typeof(DateTime);
     }
 }

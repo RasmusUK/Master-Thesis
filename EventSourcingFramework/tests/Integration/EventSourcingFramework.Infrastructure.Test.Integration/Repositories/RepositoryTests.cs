@@ -15,10 +15,10 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 [Collection("Integration")]
 public class RepositoryTests : MongoIntegrationTestBase
 {
-    private readonly IRepository<TestEntity> repository;
-    private readonly IEventStore eventStore;
     private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
     private readonly IGlobalReplayContext replayContext;
+    private readonly IRepository<TestEntity> repository;
 
     public RepositoryTests(
         IMongoDbService mongoDbService,
@@ -186,8 +186,8 @@ public class RepositoryTests : MongoIntegrationTestBase
         Assert.Contains(events, e => e is MongoDeleteEvent<TestEntity>);
         Assert.Contains(events, e => e is MongoCreateEvent<TestEntity>);
     }
-    
-        
+
+
     [Fact]
     public async Task ReadByIdAsync_ReturnsEntity_WhenExists()
     {
@@ -309,46 +309,77 @@ public class RepositoryTests : MongoIntegrationTestBase
         }
 
         public Task DeleteEntityAsync<T>(T entity)
-            where T : IEntity => throw new RepositoryException("Delete failure");
+            where T : IEntity
+        {
+            throw new RepositoryException("Delete failure");
+        }
 
         public Task<IReadOnlyCollection<T>> GetAllAsync<T>()
-            where T : IEntity => Task.FromResult<IReadOnlyCollection<T>>(Array.Empty<T>());
+            where T : IEntity
+        {
+            return Task.FromResult<IReadOnlyCollection<T>>(Array.Empty<T>());
+        }
 
         public Task<T?> GetEntityByFilterAsync<T>(Expression<Func<T, bool>> filter)
-            where T : IEntity => Task.FromResult<T?>(default);
+            where T : IEntity
+        {
+            return Task.FromResult<T?>(default);
+        }
 
         public Task<T?> GetEntityByIdAsync<T>(Guid id)
-            where T : IEntity => Task.FromResult(snapshot is T typed ? typed : default);
+            where T : IEntity
+        {
+            return Task.FromResult(snapshot is T typed ? typed : default);
+        }
 
         public Task<IReadOnlyCollection<T>> GetAllByFilterAsync<T>(Expression<Func<T, bool>> filter)
-            where T : IEntity => Task.FromResult<IReadOnlyCollection<T>>(Array.Empty<T>());
+            where T : IEntity
+        {
+            return Task.FromResult<IReadOnlyCollection<T>>(Array.Empty<T>());
+        }
 
         public Task<IReadOnlyCollection<TProjection>> GetAllProjectionsAsync<T, TProjection>(
             Expression<Func<T, TProjection>> projection
         )
-            where T : IEntity =>
-            Task.FromResult<IReadOnlyCollection<TProjection>>(Array.Empty<TProjection>());
+            where T : IEntity
+        {
+            return Task.FromResult<IReadOnlyCollection<TProjection>>(Array.Empty<TProjection>());
+        }
 
         public Task<IReadOnlyCollection<TProjection>> GetAllProjectionsByFilterAsync<
             T,
             TProjection
         >(Expression<Func<T, TProjection>> projection, Expression<Func<T, bool>> filter)
-            where T : IEntity =>
-            Task.FromResult<IReadOnlyCollection<TProjection>>(Array.Empty<TProjection>());
+            where T : IEntity
+        {
+            return Task.FromResult<IReadOnlyCollection<TProjection>>(Array.Empty<TProjection>());
+        }
 
         public Task<TProjection?> GetProjectionByFilterAsync<T, TProjection>(
             Expression<Func<T, bool>> filter,
             Expression<Func<T, TProjection>> projection
         )
-            where T : IEntity => Task.FromResult<TProjection?>(default);
+            where T : IEntity
+        {
+            return Task.FromResult<TProjection?>(default);
+        }
 
         public Task InsertEntityAsync<T>(T entity)
-            where T : IEntity => throw new RepositoryException("Insert failure");
+            where T : IEntity
+        {
+            throw new RepositoryException("Insert failure");
+        }
 
         public Task UpsertEntityAsync<TEntity>(TEntity entity)
-            where TEntity : IEntity => throw new RepositoryException("Upsert failure");
+            where TEntity : IEntity
+        {
+            throw new RepositoryException("Upsert failure");
+        }
 
         public Task UpdateEntityAsync<T>(T entity)
-            where T : IEntity => throw new RepositoryException("Update failure");
+            where T : IEntity
+        {
+            throw new RepositoryException("Update failure");
+        }
     }
 }

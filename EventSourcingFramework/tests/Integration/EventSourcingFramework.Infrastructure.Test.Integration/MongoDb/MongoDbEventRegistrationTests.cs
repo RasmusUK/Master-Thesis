@@ -1,7 +1,6 @@
 using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
-using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
 using MongoDB.Bson.Serialization;
 
@@ -35,7 +34,7 @@ public class MongoDbEventRegistrationTests
         Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoUpdateEvent<PersonEntity>)));
         Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoDeleteEvent<PersonEntity>)));
     }
-    
+
     [Fact]
     public void RegisterEntities_DoesNotRegisterDuplicateBsonClassMaps()
     {

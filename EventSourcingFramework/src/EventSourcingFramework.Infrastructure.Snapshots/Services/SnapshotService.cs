@@ -15,15 +15,15 @@ namespace EventSourcingFramework.Infrastructure.Snapshots.Services;
 public class SnapshotService : ISnapshotService
 {
     private const string SnapshotMetadataCollection = "snapshots";
+    private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
+    private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
+    private readonly IEventSequenceGenerator eventSequenceGenerator;
+    private readonly IGlobalReplayContext globalReplayContext;
 
     private readonly IMongoDbService mongoDbService;
-    private readonly IEventSequenceGenerator eventSequenceGenerator;
-    private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
-    private readonly IGlobalReplayContext globalReplayContext;
-    private readonly SnapshotOptions snapshotOptions;
-    private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
-    private SnapshotMetadata? lastSnapshotCached;
     private readonly object snapshotCacheLock = new();
+    private readonly SnapshotOptions snapshotOptions;
+    private SnapshotMetadata? lastSnapshotCached;
 
     public SnapshotService(
         IMongoDbService mongoDbService,
@@ -75,7 +75,7 @@ public class SnapshotService : ISnapshotService
             SnapshotTriggerMode.Time => timePassed,
             SnapshotTriggerMode.Either => eventCountPassed || timePassed,
             SnapshotTriggerMode.Both => eventCountPassed && timePassed,
-            _ => false,
+            _ => false
         };
 
         if (!shouldTake)
@@ -87,7 +87,7 @@ public class SnapshotService : ISnapshotService
         {
             SnapshotId = id,
             Timestamp = now,
-            EventNumber = currentEventNumber,
+            EventNumber = currentEventNumber
         };
 
         lock (snapshotCacheLock)
@@ -136,7 +136,7 @@ public class SnapshotService : ISnapshotService
             {
                 { "SnapshotId", snapshotId },
                 { "EventNumber", eventNumber },
-                { "Timestamp", dateTime },
+                { "Timestamp", dateTime }
             };
 
             await mongoDbService
@@ -170,7 +170,6 @@ public class SnapshotService : ISnapshotService
             try
             {
                 if (globalReplayContext.ReplayMode != ReplayMode.Debug)
-                {
                     foreach (var (_, originalName) in registered)
                     {
                         var backupName = $"{originalName}_backup";
@@ -191,7 +190,6 @@ public class SnapshotService : ISnapshotService
                             .RenameCollectionAsync(originalName, backupName);
                         renamedBackups.Add(originalName);
                     }
-                }
 
                 foreach (var (type, originalName) in registered)
                 {
@@ -206,7 +204,6 @@ public class SnapshotService : ISnapshotService
                 }
 
                 if (globalReplayContext.ReplayMode != ReplayMode.Debug)
-                {
                     foreach (var originalName in renamedBackups)
                     {
                         var backupName = $"{originalName}_backup";
@@ -218,7 +215,6 @@ public class SnapshotService : ISnapshotService
                                 .GetEntityDatabase(true)
                                 .DropCollectionAsync(backupName);
                     }
-                }
             }
             catch (Exception ex)
             {
@@ -347,10 +343,8 @@ public class SnapshotService : ISnapshotService
                 collectionName.EndsWith(snapshotId)
             )
         )
-        {
             await database.DropCollectionAsync(collectionName);
-        }
-        
+
         var metadataCollection = database.GetCollection<SnapshotMetadata>(SnapshotMetadataCollection);
         var filter = Builders<SnapshotMetadata>.Filter.Eq(s => s.SnapshotId, snapshotId);
         await metadataCollection.DeleteOneAsync(filter);
@@ -409,7 +403,7 @@ public class SnapshotService : ISnapshotService
             SnapshotFrequency.Week => (now - lastSnapshot).TotalDays >= 7,
             SnapshotFrequency.Month => (now - lastSnapshot).TotalDays >= 30,
             SnapshotFrequency.Year => (now - lastSnapshot).TotalDays >= 365,
-            _ => false,
+            _ => false
         };
     }
 

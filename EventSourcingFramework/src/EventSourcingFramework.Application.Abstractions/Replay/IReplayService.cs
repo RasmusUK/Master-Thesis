@@ -1,4 +1,3 @@
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Models.Events;
 
@@ -11,6 +10,7 @@ public interface IReplayService
     Task ReplayAllAsync(bool autoStop = true, bool useSnapshot = true);
     Task ReplayUntilAsync(DateTime until, bool autoStop = true, bool useSnapshot = true);
     Task ReplayFromAsync(DateTime from, bool autoStop = true, bool useSnapshot = true);
+
     Task ReplayFromUntilAsync(
         DateTime from,
         DateTime until,
@@ -19,12 +19,14 @@ public interface IReplayService
     );
 
     Task ReplayEntityAsync(Guid entityId, bool autoStop = true, bool useSnapshot = true);
+
     Task ReplayEntityUntilAsync(
         Guid entityId,
         DateTime until,
         bool autoStop = true,
         bool useSnapshot = true
     );
+
     Task ReplayEntityFromUntilAsync(
         Guid entityId,
         DateTime from,
@@ -43,11 +45,13 @@ public interface IReplayService
         bool autoStop = true,
         bool useSnapshot = true
     );
+
     Task ReplayUntilEventNumberAsync(
         long untilEventNumber,
         bool autoStop = true,
         bool useSnapshot = true
     );
+
     Task ReplayFromUntilEventNumberAsync(
         long fromEventNumber,
         long untilEventNumber,

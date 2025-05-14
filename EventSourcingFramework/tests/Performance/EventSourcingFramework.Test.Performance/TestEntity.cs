@@ -1,6 +1,4 @@
-﻿using EventSourcingFramework.Core;
-using EventSourcingFramework.Core.Attributes;
-using EventSourcingFramework.Core.Models;
+﻿using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Models.Entity;
 
 namespace EventSourcingFramework.Test.Performance;
@@ -9,20 +7,16 @@ public class TestEntity : Entity
 {
     public string Name { get; set; }
 
-    [PersonalData]
-    public string Name1 { get; set; }
+    [PersonalData] public string Name1 { get; set; }
 
-    [PersonalData]
-    public string Name2 { get; set; }
+    [PersonalData] public string Name2 { get; set; }
 
-    [PersonalData]
-    public string Name3 { get; set; }
+    [PersonalData] public string Name3 { get; set; }
 
-    [PersonalData]
-    public string Name4 { get; set; }
+    [PersonalData] public string Name4 { get; set; }
 
-    [PersonalData]
-    public string Name5 { get; set; }
+    [PersonalData] public string Name5 { get; set; }
+
     public int Nr1 { get; set; }
     public int Nr2 { get; set; }
     public int Nr3 { get; set; }

@@ -4,5 +4,5 @@ public enum SnapshotRetentionStrategy
 {
     All,
     Count,
-    Time,
+    Time
 }

@@ -28,7 +28,7 @@ public class PersonalDataStoreTests : MongoIntegrationTestBase
         var data = new Dictionary<string, object?>
         {
             { "Email", "user@example.com" },
-            { "SSN", "123-45-6789" },
+            { "SSN", "123-45-6789" }
         };
 
         // Act
@@ -51,7 +51,7 @@ public class PersonalDataStoreTests : MongoIntegrationTestBase
         var updated = new Dictionary<string, object?>
         {
             { "Phone", "99999999" },
-            { "Zip", "0000" },
+            { "Zip", "0000" }
         };
 
         // Act

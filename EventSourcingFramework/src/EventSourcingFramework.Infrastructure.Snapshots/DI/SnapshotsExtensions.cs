@@ -12,7 +12,7 @@ public static class SnapshotsExtensions
         services
             .AddSingleton<ISnapshotSettings, SnapshotSettingsAdapter>()
             .AddSingleton<ISnapshotService, SnapshotService>();
-        
+
         return services;
     }
 }

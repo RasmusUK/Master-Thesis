@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="MongoDB.Driver" Version="3.2.1" />
+        <PackageReference Include="MongoDB.Driver" Version="3.2.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\EventSourcingFramework.Application.Abstractions\EventSourcingFramework.Application.Abstractions.csproj" />
-      <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
-      <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj" />
+        <ProjectReference Include="..\EventSourcingFramework.Application.Abstractions\EventSourcingFramework.Application.Abstractions.csproj"/>
+        <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj"/>
+        <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj"/>
     </ItemGroup>
 
 </Project>

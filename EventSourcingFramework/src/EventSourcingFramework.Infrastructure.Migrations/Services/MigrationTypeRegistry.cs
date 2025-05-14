@@ -11,7 +11,10 @@ public class MigrationTypeRegistry : IMigrationTypeRegistry
         versionMap[(typeof(TEntity), version)] = versionedType;
     }
 
-    public Type GetVersionedType(Type targetType, int version) => versionMap[(targetType, version)];
+    public Type GetVersionedType(Type targetType, int version)
+    {
+        return versionMap[(targetType, version)];
+    }
 
     public Type? GetBaseType(Type targetType)
     {

@@ -41,8 +41,8 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
             {
                 Street = "Main St",
                 City = "Copenhagen",
-                Location = new Location { Latitude = 55.6761m, Longitude = 12.5683m },
-            },
+                Location = new Location { Latitude = 55.6761m, Longitude = 12.5683m }
+            }
         };
 
         var evt = new PersonCreatedEvent(entity);
@@ -83,7 +83,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
                 { "Address.Street", "Main St" },
                 { "Address.City", "Copenhagen" },
                 { "Address.Location.Latitude", 55.6761m },
-                { "Address.Location.Longitude", 12.5683m },
+                { "Address.Location.Longitude", 12.5683m }
             }
         );
 
@@ -92,7 +92,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
             Id = id,
             Name = null,
             Email = null,
-            Address = new Address { Location = new Location() },
+            Address = new Address { Location = new Location() }
         };
 
         var evt = new PersonCreatedEvent(entity) { Id = id };
@@ -137,7 +137,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
                 { "Name", null },
                 { "Email", null },
                 { "Address.Location.Latitude", null },
-                { "Address.Location.Longitude", null },
+                { "Address.Location.Longitude", null }
             }
         );
 
@@ -150,8 +150,8 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
             {
                 Street = null,
                 City = null,
-                Location = new Location(),
-            },
+                Location = new Location()
+            }
         };
 
         var evt = new PersonCreatedEvent(entity) { Id = id };
@@ -167,7 +167,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
         Assert.Equal(0, evt.Entity.Address.Location.Latitude);
         Assert.Equal(0, evt.Entity.Address.Location.Longitude);
     }
-    
+
     [Fact]
     public async Task StripAndStoreAsync_SkipsWhenEntityPropertyMissing()
     {
@@ -189,7 +189,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
         // Act & Assert
         await personalDataService.RestoreAsync(evt);
     }
-    
+
     [Fact]
     public async Task StripAndStoreAsync_Skips_WhenPersonalDataDisabled()
     {
@@ -201,7 +201,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
             Id = Guid.NewGuid(),
             Name = "ShouldNotBeStored",
             Email = "nope@example.com",
-            Address = new Address { City = "Nowhere" },
+            Address = new Address { City = "Nowhere" }
         };
 
         var evt = new PersonCreatedEvent(entity);
@@ -237,9 +237,6 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
         Assert.Null(evt.Entity.Name);
     }
 
-    
-    private record EventWithoutEntity() : MongoEventBase(Guid.NewGuid());
-    
     private IPersonalDataService CreateServiceWithOptionsEnabled(bool enabled)
     {
         var options = new EventSourcingOptions
@@ -249,4 +246,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
 
         return new PersonalDataService(personalDataStore, options);
     }
+
+
+    private record EventWithoutEntity() : MongoEventBase(Guid.NewGuid());
 }

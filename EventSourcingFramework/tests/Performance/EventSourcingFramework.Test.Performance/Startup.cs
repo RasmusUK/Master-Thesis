@@ -6,7 +6,7 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        var startup = new EventSourcingFramework.Test.Utilities.Startup();
+        var startup = new Utilities.Startup();
         startup.ConfigureServices(services);
     }
 }

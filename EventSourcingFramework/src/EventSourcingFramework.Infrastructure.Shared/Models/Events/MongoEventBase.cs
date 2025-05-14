@@ -5,8 +5,7 @@ namespace EventSourcingFramework.Infrastructure.Shared.Models.Events;
 
 public abstract record MongoEventBase(Guid EntityId) : IEvent
 {
-    [BsonId]
-    public Guid Id { get; init; } = Guid.NewGuid();
+    [BsonId] public Guid Id { get; init; } = Guid.NewGuid();
 
     public DateTime Timestamp { get; init; } = DateTime.UtcNow;
     public Guid? TransactionId { get; init; }
@@ -16,6 +15,6 @@ public abstract record MongoEventBase(Guid EntityId) : IEvent
     [BsonIgnore]
     public string Typename =>
         GetType().IsGenericType
-            ? $"{GetType().Name.Replace("Mongo","").Split('`')[0]}<{string.Join(", ", GetType().GetGenericArguments().Select(t => t.Name))}>"
+            ? $"{GetType().Name.Replace("Mongo", "").Split('`')[0]}<{string.Join(", ", GetType().GetGenericArguments().Select(t => t.Name))}>"
             : GetType().Name;
 }

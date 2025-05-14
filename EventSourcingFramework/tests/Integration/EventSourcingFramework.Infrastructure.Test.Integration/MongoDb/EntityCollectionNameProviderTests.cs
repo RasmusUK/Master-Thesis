@@ -11,15 +11,13 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 {
     private readonly EntityCollectionNameProvider provider = new(new MigrationTypeRegistry());
 
-    private class TestEntity1 { }
-
-    private class TestEntity2 { }
-
     public EntityCollectionNameProviderTests(
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext
     )
-        : base(mongoDbService, replayContext) { }
+        : base(mongoDbService, replayContext)
+    {
+    }
 
     [Fact]
     public void Register_Then_GetCollectionName_ReturnsCorrectValue()
@@ -79,5 +77,13 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
         Assert.Equal(2, all.Count);
         Assert.Contains(all, x => x.Type == typeof(TestEntity1) && x.CollectionName == "Test1");
         Assert.Contains(all, x => x.Type == typeof(TestEntity2) && x.CollectionName == "Test2");
+    }
+
+    private class TestEntity1
+    {
+    }
+
+    private class TestEntity2
+    {
     }
 }

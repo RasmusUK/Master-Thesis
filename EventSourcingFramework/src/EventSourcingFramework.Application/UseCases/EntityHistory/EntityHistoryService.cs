@@ -1,8 +1,5 @@
-using EventSourcingFramework.Application.Abstractions;
 using EventSourcingFramework.Application.Abstractions.EntityHistory;
-using EventSourcingFramework.Core;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Core.Models;
 using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
 
@@ -18,8 +15,10 @@ public class EntityHistoryService : IEntityHistoryService
     }
 
     public async Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>(Guid id)
-        where T : IEntity =>
-        (await GetEntityHistoryWithEventsAsync<T>(id)).Select(e => e.entity).ToList();
+        where T : IEntity
+    {
+        return (await GetEntityHistoryWithEventsAsync<T>(id)).Select(e => e.entity).ToList();
+    }
 
     public async Task<IReadOnlyCollection<(T entity, IEvent e)>> GetEntityHistoryWithEventsAsync<T>(
         Guid id

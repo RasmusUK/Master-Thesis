@@ -14,7 +14,9 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
         IMongoDbService mongoDbService,
         IGlobalReplayContext replayContext
     )
-        : base(mongoDbService, replayContext) { }
+        : base(mongoDbService, replayContext)
+    {
+    }
 
     [Trait("Category", "Performance")]
     [Theory]
@@ -56,7 +58,7 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
             {
                 ["EventSourcing:EnableEventStore"] = $"{eventStore}",
                 ["EventSourcing:EnableEntityStore"] = $"{entityStore}",
-                ["EventSourcing:EnablePersonalDataStore"] = $"{personalStore}",
+                ["EventSourcing:EnablePersonalDataStore"] = $"{personalStore}"
             }
         );
 

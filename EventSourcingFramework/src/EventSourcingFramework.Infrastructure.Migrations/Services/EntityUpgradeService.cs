@@ -10,10 +10,10 @@ namespace EventSourcingFramework.Infrastructure.Migrations.Services;
 public class EntityUpgradeService : IEntityUpgradeService
 {
     private readonly IEntityCollectionNameProvider collectionNameProvider;
-    private readonly ISchemaVersionRegistry schemaVersionRegistry;
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
     private readonly IEntityMigrator migrator;
     private readonly IMongoDbService mongoDbService;
-    private readonly IMigrationTypeRegistry migrationTypeRegistry;
+    private readonly ISchemaVersionRegistry schemaVersionRegistry;
 
     public EntityUpgradeService(
         IEntityCollectionNameProvider collectionNameProvider,

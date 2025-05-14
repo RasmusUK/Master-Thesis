@@ -8,6 +8,7 @@ using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Snapshots.Services;
 using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
+using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Snapshots;
@@ -15,10 +16,10 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Snapshots;
 [Collection("Integration")]
 public class SnapshotServiceTests : MongoIntegrationTestBase
 {
-    private readonly ISnapshotService snapshotService;
     private readonly IEntityCollectionNameProvider collectionNameProvider;
     private readonly IRepository<TestEntity> repository;
     private readonly IEventSequenceGenerator sequenceGenerator;
+    private readonly ISnapshotService snapshotService;
 
     public SnapshotServiceTests(
         IMongoDbService mongoDbService,
@@ -145,8 +146,8 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
                 {
                     Mode = SnapshotTriggerMode.EventCount,
                     EventThreshold = 5,
-                    Frequency = SnapshotFrequency.Month,
-                },
+                    Frequency = SnapshotFrequency.Month
+                }
             }
         );
 
@@ -175,8 +176,8 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
                 {
                     Mode = SnapshotTriggerMode.Time,
                     EventThreshold = 1000,
-                    Frequency = SnapshotFrequency.Day,
-                },
+                    Frequency = SnapshotFrequency.Day
+                }
             }
         );
 
@@ -193,7 +194,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
                 {
                     SnapshotId = "manual-old",
                     EventNumber = current - 100,
-                    Timestamp = DateTime.UtcNow.AddDays(-2),
+                    Timestamp = DateTime.UtcNow.AddDays(-2)
                 }
             );
 
@@ -217,8 +218,8 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
                 {
                     Mode = SnapshotTriggerMode.Either,
                     EventThreshold = 1,
-                    Frequency = SnapshotFrequency.Day,
-                },
+                    Frequency = SnapshotFrequency.Day
+                }
             }
         );
 
@@ -234,7 +235,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         // Assert
         Assert.True(allSnapshots.Any());
     }
-    
+
     [Fact]
     public async Task TakeSnapshotIfNeededAsync_PrunesSnapshots_OlderThanMaxAge()
     {
@@ -248,12 +249,12 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
                 {
                     Mode = SnapshotTriggerMode.EventCount,
                     EventThreshold = 1,
-                    Frequency = SnapshotFrequency.Day,
+                    Frequency = SnapshotFrequency.Day
                 },
                 Retention = new SnapshotRetentionOptions
                 {
                     Strategy = SnapshotRetentionStrategy.Time,
-                    MaxAgeDays = maxAgeDays,
+                    MaxAgeDays = maxAgeDays
                 }
             }
         );
@@ -297,7 +298,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
 
     private SnapshotService CreateSnapshotService(SnapshotOptions options)
     {
-        var wrappedOptions = Microsoft.Extensions.Options.Options.Create(
+        var wrappedOptions = Options.Create(
             new EventSourcingOptions { Snapshot = options }
         );
 

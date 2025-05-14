@@ -5,5 +5,5 @@ public enum ReplayMode
     Strict,
     Sandbox,
     Debug,
-    Replay,
+    Replay
 }
