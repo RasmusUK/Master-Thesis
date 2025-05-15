@@ -37,7 +37,7 @@ To start the local dev environment:
   ```
 - **Linux/macOS**
   ```
-  ./SpotQuote/DevUp.sh
+  ./SpotQuoteApp/DevUp.sh
   ```
 
 This will start:
