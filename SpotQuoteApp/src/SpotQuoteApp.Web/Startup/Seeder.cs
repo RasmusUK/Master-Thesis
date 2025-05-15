@@ -146,6 +146,7 @@ public class Seeder : ISeeder
 
     private async Task SeedSpotQuoteBookings()
     {
+        var rand = new Random();
         var addresses = (await addressRepository.ReadAllAsync()).ToList();
         var customers = (await customerRepository.ReadAllAsync()).ToList();
         var buyingRates = (await buyingRateRepository.ReadAllAsync()).ToList();
@@ -186,20 +187,20 @@ public class Seeder : ISeeder
                 $"Internal comments {i}",
                 new List<Quote>
                 {
-                    new Quote(
+                    new(
                         buyingRate.Supplier,
                         buyingRate.ForwarderService,
                         buyingRate.SupplierService,
-                        new Profit(10, true),
+                        new Profit(rand.Next(10) , true),
                         false,
                         new List<Cost>
                         {
                             new(
-                                new SupplierCost(ChargeType.Freight, CostType.PerKg, 10, 25, 0),
+                                new SupplierCost(ChargeType.Freight, CostType.PerKg,  rand.NextDouble()*20, 25, 0),
                                 new SellingCost(
                                     ChargeType.Freight,
                                     CostType.PerKg,
-                                    10,
+                                    rand.NextDouble()*20 + 20,
                                     25,
                                     0,
                                     string.Empty

@@ -1,6 +1,8 @@
 @page "/spot-quotes"
 @using SpotQuoteApp.Application.DTOs
 @using SpotQuoteApp.Application.Interfaces
+@using SpotQuoteApp.Application.Mappers
+@using SpotQuoteApp.Core.ValueObjects
 @using SpotQuoteApp.Core.ValueObjects.Enums
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
@@ -17,6 +19,7 @@
 <MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" Loading="@loading" Dense="true" Striped="true"
              SortMode="SortMode.Single">
     <Columns>
+        <HierarchyColumn T="SpotQuoteDto" InitiallyExpandedFunc="@(_ => false)" EnableHeaderToggle="true" />
         <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
             <CellTemplate>
@@ -42,6 +45,17 @@
             </CellTemplate>
         </TemplateColumn>
     </Columns>
+    <ChildRowContent>
+        <MudDataGrid T="QuoteDto" Items="@context.Item.Quotes" Striped="true" Dense="true">
+            <Columns>
+                <PropertyColumn Property="x => x.TotalPrice" Title="Price" Format="N2"/>
+                <PropertyColumn Property="x => x.TotalProfit" Title="Profit" Format="N2"/>
+                <PropertyColumn Property="x => x.Supplier" Title="Supplier"/>
+                <PropertyColumn Property="x => x.ForwarderService" Title="Forwarder Service"/>
+                <PropertyColumn Property="x => x.SupplierService" Title="Supplier Service"/>
+            </Columns>
+        </MudDataGrid>
+    </ChildRowContent>
     <PagerContent>
         <MudDataGridPager T="SpotQuoteDto"/>
     </PagerContent>
