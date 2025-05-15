@@ -3,6 +3,8 @@ using EventSourcingFramework.Infrastructure.DI;
 using MudBlazor.Services;
 using SpotQuoteApp.Application;
 using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Options;
+using SpotQuoteApp.Application.Services;
 using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.Validators;
 using SpotQuoteApp.Web.Components;
@@ -27,6 +29,9 @@ builder.Services.AddEventSourcing(builder.Configuration, (schema, migrations, mi
         (typeof(BuyingRate), "BuyingRate")
     );
 });
+
+builder.Services.Configure<MockApiOptions>(
+    builder.Configuration.GetSection("MockApi"));
 
 builder.Services.AddScoped<ICountryFetcher, CountryFetcher>();
 builder.Services.AddScoped<ISeeder, Seeder>();

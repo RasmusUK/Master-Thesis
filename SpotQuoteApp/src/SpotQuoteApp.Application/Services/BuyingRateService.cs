@@ -1,24 +1,33 @@
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
 using EventSourcingFramework.Core.Interfaces;
+using Microsoft.Extensions.Options;
 using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.DTOs.Api.Requests;
+using SpotQuoteApp.Application.DTOs.Api.Responses;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Application.Options;
 using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Application;
+namespace SpotQuoteApp.Application.Services;
 
 public class BuyingRateService : IBuyingRateService
 {
     private readonly IRepository<BuyingRate> buyingRateRepository;
     private readonly ILocationService locationService;
+    private readonly IApiGateway apiGateway;
+    private readonly string buyingRateApiUrl;
 
     public BuyingRateService(
         IRepository<BuyingRate> buyingRateRepository,
-        ILocationService locationService
-    )
+        ILocationService locationService, IApiGateway apiGateway, IOptions<MockApiOptions> options)
     {
         this.buyingRateRepository = buyingRateRepository;
         this.locationService = locationService;
+        this.apiGateway = apiGateway;
+        buyingRateApiUrl = $"{options.Value.BaseUrl}/api/buying-rates";
     }
 
     public async Task UpsertBuyingRatesAsync(SpotQuoteDto spotQuoteDto)
@@ -83,6 +92,42 @@ public class BuyingRateService : IBuyingRateService
         ForwarderService forwarderService
     )
     {
+        var request = new BuyingRateRequest(supplier.Value, forwarderService.Name, supplierService.Name,
+            addressFrom.Country.Code, addressTo.Country.Code, transportMode.ToString());
+        
+        var fetchedRates = (await apiGateway.PostAsync<BuyingRateRequest, BuyingRateResponseBatch>(
+            url: buyingRateApiUrl,
+            body: request
+        )).Rates.Select(r => new BuyingRateDto
+        {
+            TransportMode = TransportMode.FromString(r.TransportMode),
+            Supplier = supplier,
+            SupplierService = supplierService,
+            ForwarderService = forwarderService,
+            ValidFrom = r.ValidFrom,
+            ValidUntil = r.ValidTo,
+            Origin = new LocationDto
+            {
+                Country = addressFrom.Country,
+                Code = addressFrom.ZipCode,
+                Name = addressFrom.City,
+                Type = LocationType.ZipCode
+            },
+            Destination = new LocationDto
+            {
+                Country = addressTo.Country,
+                Code = addressTo.ZipCode,
+                Name = addressTo.City,
+                Type = LocationType.ZipCode
+            },
+            SupplierCost = new SupplierCostDto
+            {
+                ChargeType = ChargeType.FromString(r.ChargeType),
+                CostType = CostType.FromString(r.CostType),
+                Value = r.Price
+            }
+        });
+        
         LocationDto? fromLocation;
         LocationDto? toLocation;
 
@@ -127,7 +172,7 @@ public class BuyingRateService : IBuyingRateService
         }
 
         if (fromLocation is null || toLocation is null)
-            return new List<BuyingRateDto>();
+            return fetchedRates.ToList();
 
         var buyingRates = await buyingRateRepository.ReadAllByFilterAsync(b =>
             b.OriginLocationId == fromLocation.Id
@@ -151,7 +196,7 @@ public class BuyingRateService : IBuyingRateService
                 ValidFrom = b.ValidFrom,
                 ValidUntil = b.ValidUntil,
                 SupplierCost = b.SupplierCost.ToDto(),
-            })
+            }).Concat(fetchedRates)
             .ToList();
     }
 

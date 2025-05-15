@@ -5,7 +5,7 @@ using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.Exceptions;
 
-namespace SpotQuoteApp.Application;
+namespace SpotQuoteApp.Application.Services;
 
 public class AddressService : IAddressService
 {

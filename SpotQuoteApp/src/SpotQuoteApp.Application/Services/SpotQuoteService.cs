@@ -9,7 +9,7 @@ using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.Validators;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Application;
+namespace SpotQuoteApp.Application.Services;
 
 public class SpotQuoteService : ISpotQuoteService
 {

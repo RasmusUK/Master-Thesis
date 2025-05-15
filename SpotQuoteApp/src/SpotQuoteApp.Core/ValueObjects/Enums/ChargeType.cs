@@ -21,6 +21,31 @@ public record ChargeType(string Value) : IComparable
     public static readonly ChargeType CurrencyAdjustment = new("Currency Adjustment (CAF)");
 
     public override string ToString() => Value;
+    
+    public static ChargeType FromString(string value)
+    {
+        return value switch
+        {
+            "Freight" => Freight,
+            "Fuel Surcharge" => FuelSurcharge,
+            "Customs Clearance" => CustomsClearance,
+            "Duties and Taxes" => DutiesAndTaxes,
+            "Insurance" => Insurance,
+            "Documentation" => Documentation,
+            "Port/Terminal Handling" => PortHandling,
+            "Inspection" => Inspection,
+            "Demurrage" => Demurrage,
+            "Detention" => Detention,
+            "Storage" => Storage,
+            "Door Delivery" => Delivery,
+            "Bond Fee" => BondFee,
+            "Reefer Surcharge" => ReeferSurcharge,
+            "Dangerous Goods" => DangerousGoods,
+            "Bunker Adjustment (BAF)" => BunkerAdjustment,
+            "Currency Adjustment (CAF)" => CurrencyAdjustment,
+            _ => throw new ArgumentException($"Invalid charge type: {value}")
+        };
+    }
 
     public int CompareTo(object? obj)
     {

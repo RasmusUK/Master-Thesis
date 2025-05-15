@@ -5,7 +5,7 @@ using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Core.AggregateRoots;
 
-namespace SpotQuoteApp.Application;
+namespace SpotQuoteApp.Application.Services;
 
 public class CustomerService : ICustomerService
 {

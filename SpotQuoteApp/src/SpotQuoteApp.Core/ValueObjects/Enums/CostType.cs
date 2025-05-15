@@ -7,6 +7,10 @@ public record CostType(string Value) : IComparable
     public static readonly CostType PerCbm = new("Per Cbm");
 
     public override string ToString() => Value;
+    
+    public static CostType FromString(string value) =>
+        GetAll().FirstOrDefault(c => c.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
+        ?? throw new ArgumentException($"Invalid {nameof(CostType)}: {value}");
 
     public int CompareTo(object? obj)
     {

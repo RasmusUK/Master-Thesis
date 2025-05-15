@@ -310,7 +310,7 @@
                         </MudGrid>
                         <MudDivider/>
                         <MudDataGrid T="CostDto" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell" 
-                                     Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.OnRowClick" 
+                                     Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="CostEdit"
                                      CanceledEditingItem="CostEdit" CommittedItemChanges="CostEdit">
                             <ColGroup>
                                 @for (var i = 0; i < 4; i++)
@@ -335,7 +335,7 @@
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost">
                                     <EditTemplate>
-                                        <MudSelect T="CostType" @bind-Value="@context.Item.SupplierCost.CostType">
+                                        <MudSelect T="CostType" Value="@context.Item.SupplierCost.CostType" ValueChanged="@(newValue => OnSupplierCostTypeChanged(newValue, context))">
                                             @foreach (var item in CostType.GetAll())
                                             {
                                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -357,7 +357,7 @@
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SellingCost.CostType" Title="Cost">
                                     <EditTemplate>
-                                        <MudSelect T="CostType" @bind-Value="@context.Item.SellingCost.CostType">
+                                        <MudSelect T="CostType" Value="@context.Item.SellingCost.CostType" ValueChanged="@(newValue => OnSellingCostTypeChanged(newValue, context))">
                                             @foreach (var item in CostType.GetAll())
                                             {
                                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -711,55 +711,64 @@
 
     private async Task AddBuyingRatesToQuote()
     {
-        var existingQuotesWithServices = model.Quotes.Where(q => 
+        var quotesWithServices = model.Quotes.Where(q => 
             q.SupplierService == SearchBuyingRatesSupplierService && 
-            q.Supplier == SearchBuyingRatesSupplier);
+            q.Supplier == SearchBuyingRatesSupplier).ToList();
 
-        var quotesWithServices = existingQuotesWithServices.ToList();
         if (!quotesWithServices.Any())
         {
             var quote = new QuoteDto
             {
                 Profit = new ProfitDto(),
-                SupplierService = SearchBuyingRatesSupplierService,
-                Supplier = SearchBuyingRatesSupplier,
-                ForwarderService = SearchBuyingRatesForwarderService,
-                Costs = selectedBuyingRates.Select(s => new CostDto
-                {
-                    SupplierCost = s.SupplierCost
-                }).ToList()
+                SupplierService = SearchBuyingRatesSupplierService!,
+                Supplier = SearchBuyingRatesSupplier!,
+                ForwarderService = SearchBuyingRatesForwarderService!,
             };
+            
             model.Quotes.Add(quote);
+            quotesWithServices.Add(quote);            
         }
-        else
-            foreach (var quote in quotesWithServices)
+        
+        foreach (var quote in quotesWithServices)
+        {
+            foreach (var selectedBuyingRate in selectedBuyingRates)
             {
-                foreach (var selectedBuyingRate in selectedBuyingRates)
+                var cost = new CostDto
                 {
-                    var cost = new CostDto
+                    SupplierCost = new SupplierCostDto
                     {
-                        SupplierCost = new SupplierCostDto
-                        {
-                            ChargeType = selectedBuyingRate.SupplierCost.ChargeType,
-                            CostType = selectedBuyingRate.SupplierCost.CostType,
-                            Cbm = model.TotalCbm,
-                            Weight = model.TotalWeight,
-                            Value = selectedBuyingRate.SupplierCost.Value,
-                        },
-                        SellingCost = new SellingCostDto
-                        {
-                            Cbm = model.TotalCbm,
-                            Weight = model.TotalWeight,
-                        }
-                    };
-                    quote.Costs.Add(cost);
-                    CostEdit(cost);
-                }    
-            }
+                        ChargeType = selectedBuyingRate.SupplierCost.ChargeType,
+                        CostType = selectedBuyingRate.SupplierCost.CostType,
+                        Cbm = model.TotalCbm,
+                        Weight = model.TotalWeight,
+                        Value = selectedBuyingRate.SupplierCost.Value,
+                    },
+                    SellingCost = new SellingCostDto
+                    {
+                        Cbm = model.TotalCbm,
+                        Weight = model.TotalWeight,
+                    }
+                };
+                quote.Costs.Add(cost);
+                CostEdit(cost);
+            }    
+        }
     }
 
     private void SelectedItemsChanged(HashSet<BuyingRateDto> items)
     {
         selectedBuyingRates = items;
+    }
+    
+    private void OnSupplierCostTypeChanged(CostType newValue, CellContext<CostDto> context)
+    {
+        context.Item.SupplierCost.CostType = newValue;
+        CostEdit(context.Item);
+    }
+    
+    private void OnSellingCostTypeChanged(CostType newValue, CellContext<CostDto> context)
+    {
+        context.Item.SellingCost.CostType = newValue;
+        CostEdit(context.Item);
     }
 }

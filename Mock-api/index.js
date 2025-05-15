@@ -6,35 +6,32 @@ app.use(express.json());
 
 app.post('/api/buying-rates', (req, res) => {
   const {
-    supplier,
-    forwarderService,
-    supplierService,
-    countryFrom,
-    countryTo,
-    transportMode
-  } = req.body;
+    Supplier,
+    ForwarderService,
+    SupplierService,
+    CountryFrom,
+    CountryTo,
+    TransportMode
+    } = req.body;
 
-  if (!supplier || !forwarderService || !supplierService || !countryFrom || !countryTo || !transportMode) {
-    return res.status(400).json({
-      error: 'Missing one or more required fields'
-    });
-  }
+  const chargeTypes = ['Freight', 'Fuel Surcharge', 'Storage'];
+  const costTypes = ['Per Shipment', 'Per Kg', 'Per Cbm'];
 
-  const mockResult = {
-    supplier,
-    forwarderService,
-    supplierService,
-    countryFrom,
-    countryTo,
-    transportMode,
-    price: (Math.random() * 1000 + 100).toFixed(2),
-    validFrom: new Date().toISOString(),
-    validTo: new Date(Date.now() + 30 * 86400000).toISOString(),
-    chargeType: "Freight",
-    costType: "Per Shipment"
-  };
+  const Rates = chargeTypes.map((ChargeType, index) => ({
+    Supplier,
+    ForwarderService,
+    SupplierService,
+    CountryFrom,
+    CountryTo,
+    TransportMode,
+    Price: Math.round((Math.random() * 1000 + 100) * 100) / 100,
+    ValidFrom: new Date().toISOString(),
+    ValidTo: new Date(Date.now() + 30 * 86400000).toISOString(),
+    ChargeType,
+    CostType: costTypes[index]
+  }));
 
-  res.json(mockResult);
+  res.status(200).json({ Rates });
 });
 
 app.listen(port, () => {

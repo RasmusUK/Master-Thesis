@@ -6,7 +6,7 @@ using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.Exceptions;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Application;
+namespace SpotQuoteApp.Application.Services;
 
 public class LocationService : ILocationService
 {

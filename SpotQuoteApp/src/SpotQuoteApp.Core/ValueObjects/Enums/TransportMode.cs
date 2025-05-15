@@ -8,6 +8,10 @@ public record TransportMode(string Value) : IComparable
     public static readonly TransportMode Courier = new("Courier");
 
     public override string ToString() => Value;
+    
+    public static TransportMode FromString(string value) =>
+        GetAll().FirstOrDefault(c => c.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
+        ?? throw new ArgumentException($"Invalid {nameof(TransportMode)}: {value}");
 
     public int CompareTo(object? obj)
     {
