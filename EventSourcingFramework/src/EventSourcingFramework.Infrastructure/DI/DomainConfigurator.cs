@@ -7,5 +7,5 @@ public delegate void DomainConfigurator(
     ISchemaVersionRegistry schemaRegistry,
     IMigrationTypeRegistry migrationRegistry,
     IEntityMigrator migrator,
-    IEntityCollectionNameProvider collectionNameProvider
+    IMongoDbRegistrationService mongoDbRegistrationService
 );

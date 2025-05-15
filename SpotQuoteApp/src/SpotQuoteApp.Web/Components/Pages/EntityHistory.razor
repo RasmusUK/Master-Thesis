@@ -1,0 +1,65 @@
+@page "/entity-history"
+@using global::EventSourcingFramework.Core
+@using EventSourcingFramework.Core.Models.Events
+@using EventSourcingFramework.Application.Abstractions
+@using EventSourcingFramework.Application.Abstractions.EntityHistory
+@using EventSourcingFramework.Core.Models.Entity
+@inject IEntityHistoryService EntityHistoryService
+
+<MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Entity History</MudText>
+
+<MudStack>
+    <MudGrid Class="d-flex align-center mb-4">
+        <MudItem xs="10">
+            <MudTextField T="Guid?" Label="Entity id" Variant="Variant.Filled" @bind-Value="entityId" Clearable="true" />
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.Search" Color="Color.Primary" OnClick="Search" Variant="Variant.Outlined">
+                Load
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+
+    @if (history is not null)
+    {
+        <MudGrid>
+            @foreach (var (entity, e) in history)
+            {
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2">Entity State</MudText>
+                    <MudTextField T="string" Label="Entity" Variant="Variant.Outlined" Value="@GetSerializedEntity(entity)" Lines="30" ReadOnly="true" />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2" Class="mb-2">
+                        @e.Typename @e.Timestamp.ToString("dd/mm/yy hh:mm")
+                    </MudText>
+                    <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="@e.ToString()" Lines="30" ReadOnly="true" />
+                </MudItem>
+              
+            }
+        </MudGrid>
+    }
+</MudStack>
+
+@code {
+    private Guid? entityId;
+    private IReadOnlyCollection<(IEntity entity, IEvent e)>? history;
+
+    private async Task Search()
+    {
+        if (entityId.HasValue && entityId != Guid.Empty)
+        {
+            history = await EntityHistoryService.GetEntityHistoryWithEventsAsync<IEntity>(entityId.Value);
+        }
+    }
+
+    private string GetSerializedEntity(object entity)
+    {
+        return System.Text.Json.JsonSerializer.Serialize(entity, new System.Text.Json.JsonSerializerOptions
+        {
+            WriteIndented = true,
+            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+        });
+    }
+
+}

@@ -18,7 +18,7 @@ public static class ApplicationExtensions
             .AddSingleton<IPersonalDataService, PersonalDataService>()
             .AddSingleton<IEntityHistoryService, EntityHistoryService>()
             .AddSingleton<IReplayService, ReplayService>()
-            .AddSingleton<IGlobalReplayContext, GlobalReplayContext>();
+            .AddSingleton<IReplayContext, ReplayContext>();
 
         return services;
     }

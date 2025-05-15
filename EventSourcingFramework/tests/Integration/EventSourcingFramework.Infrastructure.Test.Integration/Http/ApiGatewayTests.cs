@@ -21,9 +21,9 @@ public class ApiGatewayTests : MongoIntegrationTestBase
 {
     private readonly IApiGateway apiGateway;
     private readonly IMongoCollection<MongoApiResponse> collection;
-    private readonly IGlobalReplayContext replayContext;
+    private readonly IReplayContext replayContext;
 
-    public ApiGatewayTests(IMongoDbService mongoDbService, IGlobalReplayContext replayContext,
+    public ApiGatewayTests(IMongoDbService mongoDbService, IReplayContext replayContext,
         IApiResponseStore responseStore)
         : base(mongoDbService, replayContext)
     {

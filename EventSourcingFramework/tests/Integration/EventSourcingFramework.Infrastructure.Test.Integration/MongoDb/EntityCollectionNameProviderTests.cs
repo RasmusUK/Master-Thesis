@@ -13,7 +13,7 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 
     public EntityCollectionNameProviderTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext
+        IReplayContext replayContext
     )
         : base(mongoDbService, replayContext)
     {

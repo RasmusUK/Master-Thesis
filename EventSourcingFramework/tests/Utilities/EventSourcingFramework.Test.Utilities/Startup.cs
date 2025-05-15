@@ -15,7 +15,7 @@ public class Startup
             .AddJsonFile("appsettings.json", false, true)
             .Build();
 
-        services.AddEventSourcing(configuration, (schema, migrations, migrator, collections) =>
+        services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
         {
             schema.Register(typeof(TestEntity), 3);
 
@@ -36,8 +36,7 @@ public class Startup
                 Name = $"{v2.FirstName} - {v2.SurName}"
             });
 
-            MongoDbEventRegistration.RegisterEvents(
-                collections,
+            mongoDbRegistrationService.Register(
                 (typeof(TestEntity), "TestEntity"),
                 (typeof(PersonEntity), "PersonEntity")
             );

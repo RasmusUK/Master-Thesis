@@ -23,7 +23,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
 
     public SnapshotServiceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         ISnapshotService snapshotService,
         IEntityCollectionNameProvider collectionNameProvider,
         IRepository<TestEntity> repository,
@@ -306,7 +306,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
             MongoDbService,
             sequenceGenerator,
             collectionNameProvider,
-            new GlobalReplayContext(),
+            new ReplayContext(),
             wrappedOptions
         );
     }

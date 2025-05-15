@@ -24,7 +24,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
 
     public EntityStoreTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         IEntityStore store,
         IEntityCollectionNameProvider nameProvider, IEntityMigrator entityMigrator,
         ISchemaVersionRegistry schemaVersionRegistry, IMigrationTypeRegistry migrationTypeRegistry)

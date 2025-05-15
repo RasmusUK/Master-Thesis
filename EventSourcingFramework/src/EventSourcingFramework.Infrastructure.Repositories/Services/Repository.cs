@@ -15,17 +15,17 @@ public class Repository<T> : IRepository<T>
 {
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
-    private readonly IGlobalReplayContext globalReplayContext;
+    private readonly IReplayContext replayContext;
 
     public Repository(
         IEntityStore entityStore,
         IEventStore eventStore,
-        IGlobalReplayContext globalReplayContext
+        IReplayContext replayContext
     )
     {
         this.entityStore = entityStore;
         this.eventStore = eventStore;
-        this.globalReplayContext = globalReplayContext;
+        this.replayContext = replayContext;
     }
 
     public async Task CreateAsync(T entity)
@@ -203,8 +203,8 @@ public class Repository<T> : IRepository<T>
 
     private async Task<bool> HandleEventAsync(IEvent e)
     {
-        if (globalReplayContext.IsReplaying)
-            switch (globalReplayContext.ReplayMode)
+        if (replayContext.IsReplaying)
+            switch (replayContext.ReplayMode)
             {
                 case ReplayMode.Strict:
                     throw new RepositoryException(
@@ -214,7 +214,7 @@ public class Repository<T> : IRepository<T>
                 case ReplayMode.Debug:
                 case ReplayMode.Replay:
                 default:
-                    globalReplayContext.AddEvent(e);
+                    replayContext.AddEvent(e);
                     return true;
             }
 

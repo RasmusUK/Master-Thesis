@@ -1,19 +1,19 @@
 ﻿using System.Text;
-using System.Text.Json;
 using EventSourcingFramework.Application.Abstractions.ApiGateway;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
+using Newtonsoft.Json;
 
 namespace EventSourcingFramework.Infrastructure.Http.Services;
 
 public class ApiGateway : IApiGateway
 {
     private readonly HttpClient httpClient;
-    private readonly IGlobalReplayContext replayContext;
+    private readonly IReplayContext replayContext;
     private readonly IApiResponseStore responseStore;
 
-    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IGlobalReplayContext replayContext)
+    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext)
     {
         this.httpClient = httpClient;
         this.responseStore = responseStore;
@@ -29,7 +29,7 @@ public class ApiGateway : IApiGateway
     public async Task<TResponse> PostAsync<TRequest, TResponse>(string url, TRequest body,
         Dictionary<string, string>? headers = null)
     {
-        var key = $"POST:{url}:{JsonSerializer.Serialize(body)}";
+        var key = $"POST:{url}:{JsonConvert.SerializeObject(body)}";
         return await HandleRequest<TResponse>(() => BuildRequest(HttpMethod.Post, url, body, headers), key);
     }
 
@@ -64,7 +64,7 @@ public class ApiGateway : IApiGateway
                     response.EnsureSuccessStatusCode();
 
                     var json = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<T>(json);
+                    var result = JsonConvert.DeserializeObject<T>(json);
 
                     await responseStore.SaveAsync(key, result!);
                     return result!;
@@ -81,7 +81,7 @@ public class ApiGateway : IApiGateway
                     response.EnsureSuccessStatusCode();
 
                     var json = await response.Content.ReadAsStringAsync();
-                    var result = JsonSerializer.Deserialize<T>(json);
+                    var result = JsonConvert.DeserializeObject<T>(json);
 
                     await responseStore.SaveAsync(key, result!);
                     return result!;
@@ -96,7 +96,7 @@ public class ApiGateway : IApiGateway
         liveResponse.EnsureSuccessStatusCode();
 
         var liveJson = await liveResponse.Content.ReadAsStringAsync();
-        var liveResult = JsonSerializer.Deserialize<T>(liveJson);
+        var liveResult = JsonConvert.DeserializeObject<T>(liveJson);
 
         await responseStore.SaveAsync(key, liveResult!);
         return liveResult!;
@@ -113,7 +113,7 @@ public class ApiGateway : IApiGateway
 
         if (body == null) return Task.FromResult(request);
 
-        var json = JsonSerializer.Serialize(body);
+        var json = JsonConvert.SerializeObject(body);
         request.Content = new StringContent(json, Encoding.UTF8, "application/json");
 
         return Task.FromResult(request);

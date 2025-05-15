@@ -1,0 +1,788 @@
+@page "/spot-quotes/create"
+@page "/spot-quotes/edit/{Id:guid}"
+@using Direction = SpotQuoteApp.Core.ValueObjects.Enums.Direction
+@using System.Collections.ObjectModel
+@using SpotQuoteApp.Application.DTOs
+@using SpotQuoteApp.Application.Interfaces
+@using SpotQuoteApp.Application.Mappers
+@using SpotQuoteApp.Core.ValueObjects
+@using SpotQuoteApp.Core.ValueObjects.Enums
+@inject ICustomerService CustomerService
+@inject ICountryService CountryService
+@inject IAddressService AddressService
+@inject ISpotQuoteService SpotQuoteService
+@inject NavigationManager Navigation
+@inject IBuyingRateService BuyingRateService
+
+<MudStack Row="true">
+    <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
+    @if (!IsNew)
+    {
+        <MudSpacer/>
+        <MudText>
+            Id: @Id
+        </MudText>
+    }
+</MudStack>
+<MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
+<ChildContent>
+<MudStep Title="General info">
+    <MudForm @ref=form1>
+        <MudStack>
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6">Basic info</MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem xs="3">
+                            <MudSelect @bind-Value="model.TransportMode"
+                                       Label="Transport mode"
+                                       Clearable="true"
+                                       Dense="true"
+                                       Required="true">
+                                @foreach (var mode in TransportMode.GetAll())
+                                {
+                                    <MudSelectItem Value="@mode">@mode</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudSelect @bind-Value="model.Incoterm"
+                                       Label="Incoterm"
+                                       Clearable="true"
+                                       Dense="true">
+                                @foreach (var incoterm in Incoterm.GetAll())
+                                {
+                                    <MudSelectItem Value="@incoterm">@incoterm</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudAutocomplete @bind-Value="model.Customer"
+                                             Label="Customer"
+                                             Clearable="true"
+                                             MaxItems="100"
+                                             Required="true"
+                                             SearchFunc="@SearchCustomers" 
+                                             ToStringFunc="@(c => c?.Name ?? "")"/>
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudStack>
+                                <MudToggleGroup T="Direction" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@model.Direction">
+                                    <MudToggleItem Value="@Direction.Import" Text="Import"/>
+                                    <MudToggleItem Value="@Direction.Export" Text="Export"/>
+                                </MudToggleGroup>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+            <AddressCard Title="From"
+                         @bind-Address="@model.AddressFrom"
+                         @bind-TransportMode="@model.TransportMode"
+                         Countries="countries"
+                         Addresses="addresses"/>
+            <AddressCard Title="To"
+                         @bind-Address="@model.AddressTo"
+                         @bind-TransportMode="@model.TransportMode"
+                         Countries="countries"
+                         Addresses="addresses"/>
+        </MudStack>
+    </MudForm>    
+</MudStep>
+    
+<MudStep Title="Shipping details" SecondaryText="@($"{collis.Sum(x => x.NumberOfUnits)} unit(s) / {model.TotalWeight} kg / {model.TotalCbm} m3")">
+    <MudStack>
+        <MudDataGrid T="ColliDto" Items="collis" ReadOnly="false" Bordered="true" Dense="true" 
+                     EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" 
+                     CanceledEditingItem="@ShippingDetailsEdit" CommittedItemChanges="@ShippingDetailsEdit">
+            <Columns>
+                <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
+                <PropertyColumn Property="x => x.Type" Title="Colli type">
+                    <EditTemplate>
+                        <MudSelect T="ColliType" @bind-Value="@context.Item.Type">
+                            @foreach (var item in ColliType.GetByTransportMode(model.TransportMode))
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </EditTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Length" Title="Length (cm)"/>
+                <PropertyColumn Property="x => x.Width" Title="Width (cm)"/>
+                <PropertyColumn Property="x => x.Height" Title="Height (cm)"/>
+                <PropertyColumn Editable="false" Property="x => x.Cbm" Title="CBM" AggregateDefinition="@sumCbmAggregrateDefinition" Format="N4"/>
+                <PropertyColumn Property="x => x.Weight" Title="Weight (kg)" AggregateDefinition="@sumWeightAggregrateDefinition"/>
+                <TemplateColumn StickyRight="true">
+                    <HeaderTemplate>
+                        <MudIconButton OnClick="@AddColli" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
+                    </HeaderTemplate>
+                    <EditTemplate>
+                        <MudIconButton OnClick="@(() => RemoveColli(context.Item))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                    </EditTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+        <MudCard>
+            <MudCardContent>
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudTextField T="string" Label="Description" Variant="Variant.Outlined" @bind-Value="@model.ShippingDetails.Description" AutoGrow Lines="5"/>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudTextField T="string" Label="References" Variant="Variant.Outlined" @bind-Value="@model.ShippingDetails.References" AutoGrow Lines="5"/>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudDatePicker Label="Ready to load" Editable="true" DateFormat="dd/MM/yyyy HH:mm" Clearable="true" Placeholder="dd/mm/yy hh:mm" @bind-Date="@model.ShippingDetails.ReadyToLoadDate"/>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudSelect T="BookingProperty" Label="Possible reference options" MultiSelection="true" SelectedValues="@selectedBookingProperties" SelectedValuesChanged="@OnBookingPropertiesChanged">
+                            @foreach (var item in BookingProperty.GetAll())
+                            {
+                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudStack>
+        
+</MudStep>
+<MudStep Title="Buying rates">
+    <MudStack>
+        
+        <MudGrid>
+            <MudItem xs="3">
+                <MudSelect Value="SearchBuyingRatesSupplier"
+                           Label="Supplier"
+                           Clearable="true"
+                           Dense="true"
+                           ValueChanged="@((Supplier newValue) => OnSearchBuyringRatesSupplierChanged(newValue))">
+                    @foreach (var supplier in ForwarderService.GetSuppliersByTransportMode(model.TransportMode))
+                    {
+                        <MudSelectItem Value="@supplier">@supplier</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="3">
+                <MudSelect Value="SearchBuyingRatesForwarderService"
+                           Label="Forwarder service"
+                           Clearable="true"
+                           Dense="true"
+                           Disabled="SearchBuyingRatesSupplier == null"
+                           ValueChanged="@((ForwarderService newValue) => OnSearchBuyringRatesForwarderServiceChanged(newValue))">
+                    @foreach (var forwarderService in ForwarderService.GetBySupplier(SearchBuyingRatesSupplier))
+                    {
+                        <MudSelectItem Value="@forwarderService">@forwarderService</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="3">
+                <MudSelect @bind-Value="SearchBuyingRatesSupplierService"
+                           Label="Supplier service"
+                           Clearable="true"
+                           Dense="true"
+                           Disabled="SearchBuyingRatesForwarderService == null">
+                    @foreach (var supplierService in SupplierService.GetByForwarderService(SearchBuyingRatesForwarderService))
+                    {
+                        <MudSelectItem Value="@supplierService">@supplierService</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="1">
+                <MudButton OnClick="@(SearchBuyingRates)" Variant="Variant.Filled" 
+                           Disabled="SearchBuyingRatesSupplierService == null">
+                    Search
+                </MudButton>
+            </MudItem>
+            <MudItem xs="2">
+                <MudButton Variant="Variant.Filled" Color="Color.Success" 
+                           Disabled="selectedBuyingRates.Count() == 0"
+                           OnClick="@(AddBuyingRatesToQuote)">
+                    Add to quote
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+        <MudDataGrid T="BuyingRateDto" MultiSelection="true" Items="buyingRates" SelectedItemsChanged="SelectedItemsChanged">
+            <Columns>
+                <SelectColumn T="BuyingRateDto"/>
+                <PropertyColumn Property="x => x.Origin.Country.Code" Title="From country"/>
+                <PropertyColumn Property="x => x.Origin.Type" Title="From type"/>
+                <PropertyColumn Property="x => x.Origin.Code" Title="From code"/>
+                <PropertyColumn Property="x => x.Destination.Country.Code" Title="To country"/>
+                <PropertyColumn Property="x => x.Destination.Type" Title="To type"/>
+                <PropertyColumn Property="x => x.Destination.Code" Title="To code"/>
+                <PropertyColumn Property="x => x.TransportMode" Title="Transport mode"/>
+                <PropertyColumn Property="x => x.ValidFrom" Title="Valid from" Format="dd/MM/yyyy HH:mm"/>
+                <PropertyColumn Property="x => x.ValidUntil" Title="Valid to" Format="dd/MM/yyyy HH:mm"/>
+                <PropertyColumn Property="x => x.SupplierCost.ChargeType" Title="Charge type"/>
+                <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost type"/>
+                <PropertyColumn Property="x => x.SupplierCost.Value" Title="Value"/>
+            </Columns>
+        </MudDataGrid>
+    </MudStack>
+</MudStep>
+<MudStep Title="Quote">
+    <MudStack>
+        <MudStack Justify="Justify.FlexEnd" Row="true">
+            <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@AddQuote" Variant="Variant.Filled">
+                Add
+            </MudButton>
+        </MudStack>
+        @foreach (var quote in model.Quotes)
+        {
+            <MudCard>
+                <MudCardHeader>
+                    <MudGrid>
+                        <MudItem xs="3">
+                            <MudText Typo="Typo.h6">@(quote.SupplierService?.ToString() ?? quote.ForwarderService?.ToString() ?? quote.Supplier?.ToString() ?? "Quote")</MudText>
+                        </MudItem>
+                        <MudItem xs="3"/>
+                        <MudItem xs="2">
+                            <MudNumericField Value="quote.TotalPrice" Readonly="true" Label="Total price" Step=".1" Format="N2" HideSpinButtons="true"/>
+                        </MudItem>
+                        <MudItem xs="2">
+                            <MudNumericField Value="quote.TotalProfit" Readonly="true" Label="Total estimated profit" Step=".1" Format="N2" HideSpinButtons="true"/>
+                        </MudItem>
+                        <MudItem xs="1"/>
+                        <MudItem xs="1">
+                            <MudIconButton OnClick="@(() => RemoveQuote(quote))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                        </MudItem>
+                    </MudGrid>
+                </MudCardHeader>
+                <MudDivider/>
+                <MudCardContent>
+                    <MudStack>
+                        <MudGrid>
+                            <MudItem xs="4">
+                                <MudSelect Value="quote.Supplier"
+                                           Label="Supplier"
+                                           Clearable="true"
+                                           Dense="true"
+                                           ValueChanged="@((Supplier newValue) => OnSupplierChanged(newValue, quote))">
+                                    @foreach (var supplier in ForwarderService.GetSuppliersByTransportMode(model.TransportMode))
+                                    {
+                                        <MudSelectItem Value="@supplier">@supplier</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudSelect Value="quote.ForwarderService"
+                                           Label="Forwarder service"
+                                           Clearable="true"
+                                           Dense="true"
+                                           Disabled="quote.Supplier == null"
+                                           ValueChanged="@((ForwarderService newValue) => OnForwarderServiceChanged(newValue, quote))">
+                                    @foreach (var forwarderService in ForwarderService.GetBySupplier(quote.Supplier))
+                                    {
+                                        <MudSelectItem Value="@forwarderService">@forwarderService</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="4">
+                                <MudSelect @bind-Value="quote.SupplierService"
+                                           Label="Supplier service"
+                                           Clearable="true"
+                                           Dense="true"
+                                           Disabled="quote.ForwarderService == null">
+                                    @foreach (var supplierService in SupplierService.GetByForwarderService(quote.ForwarderService))
+                                    {
+                                        <MudSelectItem Value="@supplierService">@supplierService</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="3">
+                                <MudNumericField @bind-Value="quote.Profit.Value" Label="Total profit" Step=".1" Format="N2"/>
+                            </MudItem>
+                            <MudItem xs="1">
+                                <MudStack>
+                                    <MudToggleGroup T="bool" SelectionMode="SelectionMode.SingleSelection" @bind-Value="@quote.Profit.IsPercentage">
+                                        <MudToggleItem Value="true" Text="%"/>
+                                        <MudToggleItem Value="false" Text="#"/>
+                                    </MudToggleGroup>
+                                </MudStack>
+                            </MudItem>
+                            <MudItem xs="2">
+                                <MudCheckBox @bind-Value="quote.IsAllIn" Color="Color.Primary">All-in</MudCheckBox>
+                            </MudItem>
+                        </MudGrid>
+                        <MudDivider/>
+                        <MudDataGrid T="CostDto" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell"
+                                     Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="CostEdit"
+                                     CanceledEditingItem="CostEdit" CommittedItemChanges="CostEdit">
+                            <ColGroup>
+                                @for (var i = 0; i < 4; i++)
+                                {
+                                    <col style="background: var(--mud-palette-tertiary); color: black; font-weight: bold"/>
+                                }
+                                @for (var i = 0; i < 8; i++)
+                                {
+                                    <col style="background: var(--mud-palette-secondary); color: black"/>
+                                }
+                            </ColGroup>
+                            <Columns>
+                                <PropertyColumn Property="x => x.SupplierCost.ChargeType" Title="Charge">
+                                    <EditTemplate>
+                                        <MudSelect T="ChargeType" @bind-Value="@context.Item.SupplierCost.ChargeType">
+                                            @foreach (var item in ChargeType.GetByTransportMode(model.TransportMode))
+                                            {
+                                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </EditTemplate>
+                                </PropertyColumn>
+                                <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost">
+                                    <EditTemplate>
+                                        <MudSelect T="CostType" Value="@context.Item.SupplierCost.CostType" ValueChanged="@(newValue => OnSupplierCostTypeChanged(newValue, context))">
+                                            @foreach (var item in CostType.GetAll())
+                                            {
+                                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </EditTemplate>
+                                </PropertyColumn>
+                                <PropertyColumn Property="x => x.SupplierCost.Value" Title="Value"/>
+                                <PropertyColumn Property="x => x.SupplierCost.Total" Title="Total" Editable="false" Format="N2"/>
+                                <PropertyColumn Property="x => x.SellingCost.ChargeType" Title="Charge">
+                                    <EditTemplate>
+                                        <MudSelect T="ChargeType" @bind-Value="@context.Item.SellingCost.ChargeType">
+                                            @foreach (var item in ChargeType.GetByTransportMode(model.TransportMode))
+                                            {
+                                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </EditTemplate>
+                                </PropertyColumn>
+                                <PropertyColumn Property="x => x.SellingCost.CostType" Title="Cost">
+                                    <EditTemplate>
+                                        <MudSelect T="CostType" Value="@context.Item.SellingCost.CostType" ValueChanged="@(newValue => OnSellingCostTypeChanged(newValue, context))">
+                                            @foreach (var item in CostType.GetAll())
+                                            {
+                                                <MudSelectItem Value="@item">@item</MudSelectItem>
+                                            }
+                                        </MudSelect>
+                                    </EditTemplate>
+                                </PropertyColumn>
+                                <PropertyColumn Property="x => x.SellingCost.MinimumValue" Title="Min"/>
+                                <PropertyColumn Property="x => x.SellingCost.Value" Title="Value"/>
+                                <PropertyColumn Property="x => x.SellingCost.MaximumValue" Title="Max"/>
+                                <PropertyColumn Property="x => x.SellingCost.Profit" Title="Profit"/>
+                                <PropertyColumn Property="x => x.SellingCost.Total" Title="Total" Editable="false" Format="N2"/>
+                                <PropertyColumn Property="x => x.SellingCost.Comment" Title="Comment"/>
+                                <TemplateColumn StickyRight="true">
+                                    <HeaderTemplate>
+                                        <MudIconButton OnClick="@(() => AddCost(quote))" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
+                                    </HeaderTemplate>
+                                    <EditTemplate>
+                                        <MudIconButton OnClick="@(() => RemoveCost(context.Item, quote))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                                    </EditTemplate>
+                                </TemplateColumn>
+                            </Columns>
+                        </MudDataGrid>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween">
+                            <MudStack Row="true">
+                                <MudAvatar Size="Size.Small" Color="Color.Tertiary"></MudAvatar>
+                                <MudText>Supplier</MudText>
+                            </MudStack>
+                            <MudStack Row="true">
+                                <MudText>Selling</MudText>
+                                <MudAvatar Size="Size.Small" Color="Color.Secondary"></MudAvatar>
+                            </MudStack>
+                        </MudStack>
+                        <MudStack Row="true">
+                            <MudTextField T="string" Label="Comments external" Variant="Variant.Outlined" @bind-Value="@quote.CommentsExternal" AutoGrow Lines="3"/>
+                            <MudTextField T="string" Label="Comments internal" Variant="Variant.Outlined" @bind-Value="@quote.CommentsInternal" AutoGrow Lines="3"/>
+                        </MudStack>
+                    </MudStack>
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudStack>
+</MudStep>
+<MudStep Title="Validity & recipients">
+    <MudGrid>
+        <MudItem xs="6">
+            <MudSelect Label="Mail recipients" MultiSelection="true" SelectedValues="@model.MailOptions.UserRecipients">
+                @foreach (var item in model.Customer.Users)
+                {
+                    <MudSelectItem Value="@item">@item</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="6">
+            <MudDatePicker Label="Quote validity" Editable="true" DateFormat="dd/MM/yyyy HH:mm" Clearable="true" Placeholder="dd/mm/yy hh:mm" @bind-Date="@model.ValidUntil"/>
+        </MudItem>
+        <MudItem xs="3">
+            <MudStack>
+                <MudCheckBox @bind-Value="model.MailOptions.SendCopyToMe" Color="Color.Primary">Send copy to me</MudCheckBox>
+                <MudCheckBox @bind-Value="model.MailOptions.ShowCostSpec" Color="Color.Primary">Show cost specification in mail</MudCheckBox>
+            </MudStack>
+        </MudItem>
+        <MudItem xs="9"/>
+        <MudItem xs="6">
+            <MudTextField T="string" Label="Comments for spot quote mail" Variant="Variant.Outlined" @bind-Value="model.MailOptions.Comments" AutoGrow Lines="3"/>
+        </MudItem>
+        <MudItem xs="6">
+            <MudTextField T="string" Label="Comments for spot quote internal" Variant="Variant.Outlined" @bind-Value="model.InternalComments" AutoGrow Lines="3"/>
+        </MudItem>
+        <MudItem xs="10"/>
+    </MudGrid>
+</MudStep>
+</ChildContent>
+<ActionContent Context="stepper">
+    <MudGrid>
+        <MudItem xs="1">
+            <MudButton OnClick="@(() => stepper.ResetAsync())">Reset</MudButton>
+        </MudItem>
+        <MudItem xs="3"/>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" StartIcon="@Icons.Material.Filled.ArrowBack" Color="Color.Primary" OnClick="@(() => stepper.PreviousStepAsync())" Variant="Variant.Outlined" Disabled="@(index <= 0)">
+                Previous
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2">
+            <MudButton FullWidth="true" EndIcon="@Icons.Material.Filled.ArrowForward" Color="Color.Primary" OnClick="@(() => stepper.NextStepAsync())" Variant="Variant.Filled">
+                @if (index == 4)
+                {
+                    <span>Save</span>
+                }
+                else
+                {
+                    <span>Next</span>
+                }
+            </MudButton>
+        </MudItem>
+        <MudItem xs="2"/>
+        <MudItem xs="2">
+            @if (index == 4)
+            {
+                <MudButton FullWidth="true" OnClick="@(() => Save(BookingStatus.Draft))" Variant="Variant.Filled" Color="Color.Secondary">Save as draft</MudButton>
+            }
+        </MudItem>
+    </MudGrid>
+</ActionContent>
+</MudStepper>
+
+@if (showErrorAlert)
+{
+    <MudAlert Severity="Severity.Error" ContentAlignment="HorizontalAlignment.Center" ShowCloseIcon="true" CloseIconClicked="@(() => ShowErrorAlert(false))">@errorMessage</MudAlert>
+}
+
+@code {
+    [Inject] 
+    IDialogService DialogService { get; set; }
+    [Parameter] public Guid? Id { get; set; }
+    ObservableCollection<ColliDto> collis = new();
+
+    private SpotQuoteDto model = new()
+    {
+        AddressFrom = new AddressDto(),
+        AddressTo = new AddressDto(),
+        ShippingDetails = new ShippingDetailsDto()
+    };
+    private IEnumerable<CustomerDto> customers = new List<CustomerDto>();
+    private IEnumerable<CountryDto> countries = new List<CountryDto>();
+    private IEnumerable<AddressDto> addresses = new List<AddressDto>();
+    private IEnumerable<BookingProperty> selectedBookingProperties = new List<BookingProperty>();
+    private IEnumerable<BuyingRateDto> buyingRates = new List<BuyingRateDto>();
+    private IEnumerable<BuyingRateDto> selectedBuyingRates = new List<BuyingRateDto>();
+    private bool IsNew => Id == null;
+    private MudForm form1;
+    private int index;
+    private bool showErrorAlert;
+    private string errorMessage = string.Empty;
+
+    private SupplierService? SearchBuyingRatesSupplierService;
+    private Supplier? SearchBuyingRatesSupplier;
+    private ForwarderService? SearchBuyingRatesForwarderService;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        customers = await CustomerService.GetAllCustomersAsync();
+        countries = await CountryService.GetAllCountriesAsync();
+        addresses = await AddressService.GetAllAddressesAsync();
+        if (!IsNew)
+        {
+            var existing = await SpotQuoteService.GetSpotQuoteByIdAsync(Id!.Value);
+            if (existing is not null)
+            {
+                model = existing;
+                collis = new ObservableCollection<ColliDto>(model.ShippingDetails.Collis);
+            }
+        }
+
+        model.Direction ??= Direction.Import;
+        selectedBookingProperties = model.ShippingDetails.BookingProperties.ToList();
+    }
+    
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            customers : 
+            customers.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
+
+    private void AddColli() => collis.Add(new ColliDto{ NumberOfUnits = 1 });
+    
+    private void RemoveColli(ColliDto colli) => collis.Remove(colli);
+
+    private void AddCost(QuoteDto quote) => quote.Costs.Add(new CostDto
+    {
+        SellingCost = new SellingCostDto
+        {
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        },
+        SupplierCost = new SupplierCostDto
+        {
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        }
+    });
+    
+    private void RemoveCost(CostDto cost, QuoteDto quote) => quote.Costs.Remove(cost);
+    
+    private AggregateDefinition<ColliDto> nrOfCollisAggregateDefinition = new()
+    {
+        Type = AggregateType.Sum,
+        DisplayFormat = "Totals: {value}"
+    };
+    
+    private AggregateDefinition<ColliDto> sumCbmAggregrateDefinition = new()
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var totalCbm = x.Sum(c => c.Cbm * c.NumberOfUnits);
+            return $"{totalCbm}";
+        }
+    };
+    
+    private AggregateDefinition<ColliDto> sumWeightAggregrateDefinition = new()
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var totalWeight = x.Sum(c => c.Weight * c.NumberOfUnits);
+            return $"{totalWeight}";
+        }
+    };
+    
+    private void OnBookingPropertiesChanged(IEnumerable<BookingProperty> newValues)
+    {
+        selectedBookingProperties = newValues.ToList();
+        model.ShippingDetails!.BookingProperties = selectedBookingProperties.ToList();
+    }
+
+    private void ShippingDetailsEdit(ColliDto colli)
+    {
+        colli.Cbm = colli.Length * colli.Width * colli.Height / 1000000;
+        model.TotalWeight = collis.Sum(x => x.Weight * x.NumberOfUnits);
+        model.TotalCbm = collis.Sum(x => x.Cbm * x.NumberOfUnits);
+        model.ShippingDetails.Collis = collis.ToList();
+        foreach (var cost in model.Quotes.SelectMany(q => q.Costs))
+        {
+            cost.SupplierCost.Weight = model.TotalWeight;
+            cost.SupplierCost.Cbm = model.TotalCbm;
+            cost.SellingCost.Weight = model.TotalWeight;
+            cost.SellingCost.Cbm = model.TotalCbm;
+            UpdateCost(cost);
+        }
+        StateHasChanged();
+    }
+
+    private void CostEdit(CostDto cost)
+    {
+        UpdateCost(cost);
+        StateHasChanged();
+    }
+
+    private void UpdateCost(CostDto cost)
+    {
+        cost.SupplierCost.Total = SupplierCost.CalculateTotal(cost.SupplierCost.Value, cost.SupplierCost.Weight, cost.SupplierCost.Cbm, cost.SupplierCost.CostType);
+        cost.SellingCost.Total = SellingCost.CalculateTotal(cost.SellingCost.Value, cost.SellingCost.Weight, cost.SellingCost.Cbm, cost.SellingCost.MinimumValue, cost.SellingCost.MaximumValue, cost.SellingCost.Profit, cost.SellingCost.CostType);
+        RecalcQuotes();
+    }
+
+    private void RecalcQuotes()
+    {
+        foreach (var quote in model.Quotes)
+        {
+            var (totalPrice, totalProfit) = Quote.CalculateTotal(quote.Costs.Select(c => c.ToDomain()).ToList(), quote.Profit.ToDomain());
+            quote.TotalPrice = totalPrice;
+            quote.TotalProfit = totalProfit;
+        }
+        StateHasChanged();  
+    }
+    
+    private void OnSearchBuyringRatesSupplierChanged(Supplier newSupplier)
+    {
+        SearchBuyingRatesSupplier = newSupplier;
+        SearchBuyingRatesForwarderService = null;
+        SearchBuyingRatesSupplierService = null;
+    }
+    
+    private void OnSearchBuyringRatesForwarderServiceChanged(ForwarderService newService)
+    {
+        SearchBuyingRatesForwarderService = newService;
+        SearchBuyingRatesSupplierService = null;
+    }
+    
+    private void OnSupplierChanged(Supplier newSupplier, QuoteDto quote)
+    {
+        quote.Supplier = newSupplier;
+        quote.ForwarderService = null;
+        quote.SupplierService = null;
+    }
+
+    private void OnForwarderServiceChanged(ForwarderService newService, QuoteDto quote)
+    {
+        quote.ForwarderService = newService;
+        quote.SupplierService = null;
+    }
+
+    private void RemoveQuote(QuoteDto quote)
+    {
+        model.Quotes.Remove(quote);
+    }
+
+    private void AddQuote()
+    {
+        model.Quotes.Add(new QuoteDto
+        {
+            Profit = new ProfitDto()
+        });
+    }
+    
+    private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
+    {
+        if (arg.Action == StepAction.Complete) 
+            await ControlStepCompletion(arg);
+    }
+    
+    private async Task ControlStepCompletion(StepperInteractionEventArgs arg)
+    {
+        switch (arg.StepIndex) {
+            case 0:
+                await form1.Validate();
+                if (!form1.IsValid) 
+                {
+                    await DialogService.ShowMessageBox("Error", "You have not filled in all required fields in step 1");
+                    arg.Cancel = true;
+                }
+                break;
+            case 4:
+                await Save(BookingStatus.SpotQuote);
+                break;
+        }
+    }
+    
+    private async Task Save(BookingStatus status)
+    {
+        try
+        {
+            if (IsNew)
+            {
+                foreach (var quote in model.Quotes)
+                {
+                    quote.Status = status;
+                }
+                await SpotQuoteService.CreateSpotQuoteAsync(model);
+
+            }
+            else
+            {
+                foreach (var quote in model.Quotes)
+                {
+                    if (quote.Status != BookingStatus.Draft)
+                        quote.Status = BookingStatus.Requote;
+                }
+                
+                await SpotQuoteService.UpdateSpotQuoteAsync(model);
+            }
+                
+            Navigation.NavigateTo("/spot-quotes", forceLoad: true);
+        }
+        catch (Exception e)
+        {
+            errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
+    }
+    
+    private void ShowErrorAlert(bool value)
+    {
+        showErrorAlert = value;
+        StateHasChanged();
+    }
+
+    private async Task SearchBuyingRates()
+    {
+        buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo, 
+            model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!, 
+            SearchBuyingRatesForwarderService!);
+    }
+
+    private async Task AddBuyingRatesToQuote()
+    {
+        var quotesWithServices = model.Quotes.Where(q => 
+            q.SupplierService == SearchBuyingRatesSupplierService && 
+            q.Supplier == SearchBuyingRatesSupplier).ToList();
+
+        if (!quotesWithServices.Any())
+        {
+            var quote = new QuoteDto
+            {
+                Profit = new ProfitDto(),
+                SupplierService = SearchBuyingRatesSupplierService!,
+                Supplier = SearchBuyingRatesSupplier!,
+                ForwarderService = SearchBuyingRatesForwarderService!,
+            };
+            
+            model.Quotes.Add(quote);
+            quotesWithServices.Add(quote);            
+        }
+        
+        foreach (var quote in quotesWithServices)
+        {
+            foreach (var selectedBuyingRate in selectedBuyingRates)
+            {
+                var cost = new CostDto
+                {
+                    SupplierCost = new SupplierCostDto
+                    {
+                        ChargeType = selectedBuyingRate.SupplierCost.ChargeType,
+                        CostType = selectedBuyingRate.SupplierCost.CostType,
+                        Cbm = model.TotalCbm,
+                        Weight = model.TotalWeight,
+                        Value = selectedBuyingRate.SupplierCost.Value,
+                    },
+                    SellingCost = new SellingCostDto
+                    {
+                        Cbm = model.TotalCbm,
+                        Weight = model.TotalWeight,
+                    }
+                };
+                quote.Costs.Add(cost);
+                CostEdit(cost);
+            }    
+        }
+    }
+
+    private void SelectedItemsChanged(HashSet<BuyingRateDto> items)
+    {
+        selectedBuyingRates = items;
+    }
+    
+    private void OnSupplierCostTypeChanged(CostType newValue, CellContext<CostDto> context)
+    {
+        context.Item.SupplierCost.CostType = newValue;
+        CostEdit(context.Item);
+    }
+    
+    private void OnSellingCostTypeChanged(CostType newValue, CellContext<CostDto> context)
+    {
+        context.Item.SellingCost.CostType = newValue;
+        CostEdit(context.Item);
+    }
+}

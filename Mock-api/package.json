@@ -1,0 +1,12 @@
+{
+  "name": "mock-buying-rate-api",
+  "version": "1.0.0",
+  "description": "Mock API for buying rates",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.4"
+  }
+}

@@ -46,14 +46,13 @@ public static class ServiceProvider
             .Build();
 
         var services = new ServiceCollection();
-        services.AddEventSourcing(configuration, (schema, migrations, migrator, collections) =>
+        services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
         {
             schema.Register(typeof(TestEntity), 1);
 
             migrations.Register<TestEntity>(1, typeof(TestEntity));
 
-            MongoDbEventRegistration.RegisterEvents(
-                collections,
+            mongoDbRegistrationService.Register(
                 (typeof(TestEntity), "TestEntity")
             );
         });

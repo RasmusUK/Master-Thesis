@@ -14,19 +14,21 @@ public static class DomainConfigurationExtensions
         var schemaRegistry = new SchemaVersionRegistry();
         var migrationRegistry = new MigrationTypeRegistry();
         var migrator = new EntityMigrator();
+        var mongoDbRegistrationService = new MongoDbRegistrationService();
+        
+        configureDomain(schemaRegistry, migrationRegistry, migrator, mongoDbRegistrationService);
+
         var collectionNameProvider = new EntityCollectionNameProvider(migrationRegistry);
-
-        configureDomain(schemaRegistry, migrationRegistry, migrator, collectionNameProvider);
-
+        var registered = mongoDbRegistrationService.GetRegistered();
+        foreach (var (type, collectionName) in registered)
+            collectionNameProvider.Register(type, collectionName);
+        
         services
             .AddSingleton<ISchemaVersionRegistry>(schemaRegistry)
             .AddSingleton<IMigrationTypeRegistry>(migrationRegistry)
             .AddSingleton<IEntityMigrator>(migrator)
-            .AddSingleton<IEntityCollectionNameProvider>(_ =>
-            {
-                MongoDbEventRegistration.RegisterEvents(collectionNameProvider);
-                return collectionNameProvider;
-            });
+            .AddSingleton<IEntityCollectionNameProvider>(collectionNameProvider)
+            .AddSingleton<IMongoDbRegistrationService>(mongoDbRegistrationService);
 
         return services;
     }

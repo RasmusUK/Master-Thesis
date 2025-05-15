@@ -15,7 +15,7 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
 
     public MongoDbServiceTests(
         IMongoDbService mongoDbService,
-        IGlobalReplayContext replayContext,
+        IReplayContext replayContext,
         IEntityCollectionNameProvider nameProvider
     )
         : base(mongoDbService, replayContext)

@@ -1,0 +1,100 @@
+@page "/spot-quotes"
+@using SpotQuoteApp.Application.DTOs
+@using SpotQuoteApp.Application.Interfaces
+@using SpotQuoteApp.Core.ValueObjects.Enums
+@inject ISpotQuoteService SpotQuoteService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>Spot Quotes</PageTitle>
+
+<MudStack Row="true" Justify="Justify.SpaceBetween" Class="pt-5 pb-5">
+    <MudText Typo="Typo.h5">Spot Quotes</MudText>
+    <MudButton StartIcon="@Icons.Material.Filled.Add" OnClick="@CreateNew" Variant="Variant.Filled" Color="Color.Primary">
+        Create
+    </MudButton>
+</MudStack>
+
+<MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" Loading="@loading" Dense="true" Striped="true"
+             SortMode="SortMode.Single">
+    <Columns>
+        <HierarchyColumn T="SpotQuoteDto" InitiallyExpandedFunc="@(_ => false)" EnableHeaderToggle="true" />
+        <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
+        <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </CellTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.TransportMode" Title="Mode" Filterable="false"/>
+        <PropertyColumn Property="x => x.AddressFrom.Country.Code" Title="Pickup"/>
+        <PropertyColumn Property="x => x.AddressTo.Country.Code" Title="Delivery"/>
+        <PropertyColumn Property="x => x.ValidUntil" Title="Validity" Filterable="false">
+            <CellTemplate>
+                @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </CellTemplate>
+        </PropertyColumn>
+    </Columns>
+    <ChildRowContent>
+        <MudDataGrid T="QuoteDto" Items="@context.Item.Quotes" Striped="true" Dense="true">
+            <Columns>
+                <PropertyColumn Property="x => x.TotalPrice" Title="Price" Format="N2"/>
+                <PropertyColumn Property="x => x.TotalProfit" Title="Profit" Format="N2"/>
+                <PropertyColumn Property="x => x.Supplier" Title="Supplier"/>
+                <PropertyColumn Property="x => x.ForwarderService" Title="Forwarder Service"/>
+                <PropertyColumn Property="x => x.SupplierService" Title="Supplier Service"/>
+                <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
+                <TemplateColumn>
+                    <CellTemplate Context="quoteContext">
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Success" OnClick="() => Accept(quoteContext.Item)">Accept</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Warning" OnClick="() => Requote(context.Item)">Requote</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Error" OnClick="() => Decline(quoteContext.Item)">Decline</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
+            </Columns>
+        </MudDataGrid>
+    </ChildRowContent>
+    <PagerContent>
+        <MudDataGridPager T="SpotQuoteDto"/>
+    </PagerContent>
+</MudDataGrid>
+
+@code {
+    private IEnumerable<SpotQuoteDto> spotQuotes = new List<SpotQuoteDto>();
+    private bool loading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        spotQuotes = (await SpotQuoteService.GetAllSpotQuotesAsync()).OrderByDescending(s => s.CreatedAt);
+        loading = false;
+    }
+    
+    private void CreateNew()
+    {
+        Navigation.NavigateTo("/spot-quotes/create");
+    }
+
+    private void Accept(QuoteDto quote)
+    {
+        if (quote.Status == BookingStatus.Draft)
+        {
+            Snackbar.Add("Cannot accept draft quote", Severity.Error);
+            return;
+        }
+        
+        quote.Status = BookingStatus.Accepted;
+        StateHasChanged();
+    }
+
+    private void Decline(QuoteDto quote)
+    {
+        quote.Status = BookingStatus.NotAccepted;
+        StateHasChanged();
+    }
+    
+    private void Requote(SpotQuoteDto spotQuote)
+    {
+        Navigation.NavigateTo($"/spot-quotes/edit/{spotQuote.Id}");
+    }
+}

@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
+        <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\EventSourcingFramework.Infrastructure.Repositories.csproj" />
+      <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
+    </ItemGroup>
+
+</Project>

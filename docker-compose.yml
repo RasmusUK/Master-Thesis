@@ -1,0 +1,33 @@
+services:
+  mongodb.web:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb.web
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data_web:/data/db
+
+  mockapi.web:
+    build:
+      context: ./Mock-api
+      dockerfile: Dockerfile
+    container_name:  mockapi.web
+    ports:
+      - "3000:3000"  
+
+  spotquoteapp.web:
+    build:
+      context: .
+      dockerfile: SpotQuoteApp/src/SpotQuoteApp.Web/Dockerfile
+    container_name: spotquoteapp.web
+    ports:
+      - "443:443"
+      - "8080:8080"      
+    depends_on:
+      - mongodb.web
+      - mockapi.web
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+volumes:
+  mongo_data_web:
