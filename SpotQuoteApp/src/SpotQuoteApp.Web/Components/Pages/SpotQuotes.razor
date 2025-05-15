@@ -1,6 +1,7 @@
 @page "/spot-quotes"
 @using SpotQuoteApp.Application.DTOs
 @using SpotQuoteApp.Application.Interfaces
+@using SpotQuoteApp.Core.ValueObjects.Enums
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
 
@@ -13,9 +14,8 @@
     </MudButton>
 </MudStack>
 
-<MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" RowClick="OnRowClick" Loading="@loading" 
-             SortMode="SortMode.Single" Filterable="true" FilterMode="@DataGridFilterMode.ColumnFilterRow" 
-             FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
+<MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" Loading="@loading" Dense="true" Striped="true"
+             SortMode="SortMode.Single">
     <Columns>
         <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
@@ -32,6 +32,15 @@
             </CellTemplate>
         </PropertyColumn>
         <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
+        <TemplateColumn>
+            <CellTemplate>
+                <MudStack Row>
+                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Success" OnClick="() => Accept(context.Item)">Accept</MudButton>
+                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Warning" OnClick="() => Requote(context.Item)">Requote</MudButton>
+                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Error" OnClick="() => Decline(context.Item)">Decline</MudButton>
+                </MudStack>
+            </CellTemplate>
+        </TemplateColumn>
     </Columns>
     <PagerContent>
         <MudDataGridPager T="SpotQuoteDto"/>
@@ -53,8 +62,20 @@
         Navigation.NavigateTo("/spot-quotes/create");
     }
 
-    private void OnRowClick(DataGridRowClickEventArgs<SpotQuoteDto> e)
+    private void Accept(SpotQuoteDto spotQuote)
     {
-        Navigation.NavigateTo($"/spot-quotes/edit/{e.Item.Id}");
+        spotQuote.Status = BookingStatus.Accepted;
+        StateHasChanged();
+    }
+
+    private void Decline(SpotQuoteDto spotQuote)
+    {
+        spotQuote.Status = BookingStatus.NotAccepted;
+        StateHasChanged();
+    }
+    
+    private void Requote(SpotQuoteDto spotQuote)
+    {
+        Navigation.NavigateTo($"/spot-quotes/edit/{spotQuote.Id}");
     }
 }

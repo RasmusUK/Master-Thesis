@@ -309,7 +309,7 @@
                             </MudItem>
                         </MudGrid>
                         <MudDivider/>
-                        <MudDataGrid T="CostDto" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell" 
+                        <MudDataGrid T="CostDto" Items="@quote.Costs" ReadOnly="false" EditMode="DataGridEditMode.Cell"
                                      Bordered="true" Dense="true" EditTrigger="DataGridEditTrigger.Manual" StartedEditingItem="CostEdit"
                                      CanceledEditingItem="CostEdit" CommittedItemChanges="CostEdit">
                             <ColGroup>
@@ -672,7 +672,7 @@
                 }
                 break;
             case 4:
-                await Save(BookingStatus.SpotQuote);
+                await Save(model.Status);
                 break;
         }
     }
@@ -681,12 +681,20 @@
     {
         try
         {
-            model.Status = BookingStatus.SpotQuote;
-            model.Status = status;
             if (IsNew)
+            {
+                model.Status = status;
                 await SpotQuoteService.CreateSpotQuoteAsync(model);
+
+            }
             else
+            {
+                if (model.Status != BookingStatus.Draft)
+                    model.Status = BookingStatus.Requote;
+                
                 await SpotQuoteService.UpdateSpotQuoteAsync(model);
+            }
+                
             Navigation.NavigateTo("/spot-quotes", forceLoad: true);
         }
         catch (Exception e)

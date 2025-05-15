@@ -213,7 +213,7 @@
 
     private Task FetchSimulatedEvents()
     {
-        if (mode == ReplayMode.Sandbox)
+        if (mode != ReplayMode.Strict)
             simulatedEvents = ReplayService.GetSimulatedEvents();
 
         return Task.CompletedTask;
