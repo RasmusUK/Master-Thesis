@@ -73,8 +73,8 @@ public class SpotQuoteService : ISpotQuoteService
             await buyingRateService.UpsertBuyingRatesAsync(spotQuote);
 
             var spotQuoteDomain = spotQuote.ToDomain();
-
-            if (spotQuote.Status != BookingStatus.Draft)
+            
+            if (!spotQuote.IsDraft())
             {
                 var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
                 if (!validationResult.IsValid)

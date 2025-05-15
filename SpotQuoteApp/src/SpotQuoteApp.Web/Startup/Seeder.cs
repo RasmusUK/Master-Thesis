@@ -172,7 +172,6 @@ public class Seeder : ISeeder
                 i % 2 == 0 ? Direction.Export : Direction.Import,
                 transportMode,
                 incoterm,
-                bookingStatus,
                 new ShippingDetails(
                     $"Description {i}",
                     $"References {i}",
@@ -208,7 +207,8 @@ public class Seeder : ISeeder
                             ),
                         },
                         "Comments external",
-                        "Comments internal"
+                        "Comments internal",
+                        bookingStatus
                     ),
                 }
             );

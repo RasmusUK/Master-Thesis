@@ -19,6 +19,7 @@ public static class QuoteMapper
             CommentsInternal = quote.CommentsInternal,
             TotalPrice = quote.TotalPrice,
             TotalProfit = quote.TotalProfit,
+            Status = quote.Status,
         };
     }
 
@@ -32,7 +33,8 @@ public static class QuoteMapper
             quoteDto.IsAllIn,
             quoteDto.Costs.Select(c => c.ToDomain()).ToList(),
             quoteDto.CommentsExternal,
-            quoteDto.CommentsInternal
+            quoteDto.CommentsInternal,
+            quoteDto.Status
         );
     }
 }

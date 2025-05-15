@@ -8,6 +8,7 @@ public class QuoteDto
     public ForwarderService ForwarderService { get; set; }
     public SupplierService SupplierService { get; set; }
     public ProfitDto Profit { get; set; }
+    public BookingStatus Status { get; set; }
     public bool IsAllIn { get; set; }
     public ICollection<CostDto> Costs { get; set; } = new List<CostDto>();
     public string CommentsExternal { get; set; }

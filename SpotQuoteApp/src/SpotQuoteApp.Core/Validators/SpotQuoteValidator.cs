@@ -89,11 +89,5 @@ public class SpotQuoteValidator : AbstractValidator<SpotQuote>
             .WithMessage("Transport mode cannot be empty.")
             .Must(tm => TransportMode.GetAll().Contains(tm))
             .WithMessage("Invalid transport mode value.");
-
-        RuleFor(spotQuote => spotQuote.Status)
-            .NotEmpty()
-            .WithMessage("Status cannot be empty.")
-            .Must(s => BookingStatus.GetAll().Contains(s))
-            .WithMessage("Invalid status value.");
     }
 }

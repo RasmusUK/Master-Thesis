@@ -12,7 +12,6 @@ public class SpotQuote : Entity
         Direction direction,
         TransportMode transportMode,
         Incoterm incoterm,
-        BookingStatus status,
         ShippingDetails shippingDetails,
         DateTime validUntil,
         Guid customerId,
@@ -26,7 +25,6 @@ public class SpotQuote : Entity
         Direction = direction;
         TransportMode = transportMode;
         Incoterm = incoterm;
-        Status = status;
         ShippingDetails = shippingDetails;
         ValidUntil = validUntil;
         CustomerId = customerId;
@@ -40,7 +38,6 @@ public class SpotQuote : Entity
     public Direction Direction { get; set; }
     public TransportMode TransportMode { get; set; }
     public Incoterm Incoterm { get; set; }
-    public BookingStatus Status { get; set; }
     public ShippingDetails ShippingDetails { get; set; }
     public DateTime ValidUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

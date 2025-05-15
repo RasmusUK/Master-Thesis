@@ -10,7 +10,6 @@ public class SpotQuoteDto
     public AddressDto AddressTo { get; set; }
     public Direction Direction { get; set; }
     public Incoterm Incoterm { get; set; }
-    public BookingStatus Status { get; set; }
     public TransportMode TransportMode { get; set; }
     public ShippingDetailsDto ShippingDetails { get; set; }
     public DateTime? ValidUntil { get; set; }
@@ -21,4 +20,5 @@ public class SpotQuoteDto
     public string InternalComments { get; set; }
     public double TotalWeight { get; set; }
     public double TotalCbm { get; set; }
+    public bool IsDraft() => Quotes.Any(q => q.Status == BookingStatus.Draft);
 }

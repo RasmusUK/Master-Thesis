@@ -1,11 +1,10 @@
 @page "/spot-quotes"
 @using SpotQuoteApp.Application.DTOs
 @using SpotQuoteApp.Application.Interfaces
-@using SpotQuoteApp.Application.Mappers
-@using SpotQuoteApp.Core.ValueObjects
 @using SpotQuoteApp.Core.ValueObjects.Enums
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <PageTitle>Spot Quotes</PageTitle>
 
@@ -34,16 +33,6 @@
                 @context.Item.CreatedAt.ToString("dd/MM/yyyy HH:mm")
             </CellTemplate>
         </PropertyColumn>
-        <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
-        <TemplateColumn>
-            <CellTemplate>
-                <MudStack Row>
-                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Success" OnClick="() => Accept(context.Item)">Accept</MudButton>
-                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Warning" OnClick="() => Requote(context.Item)">Requote</MudButton>
-                    <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Error" OnClick="() => Decline(context.Item)">Decline</MudButton>
-                </MudStack>
-            </CellTemplate>
-        </TemplateColumn>
     </Columns>
     <ChildRowContent>
         <MudDataGrid T="QuoteDto" Items="@context.Item.Quotes" Striped="true" Dense="true">
@@ -53,6 +42,16 @@
                 <PropertyColumn Property="x => x.Supplier" Title="Supplier"/>
                 <PropertyColumn Property="x => x.ForwarderService" Title="Forwarder Service"/>
                 <PropertyColumn Property="x => x.SupplierService" Title="Supplier Service"/>
+                <PropertyColumn Property="x => x.Status" Title="Status" Filterable="false"/>
+                <TemplateColumn>
+                    <CellTemplate Context="quoteContext">
+                        <MudStack Row>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Success" OnClick="() => Accept(quoteContext.Item)">Accept</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Warning" OnClick="() => Requote(context.Item)">Requote</MudButton>
+                            <MudButton Size="@Size.Small" Variant="@Variant.Text" Color="@Color.Error" OnClick="() => Decline(quoteContext.Item)">Decline</MudButton>
+                        </MudStack>
+                    </CellTemplate>
+                </TemplateColumn>
             </Columns>
         </MudDataGrid>
     </ChildRowContent>
@@ -76,15 +75,21 @@
         Navigation.NavigateTo("/spot-quotes/create");
     }
 
-    private void Accept(SpotQuoteDto spotQuote)
+    private void Accept(QuoteDto quote)
     {
-        spotQuote.Status = BookingStatus.Accepted;
+        if (quote.Status == BookingStatus.Draft)
+        {
+            Snackbar.Add("Cannot accept draft quote", Severity.Error);
+            return;
+        }
+        
+        quote.Status = BookingStatus.Accepted;
         StateHasChanged();
     }
 
-    private void Decline(SpotQuoteDto spotQuote)
+    private void Decline(QuoteDto quote)
     {
-        spotQuote.Status = BookingStatus.NotAccepted;
+        quote.Status = BookingStatus.NotAccepted;
         StateHasChanged();
     }
     

@@ -12,7 +12,8 @@ public record Quote
         bool isAllIn,
         ICollection<Cost> costs,
         string commentsExternal,
-        string commentsInternal
+        string commentsInternal,
+        BookingStatus status
     )
     {
         Supplier = supplier;
@@ -23,6 +24,7 @@ public record Quote
         Costs = costs;
         CommentsExternal = commentsExternal;
         CommentsInternal = commentsInternal;
+        Status = status;
 
         (TotalPrice, TotalProfit) = CalculateTotal(costs, profit);
     }
@@ -31,6 +33,7 @@ public record Quote
     public ForwarderService ForwarderService { get; }
     public SupplierService SupplierService { get; }
     public Profit Profit { get; }
+    public BookingStatus Status { get; }
     public bool IsAllIn { get; }
     public ICollection<Cost> Costs { get; }
     public string CommentsExternal { get; }

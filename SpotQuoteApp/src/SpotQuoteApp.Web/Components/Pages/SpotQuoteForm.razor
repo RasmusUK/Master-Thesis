@@ -672,7 +672,7 @@
                 }
                 break;
             case 4:
-                await Save(model.Status);
+                await Save(BookingStatus.SpotQuote);
                 break;
         }
     }
@@ -683,14 +683,20 @@
         {
             if (IsNew)
             {
-                model.Status = status;
+                foreach (var quote in model.Quotes)
+                {
+                    quote.Status = status;
+                }
                 await SpotQuoteService.CreateSpotQuoteAsync(model);
 
             }
             else
             {
-                if (model.Status != BookingStatus.Draft)
-                    model.Status = BookingStatus.Requote;
+                foreach (var quote in model.Quotes)
+                {
+                    if (quote.Status != BookingStatus.Draft)
+                        quote.Status = BookingStatus.Requote;
+                }
                 
                 await SpotQuoteService.UpdateSpotQuoteAsync(model);
             }
