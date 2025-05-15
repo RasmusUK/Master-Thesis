@@ -5,7 +5,7 @@ services:
     ports:
       - "27018:27017"
     volumes:
-      - mongo_data:/data/db
+      - mongo_data_framework:/data/db
 
 volumes:
-  mongo_data:
+  mongo_data_framework:
