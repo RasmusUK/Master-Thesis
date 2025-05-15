@@ -13,11 +13,13 @@ Start the Spot Quote App locally:
 
 - **Windows**:
   ```
-  ./SpotQuoteApp/Start.ps1
+  cd SpotQuoteApp
+  ./Start.ps1
   ```
 - **Linux/macOS**
   ```
-  ./SpotQuoteApp/Start.sh
+  cd SpotQuoteApp
+  ./Start.sh
   ```
   
 Access the app at: http://localhost:8080
@@ -33,11 +35,13 @@ To start the local dev environment:
 
 - **Windows**:
   ```
-  ./SpotQuoteApp/DevUp.ps1
+  cd SpotQuoteApp
+  ./DevUp.ps1
   ```
 - **Linux/macOS**
   ```
-  ./SpotQuoteApp/DevUp.sh
+  cd SpotQuoteApp
+  ./DevUp.sh
   ```
 
 This will start:
@@ -58,11 +62,13 @@ To start the local dev environment:
 
 - **Windows**:
   ```
-  ./EventSourcingFramework/DevUp.ps1
+  cd EventSourcingFramework
+  ./DevUp.ps1
   ```
 - **Linux/macOS**
   ```
-  ./EventSourcingFramework/DevUp.sh
+  cd EventSourcingFramework
+  ./DevUp.sh
   ```
 
 This will start a MongoDB instance.
@@ -71,11 +77,13 @@ This will start a MongoDB instance.
 
 - **Windows**:
   ```
-  ./EventSourcingFramework/RunIntegrationTests.ps1
+  cd EventSourcingFramework
+  ./RunIntegrationTests.ps1
   ```
 - **Linux/macOS**
   ```
-  ./EventSourcingFramework/RunIntegrationTests.sh
+  cd EventSourcingFramework
+  ./RunIntegrationTests.sh
   ```
   
 This will also spin up a MongoDB instance for the tests.
