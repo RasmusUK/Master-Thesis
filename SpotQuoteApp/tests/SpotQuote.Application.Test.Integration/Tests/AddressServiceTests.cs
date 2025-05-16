@@ -3,7 +3,7 @@ using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Core.AggregateRoots;
 
-namespace SpotQuote.Application.Test.Integration;
+namespace SpotQuote.Application.Test.Integration.Tests;
 
 public class AddressServiceTests : IAsyncLifetime
 {
