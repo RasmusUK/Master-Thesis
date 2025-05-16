@@ -1,0 +1,19 @@
+services:
+  mongodb.dev:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb.dev
+    ports:
+      - "27020:27017"
+    volumes:
+      - mongo_data_dev_test:/data/db
+
+  mockapi.dev:
+    build:
+      context: ./Mock-api
+      dockerfile: Dockerfile
+    container_name:  mockapi.dev
+    ports:
+      - "3001:3000"  
+
+volumes:
+  mongo_data_dev_test:

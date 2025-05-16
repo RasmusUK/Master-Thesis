@@ -34,6 +34,16 @@ public class AddressService : IAddressService
 
         if (existing is not null)
             return existing.Id;
+        
+        var country = await countryService.GetCountryByIdAsync(addressDto.Country.Id);
+        if (country is null)
+        {
+            country = await countryService.GetCountryByCodeAsync(addressDto.Country.Code);
+            if (country is null)
+                throw new NotFoundException($"Country with country code '{addressDto.Country.Code}' not found.");
+            
+            addressDto.Country = country;
+        }
 
         addressDto.Id = addressDto.Id == default ? Guid.NewGuid() : addressDto.Id;
 

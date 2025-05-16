@@ -1,0 +1,1 @@
+docker compose -f ../docker-compose.spotquoteapp.dev.test.yml up -d --build
