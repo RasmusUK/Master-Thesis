@@ -2,32 +2,40 @@
 using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.Exceptions;
 
-namespace SpotQuote.Application.Test.Integration.Tests;
+namespace SpotQuoteApp.Application.Test.Integration.Tests;
 
+[Collection("Integration")]
 public class AddressServiceTests : IAsyncLifetime
 {
     private readonly IAddressService addressService;
     private readonly IRepository<Country> countryRepository;
     private readonly IRepository<Address> addressRepository;
 
-    public AddressServiceTests(IAddressService addressService, IRepository<Country> countryRepository, IRepository<Address> addressRepository)
+    public AddressServiceTests(
+        IAddressService addressService,
+        IRepository<Country> countryRepository,
+        IRepository<Address> addressRepository
+    )
     {
         this.addressService = addressService;
         this.countryRepository = countryRepository;
         this.addressRepository = addressRepository;
-        countryRepository.CreateAsync(new Country("Denmark", "DK")).GetAwaiter().GetResult();
     }
 
-
-    public Task InitializeAsync() => Task.CompletedTask;
+    public async Task InitializeAsync()
+    {
+        await DisposeAsync();
+        await countryRepository.CreateAsync(new Country("Denmark", "DK"));
+    }
 
     public async Task DisposeAsync()
     {
         var countries = await countryRepository.ReadAllAsync();
         foreach (var country in countries)
             await countryRepository.DeleteAsync(country);
-        
+
         var addresses = await addressRepository.ReadAllAsync();
         foreach (var address in addresses)
             await addressRepository.DeleteAsync(address);
@@ -37,7 +45,7 @@ public class AddressServiceTests : IAsyncLifetime
     public async Task CreateIfNotExistsAsync_Should_Create_New_Address()
     {
         // Arrange
-        var dto = CreateAddressDto("UniqueCompany");
+        var dto = CreateAddressDto();
 
         // Act
         var id = await addressService.CreateIfNotExistsAsync(dto);
@@ -50,7 +58,7 @@ public class AddressServiceTests : IAsyncLifetime
     public async Task CreateIfNotExistsAsync_Should_Return_Same_Id_For_Existing_Address()
     {
         // Arrange
-        var dto = CreateAddressDto("DuplicateCompany");
+        var dto = CreateAddressDto();
 
         var firstId = await addressService.CreateIfNotExistsAsync(dto);
         var secondId = await addressService.CreateIfNotExistsAsync(dto);
@@ -63,7 +71,7 @@ public class AddressServiceTests : IAsyncLifetime
     public async Task GetAddressByIdAsync_Should_Return_Correct_Address()
     {
         // Arrange
-        var dto = CreateAddressDto("FindMeCorp");
+        var dto = CreateAddressDto();
         var id = await addressService.CreateIfNotExistsAsync(dto);
 
         // Act
@@ -79,7 +87,7 @@ public class AddressServiceTests : IAsyncLifetime
     public async Task GetAllAddressesAsync_Should_Return_At_Least_One()
     {
         // Arrange
-        await addressService.CreateIfNotExistsAsync(CreateAddressDto("AllCorp"));
+        await addressService.CreateIfNotExistsAsync(CreateAddressDto());
 
         // Act
         var all = await addressService.GetAllAddressesAsync();
@@ -89,13 +97,69 @@ public class AddressServiceTests : IAsyncLifetime
         Assert.True(all.Count > 0);
     }
 
-    private AddressDto CreateAddressDto(string companyName)
+    [Fact]
+    public async Task CreateIfNotExistsAsync_Throws_If_Country_Not_Found_By_Id_Or_Code()
+    {
+        // Arrange
+        var dto = CreateAddressDto();
+        dto.Country.Id = Guid.NewGuid();
+        dto.Country.Code = "XX";
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(
+            () => addressService.CreateIfNotExistsAsync(dto)
+        );
+
+        Assert.Contains("Country with country code 'XX' not found", ex.Message);
+    }
+
+    [Fact]
+    public async Task GetAddressByIdAsync_Returns_Null_If_Not_Exists()
+    {
+        // Arrange
+        var nonExistentId = Guid.NewGuid();
+
+        // Act
+        var result = await addressService.GetAddressByIdAsync(nonExistentId);
+
+        // Assert
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public async Task GetAddressByIdAsync_Throws_If_Country_Not_Found()
+    {
+        // Arrange
+        var fakeCountryId = Guid.NewGuid();
+        var address = new Address(
+            "Fake",
+            fakeCountryId,
+            "Fake",
+            "Fake",
+            "Fake",
+            "Fake",
+            "Fake",
+            "Fake",
+            "Fake",
+            "Fake"
+        );
+        await addressRepository.CreateAsync(address);
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<NotFoundException>(
+            () => addressService.GetAddressByIdAsync(address.Id)
+        );
+
+        Assert.Contains($"Country with id '{fakeCountryId}' not found", ex.Message);
+    }
+
+    private AddressDto CreateAddressDto()
     {
         return new AddressDto
         {
             Id = Guid.NewGuid(),
-            CompanyName = companyName,
-            Email = $"{companyName.ToLower()}@test.com",
+            CompanyName = "Company",
+            Email = "company@test.com",
             Phone = "12345678",
             Attention = "Test Person",
             Country = new CountryDto
@@ -106,8 +170,8 @@ public class AddressServiceTests : IAsyncLifetime
             },
             ZipCode = "1234",
             AddressLine1 = "Main Street",
-            AddressLine2 = "Suite 2",
-            City = "Copenhagen"
+            AddressLine2 = "Second street",
+            City = "Copenhagen",
         };
     }
 }

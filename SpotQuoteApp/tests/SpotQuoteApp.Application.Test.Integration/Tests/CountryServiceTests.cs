@@ -2,14 +2,18 @@ using EventSourcingFramework.Core.Interfaces;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Core.AggregateRoots;
 
-namespace SpotQuote.Application.Test.Integration.Tests;
+namespace SpotQuoteApp.Application.Test.Integration.Tests;
 
+[Collection("Integration")]
 public class CountryServiceTests : IAsyncLifetime
 {
     private readonly ICountryService countryService;
     private readonly IRepository<Country> countryRepository;
 
-    public CountryServiceTests(ICountryService countryService, IRepository<Country> countryRepository)
+    public CountryServiceTests(
+        ICountryService countryService,
+        IRepository<Country> countryRepository
+    )
     {
         this.countryService = countryService;
         this.countryRepository = countryRepository;
@@ -48,7 +52,7 @@ public class CountryServiceTests : IAsyncLifetime
         var dk = await countryRepository.ReadByFilterAsync(c => c.Code == "DK");
 
         // Act
-        var result = await countryService.GetCountryByIdAsync(dk.Id);
+        var result = await countryService.GetCountryByIdAsync(dk!.Id);
 
         // Assert
         Assert.NotNull(result);

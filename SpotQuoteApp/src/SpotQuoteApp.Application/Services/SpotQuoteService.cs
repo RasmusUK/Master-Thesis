@@ -1,4 +1,3 @@
-using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
 using FluentValidation;
@@ -6,8 +5,8 @@ using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.Exceptions;
 using SpotQuoteApp.Core.Validators;
-using SpotQuoteApp.Core.ValueObjects.Enums;
 
 namespace SpotQuoteApp.Application.Services;
 
@@ -73,7 +72,7 @@ public class SpotQuoteService : ISpotQuoteService
             await buyingRateService.UpsertBuyingRatesAsync(spotQuote);
 
             var spotQuoteDomain = spotQuote.ToDomain();
-            
+
             if (!spotQuote.IsDraft())
             {
                 var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);

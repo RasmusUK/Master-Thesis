@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Web", "src\Spo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Core", "src\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj", "{0CEC0C88-94C5-425B-BA13-BF96A29E464B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuote.Application.Test.Integration", "tests\SpotQuote.Application.Test.Integration\SpotQuote.Application.Test.Integration.csproj", "{3876F8B5-5251-48E0-9F1F-4963A5A4FB4F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SpotQuoteApp.Application.Test.Integration", "tests\SpotQuoteApp.Application.Test.Integration\SpotQuoteApp.Application.Test.Integration.csproj", "{3876F8B5-5251-48E0-9F1F-4963A5A4FB4F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{2ED2ADF3-E8E9-45DE-B7D4-5466687DC50D}"
 EndProject
