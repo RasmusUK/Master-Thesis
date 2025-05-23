@@ -23,7 +23,7 @@ jobs:
           echo "Checking for populated table at /spot-quotes..."
           for i in {1..10}; do
             content=$(curl --silent --fail http://localhost:8080/spot-quotes)
-            if echo "$content" | grep -q "<td"; then
+            if echo "$content" | grep "<td"; then
               echo "Table contains data."
               exit 0
             else
