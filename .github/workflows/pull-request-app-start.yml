@@ -1,4 +1,4 @@
-name: Pull Request App Starts
+name: App Start
 
 on:
   pull_request:
@@ -20,17 +20,18 @@ jobs:
       - name: Wait for SpotQuoteApp to start
         working-directory: SpotQuoteApp
         run: |
-          echo "Waiting for app to become available on http://localhost:8080..."
+          echo "Checking for populated table at /spot-quotes..."
           for i in {1..10}; do
-            if curl --fail http://localhost:8080; then
-              echo "App is up!"
+            content=$(curl --silent --fail http://localhost:8080/spot-quotes)
+            if echo "$content" | grep -q "<td"; then
+              echo "Table contains data."
               exit 0
+            else
+              echo "No data found, retrying ($i)..."
+              sleep 5
             fi
-            echo "Retrying in 5s ($i)..."
-            sleep 5
           done
-          echo "App failed to start." >&2
-          docker compose -f ../docker-compose.yml logs
+          echo "No spot quotes were found."
           exit 1
 
       - name: Clean up Docker
