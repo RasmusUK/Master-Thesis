@@ -1,0 +1,39 @@
+name: Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - main  # Adjust to your main branch if different
+
+jobs:
+  run-event-sourcing-tests:
+    name: Run EventSourcingFramework Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'  # Adjust this to your required .NET version
+
+      - name: Run EventSourcingFramework Integration Tests
+        run: ./RunIntegrationTests.sh
+        working-directory: ./EventSourcingFramework
+
+  run-spot-quote-tests:
+    name: Run SpotQuoteApp Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.x'  # Adjust this to your required .NET version
+
+      - name: Run SpotQuoteApp Integration Tests
+        run: ./RunIntegrationTests.sh
+        working-directory: ./SpotQuoteApp
