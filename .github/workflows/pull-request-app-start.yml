@@ -1,0 +1,40 @@
+name: App Start
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  run-spot-quote-tests-bash:
+    name: Run SpotQuoteApp
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Start Script
+        working-directory: SpotQuoteApp
+        run: bash ./Start.sh
+
+      - name: Wait for SpotQuoteApp to start
+        working-directory: SpotQuoteApp
+        run: |
+          echo "Checking for populated table at /spot-quotes..."
+          for i in {1..10}; do
+            content=$(curl --silent --show-error --connect-timeout 5 http://localhost:8080/spot-quotes || true)
+            if echo "$content" | grep "<td"; then
+              echo "Table contains data."
+              exit 0
+            else
+              echo "No data found, retrying ($i)..."
+              sleep 5
+            fi
+          done
+          echo "No spot quotes were found."
+          exit 1
+
+      - name: Clean up Docker
+        if: always()
+        working-directory: SpotQuoteApp
+        run: docker compose -f ../docker-compose.yml down -v

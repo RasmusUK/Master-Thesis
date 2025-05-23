@@ -2,11 +2,11 @@
 
 echo -e "\nRunning integration tests locally..."
 
-docker-compose up -d
+docker compose up -d
 
 function cleanup {
     echo -e "\nCleaning up Docker containers..."
-    docker-compose down -v
+    docker compose down -v
 }
 trap cleanup EXIT
 

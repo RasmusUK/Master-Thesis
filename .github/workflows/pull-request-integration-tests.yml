@@ -1,0 +1,60 @@
+name: Run Integration Tests
+
+on:
+  pull_request:
+    branches:
+      - main  
+
+jobs:
+  event-sourcing-tests:
+    name: EventSourcingFramework Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Start Docker containers
+        working-directory: EventSourcingFramework
+        run: docker compose up -d
+
+      - name: Run Application Integration Tests
+        run: dotnet test ./EventSourcingFramework/tests/Integration/EventSourcingFramework.Application.Test.Integration/ --verbosity minimal
+
+      - name: Run Infrastructure Integration Tests
+        run: dotnet test ./EventSourcingFramework/tests/Integration/EventSourcingFramework.Infrastructure.Test.Integration/ --verbosity minimal
+
+      - name: Clean up Docker
+        if: always()
+        working-directory: EventSourcingFramework
+        run: docker compose down -v
+
+  spotquoteapp-tests:
+    name: SpotQuoteApp Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.x'
+
+      - name: Start Docker containers
+        working-directory: SpotQuoteApp
+        run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml up -d --build
+
+      - name: Run SpotQuoteApp Integration Tests
+        run: dotnet test ./SpotQuoteApp/tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
+
+      - name: Clean up Docker
+        if: always()
+        working-directory: SpotQuoteApp
+        run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml down -v
