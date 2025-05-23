@@ -21,18 +21,18 @@ jobs:
 
       - name: Start Docker containers
         working-directory: EventSourcingFramework
-        run: docker-compose up -d
+        run: docker compose up -d
 
       - name: Run Application Integration Tests
-        run: dotnet test ./tests/Integration/EventSourcingFramework.Application.Test.Integration/ --verbosity minimal
+        run: dotnet test ./EventSourcingFramework/tests/Integration/EventSourcingFramework.Application.Test.Integration/ --verbosity minimal
 
       - name: Run Infrastructure Integration Tests
-        run: dotnet test ./tests/Integration/EventSourcingFramework.Infrastructure.Test.Integration/ --verbosity minimal
+        run: dotnet test ./EventSourcingFramework/tests/Integration/EventSourcingFramework.Infrastructure.Test.Integration/ --verbosity minimal
 
       - name: Clean up Docker
         if: always()
         working-directory: EventSourcingFramework
-        run: docker-compose down -v
+        run: docker compose down -v
 
   spotquoteapp-tests:
     name: SpotQuoteApp Integration Tests
@@ -52,7 +52,7 @@ jobs:
         run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml up -d --build
 
       - name: Run SpotQuoteApp Integration Tests
-        run: dotnet test ./tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
+        run: dotnet test ./SpoteQuoteApp/tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
 
       - name: Clean up Docker
         if: always()
