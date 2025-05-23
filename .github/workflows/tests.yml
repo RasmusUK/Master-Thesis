@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -40,7 +40,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
@@ -52,7 +52,7 @@ jobs:
         run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml up -d --build
 
       - name: Run SpotQuoteApp Integration Tests
-        run: dotnet test ./SpoteQuoteApp/tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
+        run: dotnet test ./SpotQuoteApp/tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
 
       - name: Clean up Docker
         if: always()
