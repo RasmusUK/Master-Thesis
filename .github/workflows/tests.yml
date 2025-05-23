@@ -1,14 +1,15 @@
-name: Integration Tests
+name: Tests
 
 on:
   pull_request:
     branches:
-      - main  # Adjust to your main branch if different
+      - main  
 
 jobs:
-  run-event-sourcing-tests:
-    name: Run EventSourcingFramework Integration Tests
+  event-sourcing-tests:
+    name: EventSourcingFramework Integration Tests
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -16,15 +17,27 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'  # Adjust this to your required .NET version
+          dotnet-version: '9.x'
 
-      - name: Run EventSourcingFramework Integration Tests
-        run: ./RunIntegrationTests.sh
-        working-directory: ./EventSourcingFramework
+      - name: Start Docker containers
+        working-directory: EventSourcingFramework
+        run: docker-compose up -d
 
-  run-spot-quote-tests:
-    name: Run SpotQuoteApp Integration Tests
+      - name: Run Application Integration Tests
+        run: dotnet test ./tests/Integration/EventSourcingFramework.Application.Test.Integration/ --verbosity minimal
+
+      - name: Run Infrastructure Integration Tests
+        run: dotnet test ./tests/Integration/EventSourcingFramework.Infrastructure.Test.Integration/ --verbosity minimal
+
+      - name: Clean up Docker
+        if: always()
+        working-directory: EventSourcingFramework
+        run: docker-compose down -v
+
+  spotquoteapp-tests:
+    name: SpotQuoteApp Integration Tests
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -32,8 +45,16 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.x'  # Adjust this to your required .NET version
+          dotnet-version: '9.x'
+
+      - name: Start Docker containers
+        working-directory: SpotQuoteApp
+        run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml up -d --build
 
       - name: Run SpotQuoteApp Integration Tests
-        run: ./RunIntegrationTests.sh
-        working-directory: ./SpotQuoteApp
+        run: dotnet test ./tests/SpotQuoteApp.Application.Test.Integration/ --verbosity minimal
+
+      - name: Clean up Docker
+        if: always()
+        working-directory: SpotQuoteApp
+        run: docker compose -f ../docker-compose.spotquoteapp.dev.test.yml down -v
