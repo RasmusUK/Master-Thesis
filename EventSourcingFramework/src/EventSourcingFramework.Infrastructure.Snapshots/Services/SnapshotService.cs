@@ -17,7 +17,6 @@ public class SnapshotService : ISnapshotService
     private const string SnapshotMetadataCollection = "snapshots";
     private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
-    private readonly IEventSequenceGenerator eventSequenceGenerator;
     private readonly IReplayContext replayContext;
 
     private readonly IMongoDbService mongoDbService;
@@ -27,14 +26,12 @@ public class SnapshotService : ISnapshotService
 
     public SnapshotService(
         IMongoDbService mongoDbService,
-        IEventSequenceGenerator eventSequenceGenerator,
         IEntityCollectionNameProvider entityCollectionNameProvider,
         IReplayContext replayContext,
         IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.mongoDbService = mongoDbService;
-        this.eventSequenceGenerator = eventSequenceGenerator;
         this.entityCollectionNameProvider = entityCollectionNameProvider;
         this.replayContext = replayContext;
         snapshotOptions = eventSourcingOptions.Value.Snapshot;
@@ -81,7 +78,7 @@ public class SnapshotService : ISnapshotService
         if (!shouldTake)
             return;
 
-        var id = await TakeSnapshotAsync();
+        var id = await TakeSnapshotAsync(currentEventNumber);
 
         var updatedSnapshot = new SnapshotMetadata
         {
@@ -98,7 +95,7 @@ public class SnapshotService : ISnapshotService
         await PruneOldSnapshotsAsync();
     }
 
-    public async Task<string> TakeSnapshotAsync()
+    public async Task<string> TakeSnapshotAsync(long eventNumber)
     {
         ThrowIfSnapshotDisabled();
         await SnapshotLock.WaitAsync();
@@ -110,7 +107,6 @@ public class SnapshotService : ISnapshotService
                 );
 
             var dateTime = DateTime.UtcNow;
-            var eventNumber = await eventSequenceGenerator.GetCurrentSequenceNumberAsync();
             var snapshotId = $"snapshot_{dateTime:yyyyMMddHHmmss}_{eventNumber}";
 
             var registered = entityCollectionNameProvider.GetAllRegistered();

@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
@@ -16,16 +17,17 @@ public class Repository<T> : IRepository<T>
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
     private readonly IReplayContext replayContext;
+    private readonly ISnapshotService snapshotService;
 
     public Repository(
         IEntityStore entityStore,
         IEventStore eventStore,
-        IReplayContext replayContext
-    )
+        IReplayContext replayContext, ISnapshotService snapshotService)
     {
         this.entityStore = entityStore;
         this.eventStore = eventStore;
         this.replayContext = replayContext;
+        this.snapshotService = snapshotService;
     }
 
     public async Task CreateAsync(T entity)
@@ -36,6 +38,7 @@ public class Repository<T> : IRepository<T>
             var e = new MongoCreateEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             await entityStore.InsertEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
         }
         catch
         {

@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Entity;
@@ -19,20 +20,21 @@ public class RepositoryTests : MongoIntegrationTestBase
     private readonly IEventStore eventStore;
     private readonly IReplayContext replayContext;
     private readonly IRepository<TestEntity> repository;
+    private readonly ISnapshotService snapshotService;
 
     public RepositoryTests(
         IMongoDbService mongoDbService,
         IRepository<TestEntity> repository,
         IEventStore eventStore,
         IEntityStore entityStore,
-        IReplayContext replayContext
-    )
+        IReplayContext replayContext, ISnapshotService snapshotService)
         : base(mongoDbService, replayContext)
     {
         this.repository = repository;
         this.eventStore = eventStore;
         this.entityStore = entityStore;
         this.replayContext = replayContext;
+        this.snapshotService = snapshotService;
     }
 
     [Fact]
@@ -109,7 +111,8 @@ public class RepositoryTests : MongoIntegrationTestBase
         var faultyRepository = new Repository<TestEntity>(
             new FailingEntityStoreWithRead(null),
             eventStore,
-            replayContext
+            replayContext,
+            snapshotService
         );
 
         // Act & Assert
@@ -135,7 +138,8 @@ public class RepositoryTests : MongoIntegrationTestBase
         var faultyRepository = new Repository<TestEntity>(
             new FailingEntityStoreWithRead(entityBefore),
             eventStore,
-            replayContext
+            replayContext,
+            snapshotService
         );
 
         var entityAfter = new TestEntity { Id = entityId, Name = "FailsOnUpdate" };
@@ -171,7 +175,8 @@ public class RepositoryTests : MongoIntegrationTestBase
         var faultyRepository = new Repository<TestEntity>(
             new FailingEntityStoreWithRead(null),
             eventStore,
-            replayContext
+            replayContext,
+            snapshotService
         );
 
         // Act & Assert

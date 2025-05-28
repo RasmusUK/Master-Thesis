@@ -1,4 +1,5 @@
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Application.UseCases.ReplayContext;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Repositories.Services;
@@ -15,19 +16,20 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
     private readonly Repository<TestEntity> repository;
+    private readonly ISnapshotService snapshotService;
 
     public SmartRepositoryTests(
         IMongoDbService mongoDbService,
         IReplayContext replayContext,
         Repository<TestEntity> repository,
         IEventStore eventStore,
-        IEntityStore entityStore
-    )
+        IEntityStore entityStore, ISnapshotService snapshotService)
         : base(mongoDbService, replayContext)
     {
         this.repository = repository;
         this.eventStore = eventStore;
         this.entityStore = entityStore;
+        this.snapshotService = snapshotService;
     }
 
     [Fact]
@@ -61,6 +63,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new ReplayContext(),
+            snapshotService,
             nameof(Repository<TestEntity>.UpdateAsync)
         );
 
@@ -95,6 +98,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new ReplayContext(),
+            snapshotService,
             nameof(Repository<TestEntity>.UpdateAsync)
         );
 
@@ -180,6 +184,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new ReplayContext(),
+            snapshotService,
             nameof(Repository<TestEntity>.DeleteAsync)
         );
 
@@ -232,6 +237,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             entityStore,
             eventStore,
             new ReplayContext(),
+            snapshotService,
             nameof(Repository<TestEntity>.DeleteAsync)
         );
 
@@ -540,9 +546,10 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
             IEntityStore entityStore,
             IEventStore eventStore,
             IReplayContext replayContext,
+            ISnapshotService snapshotService,
             string failOnMethod
         )
-            : base(entityStore, eventStore, replayContext)
+            : base(entityStore, eventStore, replayContext, snapshotService)
         {
             this.failOnMethod = failOnMethod;
         }

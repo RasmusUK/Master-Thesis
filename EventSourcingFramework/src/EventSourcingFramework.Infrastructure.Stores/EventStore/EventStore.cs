@@ -17,19 +17,16 @@ public class EventStore : IEventStore
     private readonly EventSourcingOptions eventSourcingOptions;
     private readonly IPersonalDataService personalDataService;
     private readonly IEventSequenceGenerator sequenceGenerator;
-    private readonly ISnapshotService snapshotService;
 
     public EventStore(
         IMongoDbService mongoDbService,
         IEventSequenceGenerator sequenceGenerator,
         IPersonalDataService personalDataService,
-        ISnapshotService snapshotService,
         IOptions<EventSourcingOptions> eventSourcingOptions
     )
     {
         this.sequenceGenerator = sequenceGenerator;
         this.personalDataService = personalDataService;
-        this.snapshotService = snapshotService;
         this.eventSourcingOptions = eventSourcingOptions.Value;
         collection = mongoDbService.EventCollection;
     }
@@ -50,8 +47,6 @@ public class EventStore : IEventStore
         await personalDataService.StripAndStoreAsync(eventBase);
 
         await collection.InsertOneAsync(eventBase);
-
-        await snapshotService.TakeSnapshotIfNeededAsync(eventBase.EventNumber);
     }
 
     public async Task<IEvent?> GetEventByIdAsync(Guid id)
@@ -159,6 +154,8 @@ public class EventStore : IEventStore
         await Task.WhenAll(events.Select(e => personalDataService.RestoreAsync(e)));
         return events;
     }
+
+    public Task<long> GetCurrentSequenceNumberAsync() => sequenceGenerator.GetCurrentSequenceNumberAsync();
 
     private Task<bool> EventExistsAsync(MongoEventBase e)
     {

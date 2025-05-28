@@ -52,7 +52,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BaseSnap" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         entity.Name = "SnapModified";
         await eventStore.InsertEventAsync(new MongoUpdateEvent<TestEntity>(entity));
@@ -73,7 +73,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "WindowStart" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
         var start = DateTime.UtcNow;
 
         await Task.Delay(10);
@@ -103,7 +103,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "RangeBase" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         var update = new MongoUpdateEvent<TestEntity>(entity) { Entity = { Name = "RangeNew" } };
         await eventStore.InsertEventAsync(update);
@@ -129,7 +129,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "EntitySnap" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(2);
 
         entity.Name = "EntityReplayed";
         await eventStore.InsertEventAsync(new MongoUpdateEvent<TestEntity>(entity));
@@ -150,7 +150,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "SoloSnap" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         entity.Name = "SoloModified";
         var evt = new MongoUpdateEvent<TestEntity>(entity);
@@ -233,7 +233,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Initial" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         var update = new MongoUpdateEvent<TestEntity>(entity) { Entity = { Name = "PostSnapshot" } };
         await eventStore.InsertEventAsync(update);
@@ -314,7 +314,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BeforeStop" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         var update = new MongoUpdateEvent<TestEntity>(entity) { Entity = { Name = "ShouldBeApplied" } };
         await eventStore.InsertEventAsync(update);
@@ -434,7 +434,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "CleanMe" };
         await repository.CreateAsync(entity);
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(1);
 
         entity.Name = "ChangedLater";
         await eventStore.InsertEventAsync(new MongoUpdateEvent<TestEntity>(entity));
