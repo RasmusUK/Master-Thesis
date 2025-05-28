@@ -19,16 +19,13 @@ public class EventStoreTests : MongoIntegrationTestBase
     private readonly IEventSequenceGenerator eventSequenceGenerator;
     private readonly IEventStore eventStore;
     private readonly IPersonalDataService personalDataService;
-    private readonly ISnapshotService snapshotService;
 
     public EventStoreTests(IMongoDbService mongoDbService, IReplayContext replayContext, IEventStore eventStore,
-        IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService,
-        ISnapshotService snapshotService) : base(mongoDbService, replayContext)
+        IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService) : base(mongoDbService, replayContext)
     {
         this.eventStore = eventStore;
         this.eventSequenceGenerator = eventSequenceGenerator;
         this.personalDataService = personalDataService;
-        this.snapshotService = snapshotService;
     }
 
     [Fact]
@@ -164,7 +161,6 @@ public class EventStoreTests : MongoIntegrationTestBase
             MongoDbService,
             eventSequenceGenerator,
             personalDataService,
-            snapshotService,
             Options.Create(new EventSourcingOptions
             {
                 EnableEventStore = false

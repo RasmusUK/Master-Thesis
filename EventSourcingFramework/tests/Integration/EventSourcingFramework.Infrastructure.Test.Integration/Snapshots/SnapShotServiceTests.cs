@@ -46,7 +46,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         var initialSnapshots = await snapshotService.GetAllSnapshotsAsync();
 
         // Act
-        var snapshotId = await snapshotService.TakeSnapshotAsync();
+        var snapshotId = await snapshotService.TakeSnapshotAsync(1);
         var allSnapshots = await snapshotService.GetAllSnapshotsAsync();
 
         // Assert
@@ -67,7 +67,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         var initialSnapshots = await snapshotService.GetAllSnapshotsAsync();
 
         // Act
-        var snapshotId = await snapshotService.TakeSnapshotAsync();
+        var snapshotId = await snapshotService.TakeSnapshotAsync(1);
         var allSnapshots = await snapshotService.GetAllSnapshotsAsync();
 
         // Assert
@@ -81,7 +81,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
         await repository.CreateAsync(entity);
-        var snapshotId = await snapshotService.TakeSnapshotAsync();
+        var snapshotId = await snapshotService.TakeSnapshotAsync(1);
 
         await repository.DeleteAsync(entity);
 
@@ -100,7 +100,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Latest" };
         await repository.CreateAsync(entity);
-        var snapshotId = await snapshotService.TakeSnapshotAsync();
+        var snapshotId = await snapshotService.TakeSnapshotAsync(1);
 
         // Act
         var lastId = await snapshotService.GetLastSnapshotIdAsync();
@@ -115,7 +115,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ToDelete" };
         await repository.CreateAsync(entity);
-        var snapshotId = await snapshotService.TakeSnapshotAsync();
+        var snapshotId = await snapshotService.TakeSnapshotAsync(1);
 
         var snapshotCollectionName =
             $"{collectionNameProvider.GetCollectionName(typeof(TestEntity))}_{snapshotId}";
@@ -304,7 +304,6 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
 
         return new SnapshotService(
             MongoDbService,
-            sequenceGenerator,
             collectionNameProvider,
             new ReplayContext(),
             wrappedOptions

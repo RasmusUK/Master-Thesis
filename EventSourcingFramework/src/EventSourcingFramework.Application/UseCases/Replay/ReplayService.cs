@@ -278,7 +278,7 @@ public class ReplayService : IReplayService
     {
         if (!snapshotSettings.Enabled)
             return;
-        await snapshotService.TakeSnapshotAsync();
+        await snapshotService.TakeSnapshotAsync(await eventStore.GetCurrentSequenceNumberAsync());
     }
 
     private async Task ProcessReplayEventsAsync(IEnumerable<IEvent> events)

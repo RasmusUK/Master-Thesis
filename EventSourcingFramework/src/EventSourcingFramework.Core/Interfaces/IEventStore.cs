@@ -27,4 +27,6 @@ public interface IEventStore
         long fromEventNumber,
         long untilEventNumber
     );
+
+    Task<long> GetCurrentSequenceNumberAsync();
 }
