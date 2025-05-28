@@ -1,4 +1,3 @@
-using EventSourcingFramework.Application.Abstractions.Migrations;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 
 namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
@@ -6,13 +5,8 @@ namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 public class EntityCollectionNameProvider : IEntityCollectionNameProvider
 {
     private readonly Dictionary<Type, string> collectionNames = new();
-    private readonly IMigrationTypeRegistry migrationTypeRegistry;
-
-    public EntityCollectionNameProvider(IMigrationTypeRegistry migrationTypeRegistry)
-    {
-        this.migrationTypeRegistry = migrationTypeRegistry;
-    }
-
+    private readonly Dictionary<Type, Type> migrationToBaseTypes = new();
+    
     public void Register(Type type, string collectionName)
     {
         if (type == null)
@@ -27,15 +21,16 @@ public class EntityCollectionNameProvider : IEntityCollectionNameProvider
         collectionNames[type] = collectionName;
     }
 
+    public void RegisterMigrationTypes(Type baseType, Type migrationType)
+    {
+        migrationToBaseTypes[migrationType] = baseType;
+    }
+
     public string GetCollectionName(Type type)
     {
         if (!collectionNames.ContainsKey(type))
-            type =
-                migrationTypeRegistry.GetBaseType(type)
-                ?? throw new InvalidOperationException(
-                    $"No base type registered for '{type.FullName}'"
-                );
-
+            type = migrationToBaseTypes.GetValueOrDefault(type, type);
+        
         if (!collectionNames.TryGetValue(type, out var name))
             throw new InvalidOperationException(
                 $"No collection name registered for type '{type.FullName}'"
