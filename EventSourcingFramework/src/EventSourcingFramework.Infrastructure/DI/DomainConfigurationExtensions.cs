@@ -18,10 +18,18 @@ public static class DomainConfigurationExtensions
         
         configureDomain(schemaRegistry, migrationRegistry, migrator, mongoDbRegistrationService);
 
-        var collectionNameProvider = new EntityCollectionNameProvider(migrationRegistry);
+        var collectionNameProvider = new EntityCollectionNameProvider();
         var registered = mongoDbRegistrationService.GetRegistered();
         foreach (var (type, collectionName) in registered)
+        {
             collectionNameProvider.Register(type, collectionName);
+            foreach (var migrationType in migrationRegistry.GetTypeToVersionedTypes(type))
+            {
+                if (migrationType == type)
+                    continue;
+                collectionNameProvider.RegisterMigrationTypes(type, migrationType);
+            }
+        }
         
         services
             .AddSingleton<ISchemaVersionRegistry>(schemaRegistry)

@@ -11,18 +11,11 @@ public class MigrationTypeRegistry : IMigrationTypeRegistry
         versionMap[(typeof(TEntity), version)] = versionedType;
     }
 
-    public Type GetVersionedType(Type targetType, int version)
-    {
-        return versionMap[(targetType, version)];
-    }
+    public Type GetVersionedType(Type targetType, int version) => versionMap[(targetType, version)];
 
-    public Type? GetBaseType(Type targetType)
-    {
-        var versionedTypes = versionMap
-            .Where(kvp => kvp.Value == targetType)
-            .Select(kvp => kvp.Key.targetType)
-            .ToList();
-
-        return versionedTypes.FirstOrDefault();
-    }
+    public IReadOnlyCollection<Type> GetTypeToVersionedTypes(Type targetType) => 
+        versionMap
+        .Where(kvp => kvp.Key.targetType == targetType)
+        .Select(kvp => kvp.Value)
+        .ToList();
 }

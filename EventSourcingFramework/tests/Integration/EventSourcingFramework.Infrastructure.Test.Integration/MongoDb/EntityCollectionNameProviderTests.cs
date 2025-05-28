@@ -3,13 +3,14 @@ using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
+using EventSourcingFramework.Test.Utilities.Models;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;
 
 [Collection("Integration")]
 public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
 {
-    private readonly EntityCollectionNameProvider provider = new(new MigrationTypeRegistry());
+    private readonly EntityCollectionNameProvider provider = new();
 
     public EntityCollectionNameProviderTests(
         IMongoDbService mongoDbService,
@@ -77,6 +78,23 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
         Assert.Equal(2, all.Count);
         Assert.Contains(all, x => x.Type == typeof(TestEntity1) && x.CollectionName == "Test1");
         Assert.Contains(all, x => x.Type == typeof(TestEntity2) && x.CollectionName == "Test2");
+    }
+    
+    [Fact]
+    public void RegisterMigrationTypes_Then_GetCollectionName_ResolvesBaseTypeCollection()
+    {
+        // Arrange
+        var baseType = typeof(TestEntity);
+        var migrationType = typeof(TestEntity1);
+
+        provider.Register(baseType, "BaseCollection");
+        provider.RegisterMigrationTypes(baseType, migrationType);
+
+        // Act
+        var actual = provider.GetCollectionName(migrationType);
+
+        // Assert
+        Assert.Equal("BaseCollection", actual);
     }
 
     private class TestEntity1
