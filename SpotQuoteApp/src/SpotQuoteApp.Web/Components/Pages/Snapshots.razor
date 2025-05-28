@@ -1,7 +1,9 @@
 @page "/snapshots"
 @using EventSourcingFramework.Application.Abstractions.Snapshots
+@using EventSourcingFramework.Application.Abstractions.EventStore
 @inject ISnapshotService SnapshotService
 @inject ISnackbar Snackbar
+@inject IEventSequenceGenerator EventSequenceGenerator
 
 <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">Snapshots</MudText>
 
@@ -52,7 +54,7 @@
     {
         try
         {
-            var id = await SnapshotService.TakeSnapshotAsync();
+            var id = await SnapshotService.TakeSnapshotAsync(await EventSequenceGenerator.GetCurrentSequenceNumberAsync());
             Snackbar.Add($"Snapshot {id} created", Severity.Success);
             await LoadSnapshots();
         }
