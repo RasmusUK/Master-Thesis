@@ -3,8 +3,19 @@
 This repository contains the following projects:
 
 - EventSourcingFramework
-- Mock-api
+
+  The core library providing full event sourcing functionality.
 - SpotQuoteApp
+
+  A sample application that demonstrates how to use the framework in a realistic domain scenario, specifically, for managing spot quotes.
+
+- Mock-api
+
+  A lightweight mock HTTP API used by `SpotQuoteApp` to simulate external buying rate requests
+
+- Example
+
+  A minimal standalone project that supports the _How to Use the Event Sourcing Framework_ guide and the quick-start example from this README.
 
 ## Spot Quote App
 
