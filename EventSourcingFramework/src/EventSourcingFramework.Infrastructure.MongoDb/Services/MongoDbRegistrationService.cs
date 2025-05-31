@@ -15,9 +15,9 @@ public class MongoDbRegistrationService : IMongoDbRegistrationService
         foreach (var (entityType, collectionName) in entities)
         {
             registered.Add((entityType, collectionName));
-            RegisterGenericEvent(typeof(MongoCreateEvent<>), entityType);
-            RegisterGenericEvent(typeof(MongoUpdateEvent<>), entityType);
-            RegisterGenericEvent(typeof(MongoDeleteEvent<>), entityType);
+            RegisterGenericEvent(typeof(CreateEvent<>), entityType);
+            RegisterGenericEvent(typeof(UpdateEvent<>), entityType);
+            RegisterGenericEvent(typeof(DeleteEvent<>), entityType);
         }
     }
 

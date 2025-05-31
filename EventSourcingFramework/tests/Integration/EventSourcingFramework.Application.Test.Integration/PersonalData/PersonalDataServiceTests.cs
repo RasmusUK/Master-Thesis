@@ -114,7 +114,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Generic" };
-        var evt = new MongoCreateEvent<TestEntity>(entity);
+        var evt = new CreateEvent<TestEntity>(entity);
 
         // Act
         await personalDataService.StripAndStoreAsync(evt);

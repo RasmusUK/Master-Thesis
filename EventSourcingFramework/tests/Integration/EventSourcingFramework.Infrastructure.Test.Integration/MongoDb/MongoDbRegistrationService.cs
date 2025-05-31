@@ -29,12 +29,12 @@ public class MongoDbRegistrationService : MongoIntegrationTestBase
         );
 
         // Assert
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoCreateEvent<TestEntity>)));
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoUpdateEvent<TestEntity>)));
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoDeleteEvent<TestEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(CreateEvent<TestEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(UpdateEvent<TestEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(DeleteEvent<TestEntity>)));
 
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoCreateEvent<PersonEntity>)));
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoUpdateEvent<PersonEntity>)));
-        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(MongoDeleteEvent<PersonEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(CreateEvent<PersonEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(UpdateEvent<PersonEntity>)));
+        Assert.True(BsonClassMap.IsClassMapRegistered(typeof(DeleteEvent<PersonEntity>)));
     }
 }

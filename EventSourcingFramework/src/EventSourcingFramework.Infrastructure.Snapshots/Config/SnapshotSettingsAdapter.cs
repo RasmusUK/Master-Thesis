@@ -16,7 +16,6 @@ public class SnapshotSettingsAdapter : ISnapshotSettings
     public bool Enabled => options.Enabled;
     public SnapshotTriggerMode Mode => options.Trigger.Mode;
     public SnapshotFrequency Frequency => options.Trigger.Frequency;
-    public int EventThreshold => options.Trigger.EventThreshold;
     public SnapshotRetentionStrategy Strategy => options.Retention.Strategy;
     public int MaxCount => options.Retention.MaxCount;
     public int MaxAgeDays => options.Retention.MaxAgeDays;

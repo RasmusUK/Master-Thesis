@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace EventSourcingFramework.Infrastructure.Shared.Models.Events;
 
-public record MongoCreateEvent<T>(T Entity) : MongoEventBase(Entity.Id), IMongoCreateEvent<T>
+public record CreateEvent<T>(T Entity) : MongoEventBase(Entity.Id), ICreateEvent<T>
     where T : IEntity
 {
     public override string ToString()

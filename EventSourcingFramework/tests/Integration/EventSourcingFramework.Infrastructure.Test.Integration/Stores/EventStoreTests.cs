@@ -33,7 +33,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "X" });
+        var testEvent = new CreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "X" });
 
         // Act
         await eventStore.InsertEventAsync(testEvent);
@@ -50,7 +50,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "A" });
+        var testEvent = new CreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "A" });
 
         // Act
         await eventStore.InsertEventAsync(testEvent);
@@ -66,7 +66,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "B" });
+        var testEvent = new CreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "B" });
         await eventStore.InsertEventAsync(testEvent);
 
         // Act
@@ -82,7 +82,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(
+        var testEvent = new CreateEvent<TestEntity>(
             new TestEntity { Id = entityId, Name = "TimeRange" }
         );
         await eventStore.InsertEventAsync(testEvent);
@@ -101,7 +101,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(
+        var testEvent = new CreateEvent<TestEntity>(
             new TestEntity { Id = entityId, Name = "ByEntity" }
         );
         await eventStore.InsertEventAsync(testEvent);
@@ -119,8 +119,8 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var e1 = new MongoCreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "One" });
-        var e2 = new MongoCreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "Two" });
+        var e1 = new CreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "One" });
+        var e2 = new CreateEvent<TestEntity>(new TestEntity { Id = entityId, Name = "Two" });
 
         await eventStore.InsertEventAsync(e1);
         await eventStore.InsertEventAsync(e2);
@@ -141,7 +141,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     {
         // Arrange
         var entityId = Guid.NewGuid();
-        var testEvent = new MongoCreateEvent<TestEntity>(
+        var testEvent = new CreateEvent<TestEntity>(
             new TestEntity { Id = entityId, Name = "Global" }
         );
         await eventStore.InsertEventAsync(testEvent);
@@ -167,7 +167,7 @@ public class EventStoreTests : MongoIntegrationTestBase
             }));
 
         var MongoCreateEvent =
-            new MongoCreateEvent<TestEntity>(new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" });
+            new CreateEvent<TestEntity>(new TestEntity { Id = Guid.NewGuid(), Name = "DisabledStore" });
 
         // Act
         await store.InsertEventAsync(MongoCreateEvent);

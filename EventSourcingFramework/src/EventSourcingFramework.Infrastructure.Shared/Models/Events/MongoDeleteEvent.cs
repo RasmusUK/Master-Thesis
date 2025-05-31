@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 
 namespace EventSourcingFramework.Infrastructure.Shared.Models.Events;
 
-public record MongoDeleteEvent<T>(T Entity) : MongoEventBase(Entity.Id), IMongoDeleteEvent<T>
+public record DeleteEvent<T>(T Entity) : MongoEventBase(Entity.Id), IDeleteEvent<T>
     where T : IEntity
 {
     public override string ToString()

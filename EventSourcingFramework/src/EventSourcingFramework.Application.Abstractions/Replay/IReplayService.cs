@@ -5,8 +5,8 @@ namespace EventSourcingFramework.Application.Abstractions.Replay;
 
 public interface IReplayService
 {
-    Task StartReplay(ReplayMode mode = ReplayMode.Strict);
-    Task StopReplay();
+    Task StartReplayAsync(ReplayMode mode = ReplayMode.Strict);
+    Task StopReplayAsync();
     Task ReplayAllAsync(bool autoStop = true, bool useSnapshot = true);
     Task ReplayUntilAsync(DateTime until, bool autoStop = true, bool useSnapshot = true);
     Task ReplayFromAsync(DateTime from, bool autoStop = true, bool useSnapshot = true);

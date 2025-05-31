@@ -34,8 +34,8 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
         var entity1 = new TestEntity { Id = entityId, Name = "Created" };
         var entity2 = new TestEntity { Id = entityId, Name = "Updated" };
 
-        await eventStore.InsertEventAsync(new MongoCreateEvent<TestEntity>(entity1));
-        await eventStore.InsertEventAsync(new MongoUpdateEvent<TestEntity>(entity2));
+        await eventStore.InsertEventAsync(new CreateEvent<TestEntity>(entity1));
+        await eventStore.InsertEventAsync(new UpdateEvent<TestEntity>(entity2));
 
         // Act
         var result = await entityHistoryService.GetEntityHistoryAsync<TestEntity>(entityId);
@@ -53,7 +53,7 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
         var entityId = Guid.NewGuid();
         var deleted = new TestEntity { Id = entityId, Name = "Deleted" };
 
-        var MongoDeleteEvent = new MongoDeleteEvent<TestEntity>(deleted);
+        var MongoDeleteEvent = new DeleteEvent<TestEntity>(deleted);
         await eventStore.InsertEventAsync(MongoDeleteEvent);
 
         // Act

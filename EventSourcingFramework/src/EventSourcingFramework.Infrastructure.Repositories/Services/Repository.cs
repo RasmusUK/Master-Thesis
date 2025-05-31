@@ -35,7 +35,7 @@ public class Repository<T> : IRepository<T>
         var eventEmitted = false;
         try
         {
-            var e = new MongoCreateEvent<T>(entity);
+            var e = new CreateEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             await entityStore.InsertEntityAsync(entity);
             await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
@@ -45,7 +45,7 @@ public class Repository<T> : IRepository<T>
             if (!eventEmitted)
                 throw;
 
-            var e = new MongoDeleteEvent<T>(entity);
+            var e = new DeleteEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             if (!eventEmitted)
                 throw new RepositoryException(
@@ -67,16 +67,17 @@ public class Repository<T> : IRepository<T>
 
         try
         {
-            var e = new MongoUpdateEvent<T>(entity);
+            var e = new UpdateEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             await entityStore.UpdateEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
         }
         catch
         {
             if (!eventEmitted)
                 throw;
 
-            var e = new MongoUpdateEvent<T>(snapshot);
+            var e = new UpdateEvent<T>(snapshot);
             eventEmitted = await HandleEventAsync(e);
             if (!eventEmitted)
                 throw new RepositoryException(
@@ -91,16 +92,17 @@ public class Repository<T> : IRepository<T>
         var eventEmitted = false;
         try
         {
-            var e = new MongoDeleteEvent<T>(entity);
+            var e = new DeleteEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             await entityStore.DeleteEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
         }
         catch
         {
             if (!eventEmitted)
                 throw;
 
-            var e = new MongoCreateEvent<T>(entity);
+            var e = new CreateEvent<T>(entity);
             eventEmitted = await HandleEventAsync(e);
             if (!eventEmitted)
                 throw new RepositoryException(
@@ -110,81 +112,58 @@ public class Repository<T> : IRepository<T>
         }
     }
 
-    public Task<T?> ReadByIdAsync(Guid id)
-    {
-        return entityStore.GetEntityByIdAsync<T>(id);
-    }
+    public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
 
-    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter)
-    {
-        return entityStore.GetEntityByFilterAsync(filter);
-    }
+    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter) => entityStore.GetEntityByFilterAsync(filter);
 
     public Task<TProjection?> ReadProjectionByIdAsync<TProjection>(
         Guid id,
         Expression<Func<T, TProjection>> projection
-    )
-    {
-        return entityStore.GetProjectionByFilterAsync(x => x.Id == id, projection);
-    }
+    ) => entityStore.GetProjectionByFilterAsync(x => x.Id == id, projection);
 
     public Task<TProjection?> ReadProjectionByFilterAsync<TProjection>(
         Expression<Func<T, bool>> filter,
         Expression<Func<T, TProjection>> projection
-    )
-    {
-        return entityStore.GetProjectionByFilterAsync(filter, projection);
-    }
+    ) => entityStore.GetProjectionByFilterAsync(filter, projection);
 
-    public Task<IReadOnlyCollection<T>> ReadAllAsync()
-    {
-        return entityStore.GetAllAsync<T>();
-    }
+    public Task<IReadOnlyCollection<T>> ReadAllAsync() => entityStore.GetAllAsync<T>();
 
-    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter)
-    {
-        return entityStore.GetAllByFilterAsync(filter);
-    }
+    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter) =>
+        entityStore.GetAllByFilterAsync(filter);
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsAsync<TProjection>(
         Expression<Func<T, TProjection>> projection
-    )
-    {
-        return entityStore.GetAllProjectionsAsync(projection);
-    }
+    ) => entityStore.GetAllProjectionsAsync(projection);
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsByFilterAsync<TProjection>(
         Expression<Func<T, TProjection>> projection,
         Expression<Func<T, bool>> filter
-    )
-    {
-        return entityStore.GetAllProjectionsByFilterAsync(projection, filter);
-    }
+    ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
 
     public virtual async Task CreateAsync(T entity, Guid transactionId)
     {
-        var e = new MongoCreateEvent<T>(entity) { TransactionId = transactionId };
+        var e = new CreateEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
     }
 
     public virtual async Task UpdateAsync(T entity, Guid transactionId)
     {
-        var e = new MongoUpdateEvent<T>(entity) { TransactionId = transactionId };
+        var e = new UpdateEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
         await entityStore.UpdateEntityAsync(entity);
     }
 
     public virtual async Task DeleteAsync(T entity, Guid transactionId)
     {
-        var e = new MongoDeleteEvent<T>(entity) { TransactionId = transactionId };
+        var e = new DeleteEvent<T>(entity) { TransactionId = transactionId };
         await HandleEventAsync(e);
         await entityStore.DeleteEntityAsync(entity);
     }
 
     public async Task<Guid> CreateCompensationAsync(T entity, Guid transactionId)
     {
-        var e = new MongoCreateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        var e = new CreateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
         await HandleEventAsync(e);
         await entityStore.InsertEntityAsync(entity);
         return entity.Id;
@@ -192,14 +171,14 @@ public class Repository<T> : IRepository<T>
 
     public async Task UpdateCompensationAsync(T entity, Guid transactionId)
     {
-        var e = new MongoUpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        var e = new UpdateEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
         await HandleEventAsync(e);
         await entityStore.UpsertEntityAsync(entity);
     }
 
     public async Task DeleteCompensationAsync(T entity, Guid transactionId)
     {
-        var e = new MongoDeleteEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
+        var e = new DeleteEvent<T>(entity) { TransactionId = transactionId, Compensation = true };
         await HandleEventAsync(e);
         await entityStore.DeleteEntityAsync(entity);
     }
