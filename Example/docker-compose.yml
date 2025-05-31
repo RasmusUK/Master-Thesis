@@ -1,0 +1,11 @@
+services:
+  mongodb.example:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb.example
+    ports:
+      - "27021:27017"
+    volumes:
+      - mongo_data_example:/data/db
+
+volumes:
+  mongo_data_example:
