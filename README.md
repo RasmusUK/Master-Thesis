@@ -116,7 +116,7 @@ This guide walks you through setting up and using the event sourcing framework, 
 - Basic familiarity with NoSQL principles:
   - Prefer storing object references as IDs instead of direct nested documents when modeling relationships.
   
-    Below you can see an example of this. Instead of embedding the full Address object inside the Order document, we store only its ID. This keeps the documents lightweight, supports better versioning, and avoids data duplication:
+    Below you can see an example of this. Instead of embedding the full `Address` object inside the `Order` document, we store only its ID. This keeps the documents lightweight, supports better versioning, and avoids data duplication:
     ```csharp
     // Avoid embedding related objects
     public class Order
