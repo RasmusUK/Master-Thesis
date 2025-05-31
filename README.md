@@ -536,7 +536,7 @@ public class AuditLogger
         e.EntityId,
         e.Timestamp);
     }
-    }
+  }
 }
 ```
 The developer is in charge of implementing logging and auditing based on the specific needs of the domain and compliance requirements. While the event store provides a complete history of changes, the framework does not automatically expose logs or audit trails. It is up to the developer to decide what to track, how to track it, and how to surface it.
