@@ -550,7 +550,7 @@ Once these steps are complete:
 - Personal data is separated and managed in compliance with GDPR.
 
 # Quick Start Example
-Here’s a minimal end-to-end example to help you get started quickly.
+Here is a minimal end-to-end example to help you get started quickly.
 
 ## Define Your Entity
 ```csharp
