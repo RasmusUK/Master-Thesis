@@ -449,10 +449,25 @@ When you need to make breaking changes to your domain objects:
 
 1. Version the current entity:
     - Rename the existing class to e.g. `CustomerV1` and set `SchemaVersion = 1`.
+    ```csharp
+    public class CustomerV1 : Entity
+    {
+      public int SchemaVersion { get; set; } = 1; 
+      public string FirstName { get; set; }
+      public string LastName { get; set; }
+    }
+    ```
 2. Create the new version:
     - Copy the old class to a new class named `Customer` and set `SchemaVersion = 2`
     - Make your desired changes.
-3. Inside your event sourcing registration method, register the entity versions, migrations, and a migration function to upgrade from the old version to the new one.:
+    ```csharp
+    public class Customer : Entity
+    {
+      public int SchemaVersion { get; set; } = 2;
+      public string Name { get; set; }
+    }
+    ```
+3. Inside your event sourcing registration method, register the entity versions, migrations, and a migration function to upgrade from the old version to the new one:
 ```csharp
 services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
 {
@@ -486,16 +501,52 @@ public class Customer : Entity
   public string Name { get; set; }
 }
 ```
-It is your responsibility to determine what constitutes personal data based on your domain and applicable regulations (e.g., GDPR).
+It is the developers responsibility to determine what constitutes personal data based on the domain and applicable regulations (e.g., GDPR).
 The framework provides the mechanism, but you must define which fields are sensitive and ensure compliance, including implementing appropriate data retention strategies (e.g., scheduled jobs to purge expired records).
 
+
+## Step 9: Logging And Auditing (Optional)
+Although the framework provides a complete event store behind the scenes, you may want to expose events for operational logging, audit trails, or debugging.
+
+You can easily fetch and log recent events using the IEventStore interface provided by the framework:
+```csharp
+public class AuditLogger
+{
+  private readonly IEventStore eventStore;
+  private readonly ILogger<AuditLogger> logger;
+
+  public AuditLogger(IEventStore eventStore, ILogger<AuditLogger> logger)
+  {
+    this.eventStore = eventStore;
+    this.logger = logger;
+  }
+
+  public async Task LogRecentEventsAsync(int count = 50)
+  {
+    var events = await eventStore.GetEventsAsync();
+    var recentEvents = events
+      .OrderByDescending(e => e.Timestamp)
+      .Take(count);
+
+    foreach (var e in recentEvents)
+    {
+      logger.LogInformation("Event: {Type} | Event Id: {EventId} | Entity Id: {EntityId} | Timestamp: {Timestamp}",
+        e.Typename,
+        e.Id,
+        e.EntityId,
+        e.Timestamp);
+    }
+    }
+}
+```
+The developer is in charge of implementing logging and auditing based on the specific needs of the domain and compliance requirements. While the event store provides a complete history of changes, the framework does not automatically expose logs or audit trails. It is up to the developer to decide what to track, how to track it, and how to surface it.
 ## You Are Ready
 Once these steps are complete:
 
 - Events are handled behind the scenes.
 - Repositories and APIs are ready to use.
 - Replay and snapshot capabilities are fully integrated.
-- Your system is prepared for versioning and schema evolution.
+- The system is prepared for versioning and schema evolution.
 - Personal data is separated and managed in compliance with GDPR.
 
 # Quick Start Example
