@@ -163,7 +163,7 @@ public void ConfigureServices(IServiceCollection services)
     .SetBasePath(Directory.GetCurrentDirectory())
     .AddJsonFile("appsettings.json", false, true)
     .Build();
-  services.AddEventSourcing(configuration, (schema, migrations, migrator,mongoDbRegistrationService) =>
+  services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
   {                  
     // Register Entities (Step 2)   
     // Register Migrations (Step 7)
@@ -261,7 +261,7 @@ public class Order : Entity
 ```
 Next, register your entities during service configuration. This tells the framework which entity types to persist and what MongoDB collection names to use for each.
 ```csharp
-services.AddEventSourcing(configuration, (schema, migrations, migrator,mongoDbRegistrationService) =>
+services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
 {                  
   mongoDbRegistrationService.Register(
     (typeof(Customer), "Customers"),
