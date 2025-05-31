@@ -32,7 +32,7 @@ public class ReplayService : IReplayService
         this.snapshotSettings = snapshotSettings;
     }
 
-    public async Task StartReplay(ReplayMode mode = ReplayMode.Replay)
+    public async Task StartReplayAsync(ReplayMode mode = ReplayMode.Replay)
     {
         replayContext.StartReplay(mode);
         if (mode == ReplayMode.Debug)
@@ -42,7 +42,7 @@ public class ReplayService : IReplayService
         replayContext.IsLoading = false;
     }
 
-    public async Task StopReplay()
+    public async Task StopReplayAsync()
     {
         IReadOnlyCollection<IEvent> events;
         var latestSnapshot = await TryGetLastSnapshotAsync();
@@ -92,7 +92,19 @@ public class ReplayService : IReplayService
     {
         await StartReplayIfNeeded(ReplayMode.Replay);
         await TryRestoreSnapshotAsync(useSnapshot, until: until);
-        var events = await eventStore.GetEventsUntilAsync(until);
+        IReadOnlyCollection<IEvent> events = new List<IEvent>();
+        if (useSnapshot)
+        {
+            var latestSnapshot = await TryGetLastSnapshotAsync();
+            if (latestSnapshot is not null && latestSnapshot.Timestamp <= until)
+            {
+                events = await eventStore.GetEventsFromUntilAsync(latestSnapshot.Timestamp, until);
+            }
+        }
+        else
+        {
+            events = await eventStore.GetEventsUntilAsync(until);
+        }
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
     }
@@ -223,13 +235,13 @@ public class ReplayService : IReplayService
     private async Task StartReplayIfNeeded(ReplayMode replayMode = ReplayMode.Strict)
     {
         if (!replayContext.IsReplaying)
-            await StartReplay(replayMode);
+            await StartReplayAsync(replayMode);
     }
 
     private async Task StopReplayIfNeeded(bool autoStop)
     {
         if (autoStop)
-            await StopReplay();
+            await StopReplayAsync();
     }
 
     private async Task TryRestoreSnapshotAsync(
@@ -286,48 +298,33 @@ public class ReplayService : IReplayService
         foreach (var e in events)
             switch (e)
             {
-                case IMongoCreateEvent<IEntity> create:
-                    await ProcessReplayMongoCreateEventDynamic(create);
+                case ICreateEvent<IEntity> create:
+                    await ProcessReplayCreateEvent((dynamic)create);
                     break;
-                case IMongoUpdateEvent<IEntity> update:
-                    await ProcessReplayMongoUpdateEventDynamic(update);
+                case IUpdateEvent<IEntity> update:
+                    await ProcessReplayUpdateEvent((dynamic)update);
                     break;
-                case IMongoDeleteEvent<IEntity> delete:
-                    await ProcessReplayMongoDeleteEventDynamic(delete);
+                case IDeleteEvent<IEntity> delete:
+                    await ProcessReplayDeleteEvent((dynamic)delete);
                     break;
                 default:
                     throw new InvalidOperationException($"Unknown event type: {e.GetType().Name}");
             }
     }
-
-    private Task ProcessReplayMongoCreateEventDynamic(IMongoCreateEvent<IEntity> e)
-    {
-        return ProcessReplayMongoCreateEvent((dynamic)e);
-    }
-
-    private Task ProcessReplayMongoUpdateEventDynamic(IMongoUpdateEvent<IEntity> e)
-    {
-        return ProcessReplayMongoUpdateEvent((dynamic)e);
-    }
-
-    private Task ProcessReplayMongoDeleteEventDynamic(IMongoDeleteEvent<IEntity> e)
-    {
-        return ProcessReplayMongoDeleteEvent((dynamic)e);
-    }
-
-    private Task ProcessReplayMongoCreateEvent<T>(IMongoCreateEvent<T> e)
+    
+    private Task ProcessReplayCreateEvent<T>(ICreateEvent<T> e)
         where T : IEntity
     {
         return entityStore.UpsertEntityAsync(e.Entity);
     }
 
-    private Task ProcessReplayMongoUpdateEvent<T>(IMongoUpdateEvent<T> e)
+    private Task ProcessReplayUpdateEvent<T>(IUpdateEvent<T> e)
         where T : IEntity
     {
         return entityStore.UpsertEntityAsync(e.Entity);
     }
 
-    private Task ProcessReplayMongoDeleteEvent<T>(IMongoDeleteEvent<T> e)
+    private Task ProcessReplayDeleteEvent<T>(IDeleteEvent<T> e)
         where T : IEntity
     {
         return entityStore.DeleteEntityAsync(e.Entity);

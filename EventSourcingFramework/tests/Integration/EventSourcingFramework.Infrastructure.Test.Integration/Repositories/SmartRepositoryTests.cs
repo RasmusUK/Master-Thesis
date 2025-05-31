@@ -50,7 +50,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         Assert.NotNull(stored);
         Assert.Single(events);
-        Assert.IsType<MongoCreateEvent<TestEntity>>(events.First());
+        Assert.IsType<CreateEvent<TestEntity>>(events.First());
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var events = await eventStore.GetEventsByEntityIdAsync(entity.Id);
 
         Assert.Equal(2, events.Count);
-        Assert.Contains(events, e => e is MongoCreateEvent<TestEntity>);
-        Assert.Contains(events, e => e is MongoDeleteEvent<TestEntity> de && de.Compensation);
+        Assert.Contains(events, e => e is CreateEvent<TestEntity>);
+        Assert.Contains(events, e => e is DeleteEvent<TestEntity> de && de.Compensation);
     }
 
     [Fact]
@@ -121,9 +121,9 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var events = await eventStore.GetEventsByEntityIdAsync(entity1.Id);
 
         Assert.Equal(3, events.Count);
-        Assert.Contains(events, e => e is MongoCreateEvent<TestEntity>);
-        Assert.Contains(events, e => e is MongoDeleteEvent<TestEntity>);
-        Assert.Contains(events, e => e is MongoCreateEvent<TestEntity> de && de.Compensation);
+        Assert.Contains(events, e => e is CreateEvent<TestEntity>);
+        Assert.Contains(events, e => e is DeleteEvent<TestEntity>);
+        Assert.Contains(events, e => e is CreateEvent<TestEntity> de && de.Compensation);
     }
 
     [Fact]
@@ -147,7 +147,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         Assert.Equal("After", updated!.Name);
         Assert.Equal(2, events.Count);
-        Assert.Contains(events, e => e is MongoUpdateEvent<TestEntity>);
+        Assert.Contains(events, e => e is UpdateEvent<TestEntity>);
     }
 
     [Fact]
@@ -170,7 +170,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         Assert.Null(deleted);
         Assert.Equal(2, events.Count);
-        Assert.Contains(events, e => e is MongoDeleteEvent<TestEntity>);
+        Assert.Contains(events, e => e is DeleteEvent<TestEntity>);
     }
 
     [Fact]
@@ -205,7 +205,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var events = await eventStore.GetEventsByEntityIdAsync(entity.Id);
 
         Assert.Equal(3, events.Count); // Create + Update + Compensation Update
-        Assert.Contains(events, e => e is MongoUpdateEvent<TestEntity> ue && ue.Compensation);
+        Assert.Contains(events, e => e is UpdateEvent<TestEntity> ue && ue.Compensation);
     }
 
     [Fact]
@@ -258,8 +258,8 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         var events = await eventStore.GetEventsByEntityIdAsync(entity.Id);
 
         Assert.Equal(4, events.Count); // Create + Update + Compensation Update + Compensation Delete
-        Assert.Equal(1, events.Count(e => e is MongoUpdateEvent<TestEntity> ue && ue.Compensation));
-        Assert.Equal(1, events.Count(e => e is MongoDeleteEvent<TestEntity> de && de.Compensation));
+        Assert.Equal(1, events.Count(e => e is UpdateEvent<TestEntity> ue && ue.Compensation));
+        Assert.Equal(1, events.Count(e => e is DeleteEvent<TestEntity> de && de.Compensation));
     }
 
     [Fact]

@@ -161,7 +161,7 @@
     {
         try
         {
-            await ReplayService.StopReplay();
+            await ReplayService.StopReplayAsync();
             UpdateIsRunning();
             simulatedEvents = null;
             Snackbar.Add("Replay session stopped", Severity.Warning);
@@ -196,7 +196,7 @@
     {
         try
         {
-            await ReplayService.StartReplay(mode);
+            await ReplayService.StartReplayAsync(mode);
             UpdateIsRunning();
             await replayAction();
             if (ReplayService.IsRunning())

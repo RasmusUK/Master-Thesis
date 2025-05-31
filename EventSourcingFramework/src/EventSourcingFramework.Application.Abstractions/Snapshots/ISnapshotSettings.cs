@@ -5,7 +5,6 @@ public interface ISnapshotSettings
     bool Enabled { get; }
     SnapshotTriggerMode Mode { get; }
     SnapshotFrequency Frequency { get; }
-    int EventThreshold { get; }
     SnapshotRetentionStrategy Strategy { get; }
     int MaxCount { get; }
     int MaxAgeDays { get; }

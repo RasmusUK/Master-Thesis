@@ -35,6 +35,9 @@ public class TransactionManager : ITransactionManager
         {
             list = new List<object>();
             trackedUpsertedEntities.Add(typeof(T), list);
+            
+            if (GetTrackedDeletedEntities<T>().Any(e=> e.Id == entity.Id))
+                trackedDeletedEntities![typeof(T)].Remove(entity);
         }
 
         list.Add(entity);
@@ -50,6 +53,9 @@ public class TransactionManager : ITransactionManager
         {
             list = new List<object>();
             trackedDeletedEntities.Add(typeof(T), list);
+            
+            if (GetTrackedUpsertedEntities<T>().Any(e => e.Id == entity.Id))
+                trackedUpsertedEntities![typeof(T)].Remove(entity);
         }
 
         list.Add(entity);
