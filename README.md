@@ -475,6 +475,20 @@ services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbR
 ```
 This ensures old events and entities can still be replayed and mapped to the new schema.
 
+## Step 8: Personal Data Handling
+To support GDPR compliance, you can annotate sensitive fields with the `[PersonalData]` attribute.
+This ensures that the marked properties are automatically stripped from events and stored securely in the dedicated personal data store.
+
+```csharp
+public class Customer : Entity
+{
+  [PersonalData]
+  public string Name { get; set; }
+}
+```
+It is your responsibility to determine what constitutes personal data based on your domain and applicable regulations (e.g., GDPR).
+The framework provides the mechanism, but you must define which fields are sensitive and ensure compliance, including implementing appropriate data retention strategies (e.g., scheduled jobs to purge expired records).
+
 ## You Are Ready
 Once these steps are complete:
 
@@ -482,7 +496,7 @@ Once these steps are complete:
 - Repositories and APIs are ready to use.
 - Replay and snapshot capabilities are fully integrated.
 - Your system is prepared for versioning and schema evolution.
-
+- Personal data is separated and managed in compliance with GDPR.
 
 # Quick Start Example
 Here’s a minimal end-to-end example to help you get started quickly.
