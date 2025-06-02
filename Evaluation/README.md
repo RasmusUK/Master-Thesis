@@ -5,7 +5,6 @@
 
 ### 1. Set up the framework
 - Add the event sourcing framework to the project.
-- Configure it using the included `appsettings.json` template.
 
 ### 2. Implement and register a `SpotQuote` entity
 - Design a `SpotQuote` domain model that includes the following properties:
