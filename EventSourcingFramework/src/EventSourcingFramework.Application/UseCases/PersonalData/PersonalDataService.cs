@@ -105,11 +105,8 @@ public class PersonalDataService : IPersonalDataService
     private void RestorePersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
         var type = obj.GetType();
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0))
         {
-            if (prop.GetIndexParameters().Length > 0)
-                continue;
-            
             var propPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
 
             if (dict.TryGetValue(propPath, out var val))

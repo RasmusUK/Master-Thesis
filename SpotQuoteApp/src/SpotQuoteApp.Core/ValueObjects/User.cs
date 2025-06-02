@@ -7,16 +7,16 @@ public record User(Guid Id, string Name, string Email, string Phone, string Offi
     public Guid Id { get; } = Id;
 
     [PersonalData]
-    public string Name { get; } = Name;
+    public string Name { get; set; } = Name;
 
     [PersonalData]
-    public string Email { get; } = Email;
+    public string Email { get; set; } = Email;
 
     [PersonalData]
-    public string Phone { get; } = Phone;
+    public string Phone { get; set; } = Phone;
 
     [PersonalData]
-    public string Office { get; } = Office;
+    public string Office { get; set; } = Office;
 
     public override string ToString()
     {
