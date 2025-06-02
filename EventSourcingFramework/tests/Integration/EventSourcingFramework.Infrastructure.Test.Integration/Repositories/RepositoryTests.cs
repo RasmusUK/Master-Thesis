@@ -312,6 +312,18 @@ public class RepositoryTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new PersonEntity();
+        entity.Name = "John Doe";
+        entity.Email = "mail";
+        entity.Address.Street = "123 Main St";
+        entity.Address.City = "Anytown";
+        entity.Address.Location.Latitude = 10;
+        entity.Address.Location.Longitude = 12;
+        entity.Addresses = new List<Address> {  new() { Street = "Street" } };
+        entity.Phone = new Phone
+        {
+            Number = "123456789",
+            Type = "Mobile"
+        };
         
         // Act
         await personRepository.CreateAsync(entity);
@@ -326,6 +338,9 @@ public class RepositoryTests : MongoIntegrationTestBase
         Assert.Null(e.Entity.Email);
         Assert.Null(e.Entity.Address.Street);
         Assert.Null(e.Entity.Address.City);
+        Assert.Null(e.Entity.Addresses.First().Street);
+        Assert.Null(e.Entity.Phone.Number);
+        Assert.Null(e.Entity.Phone.Type);
         Assert.Equal(0, e.Entity.Address.Location.Latitude);
         Assert.Equal(0, e.Entity.Address.Location.Longitude);
     }
@@ -342,6 +357,11 @@ public class RepositoryTests : MongoIntegrationTestBase
         entity.Address.Location.Latitude = 10;
         entity.Address.Location.Longitude = 12;
         entity.Addresses = new List<Address> {  new() { Street = "Street" } };
+        entity.Phone = new Phone
+        {
+            Number = "123456789",
+            Type = "Mobile"
+        };
         
         // Act
         await personRepository.CreateAsync(entity);
@@ -355,6 +375,8 @@ public class RepositoryTests : MongoIntegrationTestBase
         Assert.Equal("123 Main St", fetchedEntity.Address.Street);
         Assert.Equal("Anytown", fetchedEntity.Address.City);
         Assert.Equal("Street", fetchedEntity.Addresses.First().Street);
+        Assert.Equal("123456789", fetchedEntity.Phone.Number);
+        Assert.Equal("Mobile", fetchedEntity.Phone.Type);
         Assert.Equal(10, fetchedEntity.Address.Location.Latitude);
         Assert.Equal(12, fetchedEntity.Address.Location.Longitude);
     }
