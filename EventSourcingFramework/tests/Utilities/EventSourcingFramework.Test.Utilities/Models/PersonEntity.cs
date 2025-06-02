@@ -10,6 +10,7 @@ public class PersonEntity : Entity
     [PersonalData] public string Email { get; set; }
 
     public Address Address { get; set; } = new();
+    public ICollection<Address> Addresses { get; set; } = new List<Address> { new() };
 }
 
 public class Address

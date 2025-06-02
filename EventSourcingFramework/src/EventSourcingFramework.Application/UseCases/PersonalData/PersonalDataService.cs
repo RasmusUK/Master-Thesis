@@ -107,6 +107,9 @@ public class PersonalDataService : IPersonalDataService
         var type = obj.GetType();
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
+            if (prop.GetIndexParameters().Length > 0)
+                continue;
+            
             var propPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
 
             if (dict.TryGetValue(propPath, out var val))

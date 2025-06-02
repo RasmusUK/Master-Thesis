@@ -341,6 +341,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         entity.Address.City = "Anytown";
         entity.Address.Location.Latitude = 10;
         entity.Address.Location.Longitude = 12;
+        entity.Addresses = new List<Address> {  new() { Street = "Street" } };
         
         // Act
         await personRepository.CreateAsync(entity);
@@ -348,10 +349,12 @@ public class RepositoryTests : MongoIntegrationTestBase
         // Assert
         var fetchedEntity = await personRepository.ReadByIdAsync(entity.Id);
         
+        Assert.NotNull(fetchedEntity);
         Assert.Equal("John Doe", fetchedEntity.Name);
         Assert.Equal("mail", fetchedEntity.Email);
         Assert.Equal("123 Main St", fetchedEntity.Address.Street);
         Assert.Equal("Anytown", fetchedEntity.Address.City);
+        Assert.Equal("Street", fetchedEntity.Addresses.First().Street);
         Assert.Equal(10, fetchedEntity.Address.Location.Latitude);
         Assert.Equal(12, fetchedEntity.Address.Location.Longitude);
     }
