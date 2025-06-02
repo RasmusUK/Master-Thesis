@@ -274,6 +274,65 @@ services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbR
 - This registration ensures your entities are tracked and stored correctly in the entity store. It also enables full event sourcing functionality for those types, as it automatically registers the corresponding Create, Update, and Delete events for each entity.
 
 ## Step 3: Use Repositories
+
+## CRUD Interface
+
+The repository exposes the following **CRUD** operations for any entity type `T` that implements the `IEntity` interface:
+
+### Create
+
+- `Task CreateAsync(T entity)`
+  - Adds a new entity.
+
+### Read
+
+- `Task<T?> ReadByIdAsync(Guid id)`
+  - Retrieves an entity by its unique ID.
+
+- `Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter)`
+  - Retrieves a single entity matching a filter.
+
+- `Task<TProjection?> ReadProjectionByIdAsync<TProjection>(Guid id, Expression<Func<T, TProjection>> projection)`
+  - Retrieves a projected view of an entity by ID.
+
+- `Task<TProjection?> ReadProjectionByFilterAsync<TProjection>(Expression<Func<T, bool>> filter, Expression<Func<T, TProjection>> projection)`
+  - Retrieves a projected view of an entity that matches the given filter.
+
+- `Task<IReadOnlyCollection<T>> ReadAllAsync()`
+  - Retrieves all entities.
+
+- `Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter)`
+  - Retrieves all entities that match a given filter.
+
+- `Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsAsync<TProjection>(Expression<Func<T, TProjection>> projection)`
+  - Retrieves projections of all entities.
+
+- `Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsByFilterAsync<TProjection>(Expression<Func<T, TProjection>> projection, Expression<Func<T, bool>> filter)`
+  - Retrieves projections of entities matching the filter.
+
+### Update
+
+- `Task UpdateAsync(T entity)`
+  - Updates an existing entity.
+
+### Delete
+
+- `Task DeleteAsync(T entity)`
+  - Deletes an entity.
+
+
+### Definitions
+
+- A **filter** is a condition used to select specific records.
+  ```csharp
+  order => order.ShippingAddressId = 1
+  ```
+- A **projection** transforms each entity into a different form — often by selecting only specific fields or mapping to a DTO.  
+  ```csharp
+  order => new { order.Id, order.ShippingAddressId }
+  ```
+
+## Repository Interaction Options
 You can now choose how to interact with your data:
 
 ### Option A: Inject Generic Repositories
