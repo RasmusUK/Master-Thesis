@@ -4,12 +4,14 @@ using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Core.Models.Events;
 using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
 using EventSourcingFramework.Infrastructure.Repositories.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
 using EventSourcingFramework.Test.Utilities;
 using EventSourcingFramework.Test.Utilities.Models;
+using MongoDB.Driver;
 
 namespace EventSourcingFramework.Infrastructure.Test.Integration.Repositories;
 
@@ -20,6 +22,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     private readonly IEventStore eventStore;
     private readonly IReplayContext replayContext;
     private readonly IRepository<TestEntity> repository;
+    private readonly IRepository<PersonEntity> personRepository;
     private readonly ISnapshotService snapshotService;
 
     public RepositoryTests(
@@ -27,7 +30,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         IRepository<TestEntity> repository,
         IEventStore eventStore,
         IEntityStore entityStore,
-        IReplayContext replayContext, ISnapshotService snapshotService)
+        IReplayContext replayContext, ISnapshotService snapshotService, IRepository<PersonEntity> personRepository)
         : base(mongoDbService, replayContext)
     {
         this.repository = repository;
@@ -35,6 +38,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         this.entityStore = entityStore;
         this.replayContext = replayContext;
         this.snapshotService = snapshotService;
+        this.personRepository = personRepository;
     }
 
     [Fact]
@@ -301,6 +305,55 @@ public class RepositoryTests : MongoIntegrationTestBase
         // Act & Assert
         var ex = await Assert.ThrowsAsync<RepositoryException>(() => repository.CreateAsync(entity));
         Assert.Contains("Cannot emit events during replay", ex.Message);
+    }
+
+    [Fact]
+    public async Task PersonalDataIsStrippedFromEvent()
+    {
+        // Arrange
+        var entity = new PersonEntity();
+        
+        // Act
+        await personRepository.CreateAsync(entity);
+        
+        // Assert
+        var collection = MongoDbService.EventCollection;
+        var e = (ICreateEvent<PersonEntity>) await collection.Find(
+            e => e.EntityId == entity.Id
+        ).FirstOrDefaultAsync();
+        
+        Assert.Null(e.Entity.Name);
+        Assert.Null(e.Entity.Email);
+        Assert.Null(e.Entity.Address.Street);
+        Assert.Null(e.Entity.Address.City);
+        Assert.Equal(0, e.Entity.Address.Location.Latitude);
+        Assert.Equal(0, e.Entity.Address.Location.Longitude);
+    }
+    
+    [Fact]
+    public async Task PersonalDataIsPreservedInStoredEntity()
+    {
+        // Arrange
+        var entity = new PersonEntity();
+        entity.Name = "John Doe";
+        entity.Email = "mail";
+        entity.Address.Street = "123 Main St";
+        entity.Address.City = "Anytown";
+        entity.Address.Location.Latitude = 10;
+        entity.Address.Location.Longitude = 12;
+        
+        // Act
+        await personRepository.CreateAsync(entity);
+        
+        // Assert
+        var fetchedEntity = await personRepository.ReadByIdAsync(entity.Id);
+        
+        Assert.Equal("John Doe", fetchedEntity.Name);
+        Assert.Equal("mail", fetchedEntity.Email);
+        Assert.Equal("123 Main St", fetchedEntity.Address.Street);
+        Assert.Equal("Anytown", fetchedEntity.Address.City);
+        Assert.Equal(10, fetchedEntity.Address.Location.Latitude);
+        Assert.Equal(12, fetchedEntity.Address.Location.Longitude);
     }
 
 

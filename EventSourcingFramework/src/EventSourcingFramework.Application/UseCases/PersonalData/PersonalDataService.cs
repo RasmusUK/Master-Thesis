@@ -2,8 +2,13 @@ using System.Reflection;
 using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Core.Attributes;
+using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace EventSourcingFramework.Application.UseCases.PersonalData;
 
@@ -28,8 +33,16 @@ public class PersonalDataService : IPersonalDataService
         if (entity is null)
             return;
 
+        var serializedEntity = JsonConvert.SerializeObject(entity);
+        var copiedEntity = JsonConvert.DeserializeObject(serializedEntity, entity.GetType());
+        
+        if (copiedEntity is null)
+            throw new PersonalDataException("Failed to copy entity for personal data stripping.");
+        
+        SetEntityOnEvent(e, copiedEntity);
+        
         var dict = new Dictionary<string, object?>();
-        StripPersonalData(entity, dict, "");
+        StripPersonalData(copiedEntity, dict, "");
 
         if (dict.Count > 0)
             await personalDataStore.StoreAsync(e.Id, dict);
@@ -54,6 +67,13 @@ public class PersonalDataService : IPersonalDataService
         var entityProp = e.GetType()
             .GetProperty("Entity", BindingFlags.Public | BindingFlags.Instance);
         return entityProp?.GetValue(e);
+    }
+    
+    private void SetEntityOnEvent(IEvent e, object entity)
+    {
+        var entityProp = e.GetType()
+            .GetProperty("Entity", BindingFlags.Public | BindingFlags.Instance);
+        entityProp?.SetValue(e, entity);
     }
 
     private void StripPersonalData(object obj, Dictionary<string, object?> dict, string path)
