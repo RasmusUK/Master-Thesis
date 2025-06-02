@@ -79,11 +79,27 @@ public class PersonalDataService : IPersonalDataService
     private void StripPersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
         var type = obj.GetType();
-        foreach (
-            var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.GetIndexParameters().Length == 0)
-        )
+
+        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
         {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null && !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $"{path}[{index}]";
+                    StripPersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return; 
+        }
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length > 0)
+                continue;
+
             if (!prop.CanRead || !prop.CanWrite)
                 continue;
 
@@ -105,8 +121,30 @@ public class PersonalDataService : IPersonalDataService
     private void RestorePersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
         var type = obj.GetType();
-        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance).Where(p => p.GetIndexParameters().Length == 0))
+
+        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
         {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null && !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $"{path}[{index}]";
+                    RestorePersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return;
+        }
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length > 0)
+                continue;
+
+            if (!prop.CanRead || !prop.CanWrite)
+                continue;
+
             var propPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
 
             if (dict.TryGetValue(propPath, out var val))
@@ -115,8 +153,11 @@ public class PersonalDataService : IPersonalDataService
             }
             else
             {
-                var subObj = prop.GetValue(obj);
-                if (subObj != null && !IsPrimitive(prop.PropertyType)) RestorePersonalData(subObj, dict, propPath);
+                var value = prop.GetValue(obj);
+                if (value != null && !IsPrimitive(prop.PropertyType))
+                {
+                    RestorePersonalData(value, dict, propPath);
+                }
             }
         }
     }
@@ -126,7 +167,8 @@ public class PersonalDataService : IPersonalDataService
         return type.IsPrimitive
                || type.IsEnum
                || type == typeof(string)
-               || type == typeof(Guid)
-               || type == typeof(DateTime);
+               || type == typeof(decimal)
+               || type == typeof(DateTime)
+               || type == typeof(Guid);
     }
 }
