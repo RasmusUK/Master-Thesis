@@ -31,8 +31,6 @@
 - Add properties to represent the origin and destination of the quote. These should refer to existing `Location` entities, following the reference-by-ID modeling strategy.
     - `X OriginLocation`
     - `X DestinationLocation`
-- Ensure that existing `SpotQuote` remains compatible with the new version by applying the framework’s versioning and migration strategy. This includes assigning schema versions and implementing a migration function to transform old entities into the new structure by registering it within the framework.
-
 ### 6. Apply schema versioning
 - Use the framework's support for schema versioning and entity migration to support the new version.
 
