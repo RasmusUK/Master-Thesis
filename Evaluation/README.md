@@ -26,7 +26,7 @@
 
 ### 5. Evolve the `SpotQuote` entity
 - Create a new version of the `SpotQuote` entity with the following changes:
-  - Replace `CustomerName` with a new property: `string CustomerId`. 
+  - Rename `CustomerName` to `CustomerId`. Keep type.
   - The property should be marked as personal data.
 - Add properties to represent the origin and destination of the quote. These should refer to existing `Location` entities, following the reference-by-ID modeling strategy.
     - `X OriginLocation`
