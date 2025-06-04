@@ -7,7 +7,7 @@
 - Add the event sourcing framework to the project.
 
 ### 2. Implement and register a `SpotQuote` entity
-- Design a `SpotQuote` domain model that includes the following properties:
+- Design a `SpotQuote` domain model as an `Entity` that includes the following properties:
   - `string CustomerName`
   - `double Price`
 - Register the entity with the framework.
