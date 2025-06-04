@@ -155,6 +155,8 @@ This guide walks you through setting up and using the event sourcing framework, 
     ```
 ## Step 1: Install and Configure the Framework
 ### 1. Add the Framework to Your Application
+Add the following `EventSourcing.CRUD.Infrastructure` nuget package.
+
 In your `Program.cs` or `Startup.cs`, register the framework:
 ```csharp
 using EventSourcingFramework.Infrastructure.DI;
