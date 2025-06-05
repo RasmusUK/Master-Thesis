@@ -102,9 +102,6 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         Assert.NotNull(result);
         Assert.Equal("Live Response", result.Message);
         Assert.Equal(123, result.Value);
-
-        var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
-        Assert.NotNull(stored);
     }
 
     [Fact]
@@ -189,9 +186,6 @@ public class ApiGatewayTests : MongoIntegrationTestBase
         // Assert
         Assert.Equal("Live Response", result.Message);
         Assert.Equal(123, result.Value);
-
-        var stored = await collection.Find(x => x.Key == key).FirstOrDefaultAsync();
-        Assert.NotNull(stored);
     }
 
     [Fact]

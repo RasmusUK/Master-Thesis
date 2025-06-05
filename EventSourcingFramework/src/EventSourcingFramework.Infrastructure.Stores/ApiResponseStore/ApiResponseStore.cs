@@ -20,7 +20,7 @@ public class ApiResponseStore : IApiResponseStore
     {
         var filter = Builders<MongoApiResponse>.Filter.And(
             Builders<MongoApiResponse>.Filter.Eq(x => x.Key, key),
-            Builders<MongoApiResponse>.Filter.Gte(x => x.EventNumber, eventNumber)
+            Builders<MongoApiResponse>.Filter.Lte(x => x.EventNumber, eventNumber)
         );
 
         var doc = await collection

@@ -69,7 +69,6 @@ public class ApiGateway : IApiGateway
                     var json = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<T>(json);
 
-                    await responseStore.SaveAsync(key, await sequenceGenerator.GetCurrentSequenceNumberAsync(), result!);
                     return result!;
                 }
 
@@ -86,7 +85,6 @@ public class ApiGateway : IApiGateway
                     var json = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<T>(json);
 
-                    await responseStore.SaveAsync(key, await sequenceGenerator.GetCurrentSequenceNumberAsync(), result!);
                     return result!;
                 }
 
