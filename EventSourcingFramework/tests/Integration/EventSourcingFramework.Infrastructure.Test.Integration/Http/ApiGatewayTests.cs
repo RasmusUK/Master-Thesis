@@ -2,12 +2,14 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using EventSourcingFramework.Application.Abstractions.ApiGateway;
+using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Http.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models;
+using EventSourcingFramework.Infrastructure.Stores.EventStore;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -22,12 +24,14 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     private readonly IApiGateway apiGateway;
     private readonly IMongoCollection<MongoApiResponse> collection;
     private readonly IReplayContext replayContext;
+    private readonly IEventSequenceGenerator sequenceGenerator;
 
     public ApiGatewayTests(IMongoDbService mongoDbService, IReplayContext replayContext,
-        IApiResponseStore responseStore)
+        IApiResponseStore responseStore, IEventSequenceGenerator sequenceGenerator)
         : base(mongoDbService, replayContext)
     {
         this.replayContext = replayContext;
+        this.sequenceGenerator = sequenceGenerator;
         collection = mongoDbService.ApiResponseCollection;
 
         var handlerMock = new Mock<HttpMessageHandler>();
@@ -58,7 +62,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
             BaseAddress = new Uri("https://fake.api/")
         };
 
-        apiGateway = new ApiGateway(httpClient, responseStore, replayContext);
+        apiGateway = new ApiGateway(httpClient, responseStore, replayContext, sequenceGenerator);
     }
 
     [Fact]

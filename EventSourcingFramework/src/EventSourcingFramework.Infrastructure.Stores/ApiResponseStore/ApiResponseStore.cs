@@ -16,21 +16,31 @@ public class ApiResponseStore : IApiResponseStore
         collection = mongoDbService.ApiResponseCollection;
     }
 
-    public async Task<T?> GetAsync<T>(string key)
+    public async Task<T?> GetAsync<T>(string key, long eventNumber)
     {
-        var filter = Builders<MongoApiResponse>.Filter.Eq(x => x.Key, key);
-        var doc = await collection.Find(filter).FirstOrDefaultAsync();
+        var filter = Builders<MongoApiResponse>.Filter.And(
+            Builders<MongoApiResponse>.Filter.Eq(x => x.Key, key),
+            Builders<MongoApiResponse>.Filter.Gte(x => x.EventNumber, eventNumber)
+        );
 
-        return doc is not null ? BsonSerializer.Deserialize<T>(doc.Response) : default;
+        var doc = await collection
+            .Find(filter)
+            .SortByDescending(x => x.EventNumber)
+            .FirstOrDefaultAsync();
+
+        return doc is not null 
+            ? BsonSerializer.Deserialize<T>(doc.Response) 
+            : default;
     }
 
-    public async Task SaveAsync<T>(string key, T response)
+    public async Task SaveAsync<T>(string key, long eventNumber, T response)
     {
         var document = new MongoApiResponse
         {
             Key = key,
             Response = response.ToBsonDocument(),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            EventNumber = eventNumber
         };
 
         await collection.InsertOneAsync(document);

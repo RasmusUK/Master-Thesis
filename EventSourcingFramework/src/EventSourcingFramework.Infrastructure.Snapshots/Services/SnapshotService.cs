@@ -37,10 +37,10 @@ public class SnapshotService : ISnapshotService
         snapshotOptions = eventSourcingOptions.Value.Snapshot;
     }
 
-    public async Task TakeSnapshotIfNeededAsync(long currentEventNumber)
+    public async Task<bool> TakeSnapshotIfNeededAsync(long currentEventNumber)
     {
         if (!snapshotOptions.Enabled || replayContext.IsReplaying)
-            return;
+            return false;
 
         SnapshotMetadata? lastSnapshot;
         lock (snapshotCacheLock)
@@ -76,7 +76,7 @@ public class SnapshotService : ISnapshotService
         };
 
         if (!shouldTake)
-            return;
+            return false;
 
         var id = await TakeSnapshotAsync(currentEventNumber);
 
@@ -93,6 +93,7 @@ public class SnapshotService : ISnapshotService
         }
 
         await PruneOldSnapshotsAsync();
+        return true;
     }
 
     public async Task<string> TakeSnapshotAsync(long eventNumber)
@@ -148,7 +149,7 @@ public class SnapshotService : ISnapshotService
         }
     }
 
-    public async Task RestoreSnapshotAsync(string snapshotId)
+    public async Task<bool> RestoreSnapshotAsync(string snapshotId)
     {
         ThrowIfSnapshotDisabled();
         if (!replayContext.IsReplaying)
@@ -259,6 +260,7 @@ public class SnapshotService : ISnapshotService
         {
             SnapshotLock.Release();
         }
+        return true;
     }
 
     public async Task<string?> GetLastSnapshotIdAsync()
@@ -344,6 +346,16 @@ public class SnapshotService : ISnapshotService
         var metadataCollection = database.GetCollection<SnapshotMetadata>(SnapshotMetadataCollection);
         var filter = Builders<SnapshotMetadata>.Filter.Eq(s => s.SnapshotId, snapshotId);
         await metadataCollection.DeleteOneAsync(filter);
+    }
+
+    public async Task<SnapshotMetadata?> GetSnapshotMetadataAsync(string snapshotId)
+    {
+        ThrowIfSnapshotDisabled();
+        return await mongoDbService
+            .GetEntityDatabase(true)
+            .GetCollection<SnapshotMetadata>(SnapshotMetadataCollection)
+            .Find(s => s.SnapshotId == snapshotId)
+            .FirstOrDefaultAsync();
     }
 
     private void ThrowIfSnapshotDisabled()

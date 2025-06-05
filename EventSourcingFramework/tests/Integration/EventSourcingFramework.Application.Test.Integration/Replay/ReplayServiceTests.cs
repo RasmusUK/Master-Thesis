@@ -157,7 +157,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayEventAsync(evt, true);
+        await replayService.ReplayEventAsync(evt, false);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);

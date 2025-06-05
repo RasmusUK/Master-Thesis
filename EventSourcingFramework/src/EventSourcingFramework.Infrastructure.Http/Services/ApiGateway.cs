@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using EventSourcingFramework.Application.Abstractions.ApiGateway;
+using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Core.Enums;
 using EventSourcingFramework.Core.Interfaces;
@@ -12,12 +13,14 @@ public class ApiGateway : IApiGateway
     private readonly HttpClient httpClient;
     private readonly IReplayContext replayContext;
     private readonly IApiResponseStore responseStore;
+    private readonly IEventSequenceGenerator sequenceGenerator;
 
-    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext)
+    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext, IEventSequenceGenerator sequenceGenerator)
     {
         this.httpClient = httpClient;
         this.responseStore = responseStore;
         this.replayContext = replayContext;
+        this.sequenceGenerator = sequenceGenerator;
     }
 
     public async Task<T> GetAsync<T>(string url, Dictionary<string, string>? headers = null)
@@ -49,7 +52,7 @@ public class ApiGateway : IApiGateway
             {
                 case ApiReplayMode.CacheOnly:
                 {
-                    var cached = await responseStore.GetAsync<T>(key);
+                    var cached = await responseStore.GetAsync<T>(key, replayContext.EventNumber);
                     if (cached is not null)
                         return cached;
 
@@ -66,13 +69,13 @@ public class ApiGateway : IApiGateway
                     var json = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<T>(json);
 
-                    await responseStore.SaveAsync(key, result!);
+                    await responseStore.SaveAsync(key, await sequenceGenerator.GetCurrentSequenceNumberAsync(), result!);
                     return result!;
                 }
 
                 case ApiReplayMode.CacheThenExternal:
                 {
-                    var cached = await responseStore.GetAsync<T>(key);
+                    var cached = await responseStore.GetAsync<T>(key, replayContext.EventNumber);
                     if (cached is not null)
                         return cached;
 
@@ -83,7 +86,7 @@ public class ApiGateway : IApiGateway
                     var json = await response.Content.ReadAsStringAsync();
                     var result = JsonConvert.DeserializeObject<T>(json);
 
-                    await responseStore.SaveAsync(key, result!);
+                    await responseStore.SaveAsync(key, await sequenceGenerator.GetCurrentSequenceNumberAsync(), result!);
                     return result!;
                 }
 
@@ -98,7 +101,7 @@ public class ApiGateway : IApiGateway
         var liveJson = await liveResponse.Content.ReadAsStringAsync();
         var liveResult = JsonConvert.DeserializeObject<T>(liveJson);
 
-        await responseStore.SaveAsync(key, liveResult!);
+        await responseStore.SaveAsync(key, await sequenceGenerator.GetCurrentSequenceNumberAsync(), liveResult!);
         return liveResult!;
     }
 
