@@ -86,7 +86,9 @@ public class Seeder : ISeeder
                 $"Address {i}",
                 $"Email {i}",
                 $"Phone {i}",
-                $"Attention {i}"
+                $"Attention {i}",
+                $"Port {i}",
+                $"Airport {i}"
             );
             await addressRepository.CreateAsync(address);
         }
@@ -190,16 +192,22 @@ public class Seeder : ISeeder
                         buyingRate.Supplier,
                         buyingRate.ForwarderService,
                         buyingRate.SupplierService,
-                        new Profit(rand.Next(10) , true),
+                        new Profit(rand.Next(10), true),
                         false,
                         new List<Cost>
                         {
                             new(
-                                new SupplierCost(ChargeType.Freight, CostType.PerKg,  rand.NextDouble()*20, 25, 0),
+                                new SupplierCost(
+                                    ChargeType.Freight,
+                                    CostType.PerKg,
+                                    rand.NextDouble() * 20,
+                                    25,
+                                    0
+                                ),
                                 new SellingCost(
                                     ChargeType.Freight,
                                     CostType.PerKg,
-                                    rand.NextDouble()*20 + 20,
+                                    rand.NextDouble() * 20 + 20,
                                     25,
                                     0,
                                     string.Empty

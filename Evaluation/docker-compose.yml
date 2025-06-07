@@ -1,0 +1,11 @@
+services:
+  mongodb.evaluation:
+    image: mongodb/mongodb-community-server:latest
+    container_name: mongodb.evaluation
+    ports:
+      - "27022:27017"
+    volumes:
+      - mongo_data_evaluation:/data/db
+
+volumes:
+  evaluation:

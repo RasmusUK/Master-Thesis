@@ -25,8 +25,8 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
         var expected = new SampleResponse { Message = "Hello", Value = 42 };
 
         // Act
-        await store.SaveAsync(key, expected);
-        var result = await store.GetAsync<SampleResponse>(key);
+        await store.SaveAsync(key, 1, expected);
+        var result = await store.GetAsync<SampleResponse>(key, 1);
 
         // Assert
         Assert.NotNull(result);
@@ -41,7 +41,7 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
         var nonExistentKey = $"missing:{Guid.NewGuid()}";
 
         // Act
-        var result = await store.GetAsync<SampleResponse>(nonExistentKey);
+        var result = await store.GetAsync<SampleResponse>(nonExistentKey, 1);
 
         // Assert
         Assert.Null(result);

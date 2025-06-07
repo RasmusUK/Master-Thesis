@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+      <Version>1.0.1</Version>
+      <Authors>RUK</Authors>
+      <Description>Simplified CRUD-based event sourcing</Description>
+      <PackageId>EventSourcing.CRUD.Application.Abstractions</PackageId>
+      <RepositoryUrl>https://github.com/RasmusUK/Master-Thesis</RepositoryUrl>
+      <IncludeReferencedProjects>true</IncludeReferencedProjects>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj"/>
+    </ItemGroup>
+
+</Project>

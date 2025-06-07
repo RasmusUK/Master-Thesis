@@ -153,6 +153,8 @@
         Address.City = address.City;
         Address.AddressLine1 = address.AddressLine1;
         Address.AddressLine2 = address.AddressLine2;
+        Address.Port = address.Port;
+        Address.Airport = address.Airport;
         await AddressChanged.InvokeAsync(address);
     }
     

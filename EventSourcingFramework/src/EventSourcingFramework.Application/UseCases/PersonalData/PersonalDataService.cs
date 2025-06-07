@@ -2,8 +2,13 @@ using System.Reflection;
 using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Core.Attributes;
+using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace EventSourcingFramework.Application.UseCases.PersonalData;
 
@@ -28,8 +33,16 @@ public class PersonalDataService : IPersonalDataService
         if (entity is null)
             return;
 
+        var serializedEntity = JsonConvert.SerializeObject(entity);
+        var copiedEntity = JsonConvert.DeserializeObject(serializedEntity, entity.GetType());
+        
+        if (copiedEntity is null)
+            throw new PersonalDataException("Failed to copy entity for personal data stripping.");
+        
+        SetEntityOnEvent(e, copiedEntity);
+        
         var dict = new Dictionary<string, object?>();
-        StripPersonalData(entity, dict, "");
+        StripPersonalData(copiedEntity, dict, "");
 
         if (dict.Count > 0)
             await personalDataStore.StoreAsync(e.Id, dict);
@@ -55,15 +68,38 @@ public class PersonalDataService : IPersonalDataService
             .GetProperty("Entity", BindingFlags.Public | BindingFlags.Instance);
         return entityProp?.GetValue(e);
     }
+    
+    private void SetEntityOnEvent(IEvent e, object entity)
+    {
+        var entityProp = e.GetType()
+            .GetProperty("Entity", BindingFlags.Public | BindingFlags.Instance);
+        entityProp?.SetValue(e, entity);
+    }
 
     private void StripPersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
         var type = obj.GetType();
-        foreach (
-            var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(p => p.GetIndexParameters().Length == 0)
-        )
+
+        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
         {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null && !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $"{path}[{index}]";
+                    StripPersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return; 
+        }
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length > 0)
+                continue;
+
             if (!prop.CanRead || !prop.CanWrite)
                 continue;
 
@@ -85,8 +121,30 @@ public class PersonalDataService : IPersonalDataService
     private void RestorePersonalData(object obj, Dictionary<string, object?> dict, string path)
     {
         var type = obj.GetType();
+
+        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
+        {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null && !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $"{path}[{index}]";
+                    RestorePersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return;
+        }
+
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
         {
+            if (prop.GetIndexParameters().Length > 0)
+                continue;
+
+            if (!prop.CanRead || !prop.CanWrite)
+                continue;
+
             var propPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
 
             if (dict.TryGetValue(propPath, out var val))
@@ -95,8 +153,11 @@ public class PersonalDataService : IPersonalDataService
             }
             else
             {
-                var subObj = prop.GetValue(obj);
-                if (subObj != null && !IsPrimitive(prop.PropertyType)) RestorePersonalData(subObj, dict, propPath);
+                var value = prop.GetValue(obj);
+                if (value != null && !IsPrimitive(prop.PropertyType))
+                {
+                    RestorePersonalData(value, dict, propPath);
+                }
             }
         }
     }
@@ -106,7 +167,8 @@ public class PersonalDataService : IPersonalDataService
         return type.IsPrimitive
                || type.IsEnum
                || type == typeof(string)
-               || type == typeof(Guid)
-               || type == typeof(DateTime);
+               || type == typeof(decimal)
+               || type == typeof(DateTime)
+               || type == typeof(Guid);
     }
 }
