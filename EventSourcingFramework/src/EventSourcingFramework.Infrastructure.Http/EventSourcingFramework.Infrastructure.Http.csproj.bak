@@ -7,19 +7,19 @@
       <Version>1.0.1</Version>
       <Authors>RUK</Authors>
       <Description>Simplified CRUD-based event sourcing</Description>
-      <PackageId>EventSourcing.CRUD.Infrastructure.Stores</PackageId>
+      <PackageId>EventSourcing.CRUD.Infrastructure.Http</PackageId>
       <RepositoryUrl>https://github.com/RasmusUK/Master-Thesis</RepositoryUrl>
       <IncludeReferencedProjects>true</IncludeReferencedProjects>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="MongoDB.Driver" Version="3.2.1"/>
+        <ProjectReference Include="..\EventSourcingFramework.Application.Abstractions\EventSourcingFramework.Application.Abstractions.csproj"/>
+        <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\EventSourcingFramework.Application.Abstractions\EventSourcingFramework.Application.Abstractions.csproj"/>
-        <ProjectReference Include="..\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj"/>
-        <ProjectReference Include="..\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj"/>
+        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.5"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     </ItemGroup>
 
 </Project>
