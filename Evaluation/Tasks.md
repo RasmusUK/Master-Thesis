@@ -88,7 +88,7 @@ The key domain entities must be identified and modelled following the guidelines
 - You can apply the method gradually. Event-sourced entities can live alongside traditional ones.
 
 
-### Example:
+### Example
 ```csharp
 using EventSourcingFramework.Core.Models.Entity;
 
