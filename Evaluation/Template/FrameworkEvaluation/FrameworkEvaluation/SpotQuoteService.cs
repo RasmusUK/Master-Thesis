@@ -1,5 +1,3 @@
-using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
-
 namespace FrameworkEvaluation;
 
 public class SpotQuoteService
