@@ -388,10 +388,12 @@ Inject `IReplayService` wherever you need to perform a replay operation, for exa
 public class DebugService
 {
   private readonly IReplayService replayService;
+  private readonly IEntityHistoryService entityHistoryService;
 
-  public DebugService(IReplayService replayService)
+  public DebugService(IReplayService replayService, IEntityHistoryService entityHistoryService)
   {
     this.replayService = replayService;
+    this.entityHistoryService = entityHistoryService;
   }
   
   public Task TimeTravelToAsync(DateTime dateTime)
