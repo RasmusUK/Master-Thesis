@@ -309,7 +309,7 @@ public class DebugService
     this.entityHistoryService = entityHistoryService;
   }
   
-  public async Task TimeTravelToAsync(DateTime dateTime)
+  public async Task DebugTo(DateTime dateTime)
   {
     await replayService.ReplayUntilAsync(dateTime, 
       useSnapshot: true, 
@@ -317,7 +317,7 @@ public class DebugService
     );
   }
 
-  public async Task RestoreEntityStoreAsync()
+  public async Task RestoreEntityStore()
   {
     await replayService.ReplayAllAsync(
       useSnapshot:false,
@@ -325,10 +325,9 @@ public class DebugService
     );
   }
   
-  public async Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>
-    (Guid entityId) where T : Entity
+  public async Task<IReadOnlyCollection<Car>> GetCarHistory(Guid entityId)
   {
-    return await entityHistoryService.GetEntityHistoryAsync<T>(entityId);
+    return await entityHistoryService.GetEntityHistoryAsync<Car>(entityId);
   }
 }
 ```
