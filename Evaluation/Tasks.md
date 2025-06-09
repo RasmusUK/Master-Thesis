@@ -354,7 +354,7 @@ As your domain model changes, you can safely update it without breaking existing
 - This ensures long-term maintainability and consistency across your system.
 
 ### Example
-Suppose we want to upgrade our `Car` entity and change the model to an enum instead. Assume we have created all models as enums and added a custom `Model.ParseFromString` method. 
+Suppose we want to upgrade our `Car` entity and change the model to an enum instead. Assume we have created all models as enums and added a custom `CarModel.ParseFromString` method. 
 
 1. First we change the name of our existing class and set the `SchemaVersion = 1`. 
 
@@ -362,7 +362,7 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
     ```csharp
     public class CarV1 : Entity
     {
-      public string Model { get; set; }
+      public string CarModel { get; set; }
       public int Year { get; set; }
       public new int SchmeaVersion { get; set; } = 1;
       
@@ -377,7 +377,7 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
     ```csharp
     public class Car : Entity
     {
-      public Model Model { get; set; }
+      public CarModel CarModel { get; set; }
       public int Year { get; set; }
       public int SchmeaVersion { get; set; } = 2;
       
@@ -403,7 +403,7 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
         migrations.Register<Car>(2, typeof(Car));
 
         migrator.Register<CarV1, Car>(1, v1 => 
-        new Car(Model.ParseFromString(v1.Model), v1.Year));
+        new Car(CarModel.ParseFromString(v1.CarModel), v1.Year));
     });
     ```
 
@@ -411,7 +411,7 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
 
 1. Update existing `Customer` to `CustomerV1`.
 2. Create a new `Customer` version with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`.
-2. Register the schema version, the migrations, and the migration function in `Startup.cs`.
+2. Register the schema version, the migrations, and the migration function in `Startup.cs`. The `Name` of the new `Customer` should be the `FirstName` of `CustomerV1`.
 
 
 ## 9. Handle Personal Data Securely and in Compliance with Regulations
