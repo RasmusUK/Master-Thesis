@@ -453,32 +453,19 @@ While the framework captures all domain changes in an immutable event store, it 
 ### Example
 Suppose you want to analyze recent system activity. Since all domain changes are events, you can simply query the event store and transform the data however you like. Here's an example that logs the most recent 50 events:
 ```csharp
-public class AuditLogger
+public class CarService
 {
   private readonly IEventStore eventStore;
-  private readonly ILogger<AuditLogger> logger;
 
-  public AuditLogger(IEventStore eventStore, ILogger<AuditLogger> logger)
+  public CarService(IEventStore eventStore)
   {
     this.eventStore = eventStore;
-    this.logger = logger;
   }
 
-  public async Task LogRecentEventsAsync(int count = 50)
+  public async Task<int> TotalNrOfEvents()
   {
     var events = await eventStore.GetEventsAsync();
-    var recentEvents = events
-      .OrderByDescending(e => e.Timestamp)
-      .Take(count);
-
-    foreach (var e in recentEvents)
-    {
-      logger.LogInformation("Event: {Type} | Event Id: {EventId} | Entity Id: {EntityId} | Timestamp: {Timestamp}",
-        e.Typename,
-        e.Id,
-        e.EntityId,
-        e.Timestamp);
-    }
+    return events.Count;
   }
 }
 ```
