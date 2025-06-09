@@ -1,5 +1,4 @@
 using SpotQuoteApp.Application.DTOs;
-using SpotQuoteApp.Core.AggregateRoots;
 
 namespace SpotQuoteApp.Application.Interfaces;
 

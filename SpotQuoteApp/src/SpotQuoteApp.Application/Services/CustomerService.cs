@@ -2,7 +2,7 @@ using EventSourcingFramework.Core.Interfaces;
 using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.Exceptions;
 
 namespace SpotQuoteApp.Application.Services;

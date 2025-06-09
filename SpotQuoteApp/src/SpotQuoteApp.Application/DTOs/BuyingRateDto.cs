@@ -1,4 +1,3 @@
-using SpotQuoteApp.Core.AggregateRoots;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
 namespace SpotQuoteApp.Application.DTOs;

@@ -1,5 +1,5 @@
 using SpotQuoteApp.Application.DTOs;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 
 namespace SpotQuoteApp.Application.Mappers;
 

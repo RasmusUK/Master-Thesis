@@ -5,11 +5,13 @@ namespace EventSourcingFramework.Test.Utilities.Models;
 
 public class PersonEntity : Entity
 {
-    [PersonalData] public string Name { get; set; }
+    [PersonalData] public string Name { get; set; } 
 
     [PersonalData] public string Email { get; set; }
 
     public Address Address { get; set; } = new();
+    public ICollection<Address> Addresses { get; set; } = new List<Address> { new() };
+    public Phone Phone { get; set; } = new();
 }
 
 public class Address
@@ -26,4 +28,11 @@ public class Location
     [PersonalData] public decimal Latitude { get; set; }
 
     [PersonalData] public decimal Longitude { get; set; }
+}
+
+public record Phone
+{
+    [PersonalData] public string Number { get; set; } 
+
+    [PersonalData] public string Type { get; set; }
 }

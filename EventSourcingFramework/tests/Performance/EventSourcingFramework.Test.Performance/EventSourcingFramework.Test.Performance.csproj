@@ -26,7 +26,6 @@
         <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.MongoDb\EventSourcingFramework.Infrastructure.MongoDb.csproj"/>
         <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure.Shared\EventSourcingFramework.Infrastructure.Shared.csproj"/>
         <ProjectReference Include="..\..\..\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj"/>
-        <ProjectReference Include="..\..\Integration\EventSourcingFramework.Test.Utilities\EventSourcingFramework.Test.Utilities.csproj"/>
         <ProjectReference Include="..\..\Utilities\EventSourcingFramework.Test.Utilities\EventSourcingFramework.Test.Utilities.csproj"/>
     </ItemGroup>
     <PropertyGroup>

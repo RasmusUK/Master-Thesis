@@ -2,11 +2,11 @@
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects.Old;
 
-public class SpotQuote : Entity
+public class SpotQuoteV1 : Entity
 {
-    public SpotQuote(
+    public SpotQuoteV1(
         Guid addressFromId,
         Guid addressToId,
         Direction direction,
@@ -14,7 +14,7 @@ public class SpotQuote : Entity
         Incoterm incoterm,
         ShippingDetails shippingDetails,
         DateTime validUntil,
-        Guid customerId,
+        Customer customer,
         MailOptions mailOptions,
         string internalComments,
         ICollection<Quote> quotes
@@ -27,10 +27,11 @@ public class SpotQuote : Entity
         Incoterm = incoterm;
         ShippingDetails = shippingDetails;
         ValidUntil = validUntil;
-        CustomerId = customerId;
+        Customer = customer;
         MailOptions = mailOptions;
         InternalComments = internalComments;
         Quotes = quotes;
+        SchemaVersion = 1;
     }
 
     public Guid AddressFromId { get; set; }
@@ -41,7 +42,7 @@ public class SpotQuote : Entity
     public ShippingDetails ShippingDetails { get; set; }
     public DateTime ValidUntil { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public Guid CustomerId { get; set; }
+    public Customer Customer { get; set; }
     public ICollection<Quote> Quotes { get; set; }
     public MailOptions MailOptions { get; set; }
     public string InternalComments { get; set; }

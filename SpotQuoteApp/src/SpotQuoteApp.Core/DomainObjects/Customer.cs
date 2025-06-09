@@ -1,7 +1,8 @@
+using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class Customer : Entity
 {

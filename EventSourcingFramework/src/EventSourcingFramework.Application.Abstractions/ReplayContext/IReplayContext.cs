@@ -9,6 +9,7 @@ public interface IReplayContext
     ApiReplayMode ApiReplayMode { get; }
     bool IsReplaying { get; }
     bool IsLoading { get; set; }
+    long EventNumber { get; set; }
     void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiReplayMode = ApiReplayMode.CacheOnly);
     void StopReplay();
     IReadOnlyCollection<IEvent> GetEvents();

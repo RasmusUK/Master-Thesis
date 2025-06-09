@@ -7,9 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Core\EventSourcingFramework.Core.csproj" />
-        <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\EventSourcingFramework.Infrastructure.Repositories.csproj" />
       <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="EventSourcing.CRUD.Infrastructure.Repositories" Version="1.0.1" />
     </ItemGroup>
 
 </Project>

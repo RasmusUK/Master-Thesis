@@ -2,7 +2,7 @@ using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class BuyingRate : Entity
 {
