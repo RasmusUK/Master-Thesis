@@ -2,7 +2,7 @@ using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class Customer : Entity
 {
@@ -11,7 +11,6 @@ public class Customer : Entity
         Name = name;
     }
 
-    [PersonalData]
     public string Name { get; set; }
     public ICollection<User> Users { get; set; } = new List<User>();
 }

@@ -15,7 +15,6 @@ public record User(Guid Id, string Name, string Email, string Phone, string Offi
     [PersonalData]
     public string Phone { get; set; } = Phone;
 
-    [PersonalData]
     public string Office { get; set; } = Office;
 
     public override string ToString()

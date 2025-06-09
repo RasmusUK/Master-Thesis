@@ -1,7 +1,7 @@
 using EventSourcingFramework.Core.Interfaces;
 using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Mappers;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 

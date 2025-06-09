@@ -7,7 +7,7 @@ using SpotQuoteApp.Application.DTOs.Api.Responses;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Application.Options;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
@@ -22,7 +22,10 @@ public class BuyingRateService : IBuyingRateService
 
     public BuyingRateService(
         IRepository<BuyingRate> buyingRateRepository,
-        ILocationService locationService, IApiGateway apiGateway, IOptions<MockApiOptions> options)
+        ILocationService locationService,
+        IApiGateway apiGateway,
+        IOptions<MockApiOptions> options
+    )
     {
         this.buyingRateRepository = buyingRateRepository;
         this.locationService = locationService;
@@ -92,13 +95,21 @@ public class BuyingRateService : IBuyingRateService
         ForwarderService forwarderService
     )
     {
-        var request = new BuyingRateRequest(supplier.Value, forwarderService.Name, supplierService.Name,
-            addressFrom.Country.Code, addressTo.Country.Code, transportMode.ToString());
-        
-        var fetchedRates = (await apiGateway.PostAsync<BuyingRateRequest, BuyingRateResponseBatch>(
-            url: buyingRateApiUrl,
-            body: request
-        )).Rates.Select(r => new BuyingRateDto
+        var request = new BuyingRateRequest(
+            supplier.Value,
+            forwarderService.Name,
+            supplierService.Name,
+            addressFrom.Country.Code,
+            addressTo.Country.Code,
+            transportMode.ToString()
+        );
+
+        var fetchedRates = (
+            await apiGateway.PostAsync<BuyingRateRequest, BuyingRateResponseBatch>(
+                url: buyingRateApiUrl,
+                body: request
+            )
+        ).Rates.Select(r => new BuyingRateDto
         {
             TransportMode = TransportMode.FromString(r.TransportMode),
             Supplier = supplier,
@@ -111,23 +122,23 @@ public class BuyingRateService : IBuyingRateService
                 Country = addressFrom.Country,
                 Code = addressFrom.ZipCode,
                 Name = addressFrom.City,
-                Type = LocationType.ZipCode
+                Type = LocationType.ZipCode,
             },
             Destination = new LocationDto
             {
                 Country = addressTo.Country,
                 Code = addressTo.ZipCode,
                 Name = addressTo.City,
-                Type = LocationType.ZipCode
+                Type = LocationType.ZipCode,
             },
             SupplierCost = new SupplierCostDto
             {
                 ChargeType = ChargeType.FromString(r.ChargeType),
                 CostType = CostType.FromString(r.CostType),
-                Value = r.Price
-            }
+                Value = r.Price,
+            },
         });
-        
+
         LocationDto? fromLocation;
         LocationDto? toLocation;
 
@@ -196,7 +207,8 @@ public class BuyingRateService : IBuyingRateService
                 ValidFrom = b.ValidFrom,
                 ValidUntil = b.ValidUntil,
                 SupplierCost = b.SupplierCost.ToDto(),
-            }).Concat(fetchedRates)
+            })
+            .Concat(fetchedRates)
             .ToList();
     }
 

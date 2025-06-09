@@ -1,3 +1,5 @@
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
+
 namespace FrameworkEvaluation;
 
 public class SpotQuoteService
@@ -6,13 +8,13 @@ public class SpotQuoteService
     {
     }
     
-    /* Part 1 */
+    /* Part 4 */
     public async Task<Guid> CreateSpotQuote(string customerName, decimal price)
     {
         throw new NotImplementedException();
     }
     
-    public async Task<SpotQuote?> ReadSpotQuote(Guid spotQuoteId)
+    public async Task<SpotQuote?> GetSpotQuote(Guid spotQuoteId)
     {
         throw new NotImplementedException();
     }
@@ -27,19 +29,24 @@ public class SpotQuoteService
         throw new NotImplementedException();
     }
     
-    /* Part 3 */
-    public async Task<SpotQuoteCountriesReadModel?> GetSpotQuoteCountriesReadModel(Guid spotQuoteId)
-    {
-        throw new NotImplementedException();
-    }
-    
-    /* Part 4 */
-    public async Task<Location> GetSpotQuoteOriginLocation(Guid spotQuoteId)
-    {
-        throw new NotImplementedException();
-    }
-    
     /* Part 5 */
+    public async Task<IReadOnlyCollection<Guid>> GetAllSpotQuoteIdsForCustomer(Guid customerId)
+    {
+        throw new NotImplementedException();
+    }
+    
+    /* Part 6 */
+    public async Task<IReadOnlyCollection<SpotQuote>> FetchExternalSpotQuotes()
+    {
+        throw new NotImplementedException();
+    }
+
+    /* Part 7 */
+    public async Task<IReadOnlyCollection<SpotQuote>> GetSpotQuoteHistory(Guid spotQuoteId)
+    {
+        throw new NotImplementedException();
+    }
+
     public async Task DebugTo(DateTime pointInTime)
     {
         throw new NotImplementedException();
@@ -50,7 +57,8 @@ public class SpotQuoteService
         throw new NotImplementedException();
     }
 
-    public async Task<IReadOnlyCollection<SpotQuote>> GetSpotQuoteHistory(Guid spotQuoteId)
+    /* Part 10 */
+    public async Task<int> NrOfEventsTheLastHour()
     {
         throw new NotImplementedException();
     }

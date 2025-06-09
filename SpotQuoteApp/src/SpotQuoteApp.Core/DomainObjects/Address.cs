@@ -1,10 +1,11 @@
 using EventSourcingFramework.Core.Models.Entity;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class Address : Entity
 {
-    public Address(string companyName,
+    public Address(
+        string companyName,
         Guid countryId,
         string city,
         string zipCode,
@@ -14,7 +15,8 @@ public class Address : Entity
         string phone,
         string attention,
         string? port = null,
-        string? airport = null)
+        string? airport = null
+    )
     {
         CompanyName = companyName;
         CountryId = countryId;

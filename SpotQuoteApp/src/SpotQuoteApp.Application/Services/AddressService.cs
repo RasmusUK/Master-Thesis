@@ -2,7 +2,7 @@ using EventSourcingFramework.Core.Interfaces;
 using SpotQuoteApp.Application.DTOs;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.Exceptions;
 
 namespace SpotQuoteApp.Application.Services;
@@ -34,14 +34,16 @@ public class AddressService : IAddressService
 
         if (existing is not null)
             return existing.Id;
-        
+
         var country = await countryService.GetCountryByIdAsync(addressDto.Country.Id);
         if (country is null)
         {
             country = await countryService.GetCountryByCodeAsync(addressDto.Country.Code);
             if (country is null)
-                throw new NotFoundException($"Country with country code '{addressDto.Country.Code}' not found.");
-            
+                throw new NotFoundException(
+                    $"Country with country code '{addressDto.Country.Code}' not found."
+                );
+
             addressDto.Country = country;
         }
 

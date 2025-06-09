@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Options;
 using SpotQuoteApp.Application.Services;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.Validators;
 
 namespace SpotQuoteApp.Application.Test.Integration;

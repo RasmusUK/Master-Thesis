@@ -1,7 +1,7 @@
 using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class Location : Entity
 {

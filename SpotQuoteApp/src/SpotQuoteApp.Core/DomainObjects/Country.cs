@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Models.Entity;
 
-namespace SpotQuoteApp.Core.AggregateRoots;
+namespace SpotQuoteApp.Core.DomainObjects;
 
 public class Country : Entity
 {

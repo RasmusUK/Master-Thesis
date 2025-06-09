@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Interfaces;
 using FluentValidation;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
 namespace SpotQuoteApp.Core.Validators;

@@ -1,10 +1,13 @@
+using EventSourcingFramework.Application.Abstractions.Replay;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
-using SpotQuoteApp.Core.AggregateRoots;
+using EventSourcingFramework.Infrastructure.Shared.Models.Events;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.DomainObjects.Old;
 using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 using SpotQuoteApp.Web.Data;
-using Country = SpotQuoteApp.Core.AggregateRoots.Country;
+using Country = SpotQuoteApp.Core.DomainObjects.Country;
 
 namespace SpotQuoteApp.Web.Startup;
 
@@ -18,6 +21,8 @@ public class Seeder : ISeeder
     private readonly IRepository<Location> locationRepository;
     private readonly IRepository<BuyingRate> buyingRateRepository;
     private readonly IMongoDbService mongoDbService;
+    private readonly IEventStore eventstore;
+    private readonly IEntityStore entityStore;
     private const int Nr = 10;
 
     public Seeder(
@@ -28,7 +33,9 @@ public class Seeder : ISeeder
         IRepository<Address> addressRepository,
         IRepository<Location> locationRepository,
         IRepository<BuyingRate> buyingRateRepository,
-        IMongoDbService mongoDbService
+        IMongoDbService mongoDbService,
+        IEventStore eventstore,
+        IEntityStore entityStore
     )
     {
         this.countryFetcher = countryFetcher;
@@ -38,6 +45,8 @@ public class Seeder : ISeeder
         this.addressRepository = addressRepository;
         this.locationRepository = locationRepository;
         this.mongoDbService = mongoDbService;
+        this.eventstore = eventstore;
+        this.entityStore = entityStore;
         this.buyingRateRepository = buyingRateRepository;
     }
 
@@ -152,6 +161,7 @@ public class Seeder : ISeeder
         var addresses = (await addressRepository.ReadAllAsync()).ToList();
         var customers = (await customerRepository.ReadAllAsync()).ToList();
         var buyingRates = (await buyingRateRepository.ReadAllAsync()).ToList();
+
         for (var i = 1; i <= Nr; i++)
         {
             var buyingRate = buyingRates[i % Nr];
@@ -220,7 +230,29 @@ public class Seeder : ISeeder
                     ),
                 }
             );
-            await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
+            if (i == 1)
+            {
+                var spotQuoteV1 = new SpotQuoteV1(
+                    spotQuoteBooking.AddressFromId,
+                    spotQuoteBooking.AddressToId,
+                    spotQuoteBooking.Direction,
+                    spotQuoteBooking.TransportMode,
+                    spotQuoteBooking.Incoterm,
+                    spotQuoteBooking.ShippingDetails,
+                    spotQuoteBooking.ValidUntil,
+                    customers[i - 1],
+                    spotQuoteBooking.MailOptions,
+                    spotQuoteBooking.InternalComments,
+                    spotQuoteBooking.Quotes
+                );
+                var evt = new CreateEvent<SpotQuoteV1>(spotQuoteV1);
+                await eventstore.InsertEventAsync(evt);
+                await entityStore.InsertEntityAsync(spotQuoteV1);
+            }
+            else
+            {
+                await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
+            }
         }
     }
 }

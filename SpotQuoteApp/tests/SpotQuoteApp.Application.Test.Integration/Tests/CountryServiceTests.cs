@@ -1,6 +1,6 @@
 using EventSourcingFramework.Core.Interfaces;
 using SpotQuoteApp.Application.Interfaces;
-using SpotQuoteApp.Core.AggregateRoots;
+using SpotQuoteApp.Core.DomainObjects;
 
 namespace SpotQuoteApp.Application.Test.Integration.Tests;
 
