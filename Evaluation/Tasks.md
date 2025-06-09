@@ -410,7 +410,7 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
 ### Task
 
 1. Update existing `Customer` to `CustomerV1`.
-2. Create a new `Customer` version with a `Name` property instead of `FirstName` and `LastName`. 
+2. Create a new `Customer` version with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`.
 2. Register the schema version, the migrations, and the migration function in `Startup.cs`.
 
 
