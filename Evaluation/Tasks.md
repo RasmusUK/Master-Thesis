@@ -325,9 +325,9 @@ public class DebugService
     );
   }
   
-  public async Task<IReadOnlyCollection<Car>> GetCarHistory(Guid entityId)
+  public async Task<IReadOnlyCollection<Car>> GetCarHistory(Guid carId)
   {
-    return await entityHistoryService.GetEntityHistoryAsync<Car>(entityId);
+    return await entityHistoryService.GetEntityHistoryAsync<Car>(carId);
   }
 }
 ```
