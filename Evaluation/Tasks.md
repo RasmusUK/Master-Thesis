@@ -409,9 +409,9 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
 
 ### Task
 
-1. Update existing `Customer` to `CustomerV1`.
-2. Create a new `Customer` version with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`.
-2. Register the schema version, the migrations, and the migration function in `Startup.cs`. The `Name` of the new `Customer` should be the `FirstName` of `CustomerV1`.
+1. Update existing class name `Customer` to `CustomerV1`.
+2. Create a new `Customer` class version with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`. Remember to add the `SchemaVersions` in the classes.
+3. Register the schema version, the migrations, and the migration function in `Startup.cs`. The `Name` of the new `Customer` should be the `FirstName` of `CustomerV1`.
 
 
 ## 9. Handle Personal Data Securely and in Compliance with Regulations
