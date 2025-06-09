@@ -398,7 +398,10 @@ public class DebugService
   
   public Task TimeTravelToAsync(DateTime dateTime)
   {
-    return replayService.ReplayUntilAsync(dateTime);
+    return replayService.ReplayUntilAsync(dateTime, 
+      useSnapshot: true, 
+      autoStop: false
+    );
   }
 
   public Task RestoreEntityStoreAsync()
