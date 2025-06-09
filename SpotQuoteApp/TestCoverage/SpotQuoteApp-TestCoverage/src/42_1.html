@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\DTOs\QuoteDto.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Core.ValueObjects.Enums;
+
+namespace SpotQuoteApp.Application.DTOs;
+
+public class QuoteDto
+{
+    public Supplier Supplier { get; set; }
+    public ForwarderService ForwarderService { get; set; }
+    public SupplierService SupplierService { get; set; }
+    public ProfitDto Profit { get; set; }
+    public BookingStatus Status { get; set; }
+    public bool IsAllIn { get; set; }
+    public ICollection&lt;CostDto&gt; Costs { get; set; } = new List&lt;CostDto&gt;();
+    public string CommentsExternal { get; set; }
+    public string CommentsInternal { get; set; }
+    public double TotalPrice { get; set; }
+    public double TotalProfit { get; set; }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[7,32,7,36,1],[7,37,7,41,1],[8,48,8,52,1],[8,53,8,57,1],[9,46,9,50,1],[9,51,9,55,1],[10,31,10,35,1],[10,36,10,40,1],[11,35,11,39,1],[11,40,11,44,1],[12,27,12,31,1],[12,32,12,36,1],[13,41,13,45,1],[13,46,13,50,1],[13,55,13,74,1],[14,38,14,42,1],[14,43,14,47,1],[15,38,15,42,1],[15,43,15,47,1],[16,32,16,36,0],[16,37,16,41,1],[17,33,17,37,0],[17,38,17,42,1]]);
+    </script>
+  </body>
+</html>

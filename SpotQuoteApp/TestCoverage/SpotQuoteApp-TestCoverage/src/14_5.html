@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\Validators\SpotQuoteValidator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using FluentValidation;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.ValueObjects.Enums;
+
+namespace SpotQuoteApp.Core.Validators;
+
+public class SpotQuoteValidator : AbstractValidator&lt;SpotQuote&gt;
+{
+    public SpotQuoteValidator(
+        IRepository&lt;Customer&gt; customerRepository,
+        IRepository&lt;Address&gt; addressRepository
+    )
+    {
+        RuleFor(spotQuote =&gt; spotQuote.CustomerId)
+            .NotEmpty()
+            .WithMessage(&quot;Customer id cannot be empty.&quot;)
+            .MustAsync(
+                async (customerId, _) =&gt;
+                {
+                    var customer = await customerRepository.ReadByIdAsync(customerId);
+                    return customer is not null;
+                }
+            )
+            .WithMessage(&quot;Customer does not exist.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.AddressFromId)
+            .NotEmpty()
+            .WithMessage(&quot;Address from id cannot be empty.&quot;)
+            .MustAsync(
+                async (addressFromId, _) =&gt;
+                {
+                    var address = await addressRepository.ReadByIdAsync(addressFromId);
+                    return address is not null;
+                }
+            )
+            .WithMessage(&quot;Address from does not exist.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.AddressToId)
+            .NotEmpty()
+            .WithMessage(&quot;Address to id cannot be empty.&quot;)
+            .MustAsync(
+                async (addressToId, _) =&gt;
+                {
+                    var address = await addressRepository.ReadByIdAsync(addressToId);
+                    return address is not null;
+                }
+            )
+            .WithMessage(&quot;Address to does not exist.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.ValidUntil)
+            .NotEmpty()
+            .WithMessage(&quot;Valid until date cannot be empty.&quot;)
+            .Must(validUntil =&gt; validUntil &gt; DateTime.UtcNow)
+            .WithMessage(&quot;Valid until date must be in the future.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.Quotes)
+            .NotEmpty()
+            .WithMessage(&quot;Quotes cannot be empty.&quot;)
+            .Must(quotes =&gt; quotes.Count &gt; 0)
+            .WithMessage(&quot;At least one quote is required.&quot;)
+            .Must(quotes =&gt; quotes.All(q =&gt; q.TotalPrice &gt; 0))
+            .WithMessage(&quot;All quotes must have a price greater than zero.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.ShippingDetails)
+            .NotEmpty()
+            .WithMessage(&quot;Shipping details cannot be empty.&quot;)
+            .Must(shippingDetails =&gt; shippingDetails.Collis.Count &gt; 0)
+            .WithMessage(&quot;At least one colli is required.&quot;)
+            .Must(shippingDetails =&gt; shippingDetails.Collis.All(c =&gt; c.Weight &gt; 0))
+            .WithMessage(&quot;All collis must have a weight greater than zero.&quot;)
+            .Must(shippingDetails =&gt; shippingDetails.Collis.All(c =&gt; c.Cbm &gt; 0))
+            .WithMessage(&quot;All collis must have a cbm greater than zero.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.Direction)
+            .NotEmpty()
+            .WithMessage(&quot;Direction cannot be empty.&quot;)
+            .Must(d =&gt; d == Direction.Import || d == Direction.Export)
+            .WithMessage(&quot;Invalid direction value.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.Incoterm)
+            .NotEmpty()
+            .WithMessage(&quot;Incoterm cannot be empty.&quot;)
+            .Must(i =&gt; Incoterm.GetAll().Contains(i))
+            .WithMessage(&quot;Invalid incoterm value.&quot;);
+
+        RuleFor(spotQuote =&gt; spotQuote.TransportMode)
+            .NotEmpty()
+            .WithMessage(&quot;Transport mode cannot be empty.&quot;)
+            .Must(tm =&gt; TransportMode.GetAll().Contains(tm))
+            .WithMessage(&quot;Invalid transport mode value.&quot;);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[10,5,13,6,1],[14,5,14,6,1],[15,9,20,17,1],[20,17,20,18,1],[20,18,21,21,1],[21,21,21,87,1],[21,87,22,21,1],[22,21,22,49,1],[22,49,23,17,1],[23,17,23,18,1],[23,18,25,54,1],[27,9,32,17,1],[32,17,32,18,1],[32,18,33,21,1],[33,21,33,88,1],[33,88,34,21,1],[34,21,34,48,1],[34,48,35,17,1],[35,17,35,18,1],[35,18,37,58,1],[39,9,44,17,1],[44,17,44,18,1],[44,18,45,21,1],[45,21,45,86,1],[45,86,46,21,1],[46,21,46,48,1],[46,48,47,17,1],[47,17,47,18,1],[47,18,49,56,1],[51,9,54,33,1],[54,33,54,61,1],[54,61,55,69,1],[57,9,60,29,1],[60,29,60,45,1],[60,45,62,29,1],[62,29,62,45,1],[62,45,62,61,1],[62,61,62,62,1],[62,62,63,77,1],[65,9,68,38,1],[68,38,68,70,1],[68,70,70,38,1],[70,38,70,70,1],[70,70,70,82,1],[70,82,70,83,1],[70,83,72,38,1],[72,38,72,70,1],[72,70,72,79,1],[72,79,72,80,1],[72,80,73,75,1],[75,9,78,24,1],[78,24,78,70,1],[78,70,79,54,1],[81,9,84,24,1],[84,24,84,53,1],[84,53,85,53,1],[87,9,90,25,1],[90,25,90,60,1],[90,60,91,59,1],[92,5,92,6,1]]);
+    </script>
+  </body>
+</html>

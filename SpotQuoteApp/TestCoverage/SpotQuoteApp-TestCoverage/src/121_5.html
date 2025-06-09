@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\User.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Attributes;
+
+namespace SpotQuoteApp.Core.ValueObjects;
+
+public record User(Guid Id, string Name, string Email, string Phone, string Office)
+{
+    public Guid Id { get; set; } = Id;
+
+    [PersonalData]
+    public string Name { get; set; } = Name;
+
+    [PersonalData]
+    public string Email { get; set; } = Email;
+
+    [PersonalData]
+    public string Phone { get; set; } = Phone;
+
+    public string Office { get; set; } = Office;
+
+    public override string ToString()
+    {
+        return $&quot;{Name} ({Email})&quot;;
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[5,15,5,19,0],[7,22,7,26,1],[7,27,7,31,1],[7,36,7,38,1],[10,26,10,30,1],[10,31,10,35,1],[10,40,10,44,1],[13,27,13,31,1],[13,32,13,36,1],[13,41,13,46,1],[16,27,16,31,1],[16,32,16,36,1],[16,41,16,46,1],[18,28,18,32,1],[18,33,18,37,1],[18,42,18,48,1],[21,5,21,6,0],[22,9,22,36,0],[23,5,23,6,0]]);
+    </script>
+  </body>
+</html>

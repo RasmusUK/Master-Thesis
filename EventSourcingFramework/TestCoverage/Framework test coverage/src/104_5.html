@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Shared\Models\Events\MongoUpdateEvent.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Core.Models.Events;
+using Newtonsoft.Json;
+
+namespace EventSourcingFramework.Infrastructure.Shared.Models.Events;
+
+public record UpdateEvent&lt;T&gt;(T Entity) : MongoEventBase(Entity.Id), IUpdateEvent&lt;T&gt;
+    where T : IEntity
+{
+    public override string ToString()
+    {
+        return JsonConvert.SerializeObject(Entity, Formatting.Indented);
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[7,15,7,29,0],[7,42,7,67,1],[11,5,11,6,0],[12,9,12,73,0],[13,5,13,6,0]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Migrations\Services\EntityMigrator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Migrations;
+using EventSourcingFramework.Core.Models.Entity;
+
+namespace EventSourcingFramework.Infrastructure.Migrations.Services;
+
+public class EntityMigrator : IEntityMigrator
+{
+    private readonly Dictionary&lt;(Type, int), Func&lt;IEntity, IEntity&gt;&gt; migrations = new();
+
+    public void Register&lt;TFrom, TTo&gt;(int fromVersion, Func&lt;TFrom, TTo&gt; migration)
+        where TFrom : IEntity
+        where TTo : IEntity
+    {
+        migrations[(typeof(TFrom), fromVersion)] = e =&gt; migration((TFrom)e);
+    }
+
+    public IEntity Migrate(IEntity oldInstance, Type fromType, Type toType, int fromVersion)
+    {
+        if (fromType == toType)
+            return oldInstance;
+
+        if (!migrations.TryGetValue((fromType, fromVersion), out var migrator))
+            throw new Exception($&quot;No migration registered from {fromType.Name} v{fromVersion}&quot;);
+
+        return migrator(oldInstance);
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[8,5,8,89,1],[13,5,13,6,1],[14,9,14,57,1],[14,57,14,76,1],[14,76,14,77,1],[15,5,15,6,1],[18,5,18,6,1],[19,9,19,32,1],[20,13,20,32,1],[22,9,22,80,1],[23,13,23,97,1],[25,9,25,38,1],[26,5,26,6,1]]);
+    </script>
+  </body>
+</html>

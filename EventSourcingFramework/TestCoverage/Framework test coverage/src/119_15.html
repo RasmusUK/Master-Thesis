@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.MongoDb\Services\MongoDbService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Reflection;
+using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Infrastructure.Shared.Models;
+using EventSourcingFramework.Infrastructure.Shared.Models.Events;
+using Microsoft.Extensions.Options;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Conventions;
+using MongoDB.Driver;
+
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
+
+public class MongoDbService : IMongoDbService
+{
+    private readonly MongoClient apiResponseClient;
+    private readonly IMongoDatabase apiResponseDatabase;
+    private readonly MongoClient debugEntityClient;
+    private readonly IMongoDatabase debugEntityDatabase;
+    private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
+    private readonly MongoClient eventClient;
+    private readonly IMongoDatabase eventDatabase;
+    private readonly MongoClient personalDataClient;
+    private readonly IMongoDatabase personalDataDatabase;
+    private readonly MongoClient productionEntityClient;
+    private readonly IMongoDatabase productionEntityDatabase;
+    private IMongoDatabase entityDatabase;
+
+    public MongoDbService(
+        IOptions&lt;MongoDbOptions&gt; mongoDbOptions,
+        IEntityCollectionNameProvider entityCollectionNameProvider
+    )
+    {
+        this.entityCollectionNameProvider = entityCollectionNameProvider;
+        RegisterConventions();
+
+        var options = mongoDbOptions.Value;
+
+        (eventDatabase, eventClient) = CreateDatabase(options.EventStore);
+        (productionEntityDatabase, productionEntityClient) = CreateDatabase(options.EntityStore);
+        (debugEntityDatabase, debugEntityClient) = CreateDatabase(options.DebugEntityStore);
+        (personalDataDatabase, personalDataClient) = CreateDatabase(options.PersonalDataStore);
+        (apiResponseDatabase, apiResponseClient) = CreateDatabase(options.ApiResponseStore);
+
+        EventCollection = eventDatabase.GetCollection&lt;MongoEventBase&gt;(&quot;events&quot;);
+        PersonalDataCollection = personalDataDatabase.GetCollection&lt;MongoPersonalData&gt;(&quot;personalData&quot;);
+        CounterCollection = eventDatabase.GetCollection&lt;BsonDocument&gt;(&quot;counters&quot;);
+        ApiResponseCollection = apiResponseDatabase.GetCollection&lt;MongoApiResponse&gt;(&quot;apiResponses&quot;);
+
+        entityDatabase = productionEntityDatabase;
+
+        EnsureEventIndexesAsync().GetAwaiter().GetResult();
+    }
+
+    public IMongoCollection&lt;MongoEventBase&gt; EventCollection { get; }
+    public IMongoCollection&lt;MongoPersonalData&gt; PersonalDataCollection { get; }
+    public IMongoCollection&lt;MongoApiResponse&gt; ApiResponseCollection { get; }
+    public IMongoCollection&lt;BsonDocument&gt; CounterCollection { get; }
+
+    public IMongoCollection&lt;TEntity&gt; GetEntityCollection&lt;TEntity&gt;(string collectionName)
+    {
+        return entityDatabase.GetCollection&lt;TEntity&gt;(collectionName);
+    }
+
+    public IMongoCollection&lt;T&gt; GetCollection&lt;T&gt;(
+        string collectionName,
+        bool alwaysProduction = false
+    )
+    {
+        return alwaysProduction
+            ? productionEntityDatabase.GetCollection&lt;T&gt;(collectionName)
+            : entityDatabase.GetCollection&lt;T&gt;(collectionName);
+    }
+
+    public IMongoDatabase GetEntityDatabase(bool alwaysProduction = false)
+    {
+        return alwaysProduction ? productionEntityDatabase : entityDatabase;
+    }
+
+    public async Task CleanUpAsync()
+    {
+        await eventClient.DropDatabaseAsync(eventDatabase.DatabaseNamespace.DatabaseName);
+        await productionEntityClient.DropDatabaseAsync(
+            productionEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+        await personalDataClient.DropDatabaseAsync(
+            personalDataDatabase.DatabaseNamespace.DatabaseName
+        );
+        await debugEntityClient.DropDatabaseAsync(
+            debugEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+        await apiResponseClient.DropDatabaseAsync(
+            apiResponseDatabase.DatabaseNamespace.DatabaseName
+        );
+    }
+
+    public async Task UseDebugEntityDatabase()
+    {
+        entityDatabase = debugEntityDatabase;
+        await CloneProductionToReplayAsync();
+    }
+
+    public async Task UseProductionEntityDatabase()
+    {
+        entityDatabase = productionEntityDatabase;
+        await debugEntityClient.DropDatabaseAsync(
+            debugEntityDatabase.DatabaseNamespace.DatabaseName
+        );
+    }
+
+    private async Task CloneProductionToReplayAsync()
+    {
+        var registered = entityCollectionNameProvider.GetAllRegistered();
+
+        foreach (var (type, collectionName) in registered)
+        {
+            var method = typeof(MongoDbService).GetMethod(
+                nameof(CopyCollectionAsync),
+                BindingFlags.NonPublic | BindingFlags.Instance
+            );
+            var genericMethod = method!.MakeGenericMethod(type);
+            await (Task)genericMethod.Invoke(this, new object[] { collectionName })!;
+        }
+    }
+
+    private async Task CopyCollectionAsync&lt;T&gt;(string collectionName)
+    {
+        var source = productionEntityDatabase.GetCollection&lt;T&gt;(collectionName);
+        var target = debugEntityDatabase.GetCollection&lt;T&gt;(collectionName);
+
+        var allDocs = await source.Find(_ =&gt; true).ToListAsync();
+
+        if (allDocs.Any())
+            await target.InsertManyAsync(allDocs);
+    }
+
+    private static (IMongoDatabase db, MongoClient client) CreateDatabase(DatabaseOptions options)
+    {
+        if (string.IsNullOrWhiteSpace(options.ConnectionString))
+            throw new ArgumentException(&quot;MongoDB connection string is required.&quot;);
+
+        if (string.IsNullOrWhiteSpace(options.DatabaseName))
+            throw new ArgumentException(&quot;MongoDB database name is required.&quot;);
+
+        var client = new MongoClient(MongoUrl.Create(options.ConnectionString));
+        var db = client.GetDatabase(options.DatabaseName);
+        return (db, client);
+    }
+
+    private static void RegisterConventions()
+    {
+        var conventionPack = new ConventionPack { new IgnoreExtraElementsConvention(true) };
+
+        ConventionRegistry.Register(&quot;GlobalConventions&quot;, conventionPack, _ =&gt; true);
+    }
+
+    private async Task EnsureEventIndexesAsync()
+    {
+        var existingIndexes = await EventCollection.Indexes.ListAsync();
+        var existingList = await existingIndexes.ToListAsync();
+
+        var eventNumberIndexExists = existingList.Any(index =&gt;
+            index.GetValue(&quot;name&quot;, &quot;&quot;).AsString == &quot;EventNumber_Ascending&quot;
+        );
+
+        if (!eventNumberIndexExists)
+        {
+            var indexModel = new CreateIndexModel&lt;MongoEventBase&gt;(
+                Builders&lt;MongoEventBase&gt;.IndexKeys.Ascending(e =&gt; e.EventNumber),
+                new CreateIndexOptions { Unique = true, Name = &quot;EventNumber_Ascending&quot; }
+            );
+
+            await EventCollection.Indexes.CreateOneAsync(indexModel);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[28,5,31,6,1],[32,5,32,6,1],[33,9,33,74,1],[34,9,34,31,1],[36,9,36,44,1],[38,9,38,75,1],[39,9,39,98,1],[40,9,40,93,1],[41,9,41,96,1],[42,9,42,93,1],[44,9,44,81,1],[45,9,45,104,1],[46,9,46,83,1],[47,9,47,101,1],[49,9,49,51,1],[51,9,51,60,1],[52,5,52,6,1],[54,63,54,67,1],[55,73,55,77,1],[56,71,56,75,1],[57,63,57,67,1],[60,5,60,6,1],[61,9,61,70,1],[62,5,62,6,1],[68,5,68,6,1],[69,9,71,63,1],[72,5,72,6,1],[75,5,75,6,1],[76,9,76,77,1],[77,5,77,6,1],[80,5,80,6,1],[81,9,81,91,1],[82,9,84,11,1],[85,9,87,11,1],[88,9,90,11,1],[91,9,93,11,1],[94,5,94,6,1],[97,5,97,6,1],[98,9,98,46,1],[99,9,99,46,1],[100,5,100,6,1],[103,5,103,6,1],[104,9,104,51,1],[105,9,107,11,1],[108,5,108,6,1],[111,5,111,6,1],[112,9,112,74,1],[114,9,114,16,1],[114,18,114,44,1],[114,45,114,47,1],[114,48,114,58,1],[115,9,115,10,1],[116,13,119,15,1],[120,13,120,65,1],[121,13,121,86,1],[122,9,122,10,1],[123,5,123,6,1],[126,5,126,6,1],[127,9,127,80,1],[128,9,128,75,1],[130,9,130,66,1],[132,9,132,27,1],[133,13,133,51,1],[134,5,134,6,1],[137,5,137,6,1],[138,9,138,65,1],[139,13,139,83,0],[141,9,141,61,1],[142,13,142,79,0],[144,9,144,81,1],[145,9,145,59,1],[146,9,146,29,1],[147,5,147,6,1],[150,5,150,6,1],[151,9,151,93,1],[153,9,153,79,1],[153,79,153,83,1],[153,83,153,85,1],[154,5,154,6,1],[157,5,157,6,1],[158,9,158,73,1],[159,9,159,64,1],[161,9,162,13,1],[162,13,162,75,0],[162,75,163,11,1],[165,9,165,37,1],[166,9,166,10,1],[167,13,170,15,1],[172,13,172,70,1],[173,9,173,10,1],[174,5,174,6,1]]);
+    </script>
+  </body>
+</html>

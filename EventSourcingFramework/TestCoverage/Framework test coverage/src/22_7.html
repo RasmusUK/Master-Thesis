@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Application\UseCases\PersonalData\PersonalDataService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Reflection;
+using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
+using EventSourcingFramework.Application.Abstractions.PersonalData;
+using EventSourcingFramework.Core.Attributes;
+using EventSourcingFramework.Core.Exceptions;
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Core.Models.Events;
+using MongoDB.Bson.IO;
+using Newtonsoft.Json;
+using JsonConvert = Newtonsoft.Json.JsonConvert;
+
+namespace EventSourcingFramework.Application.UseCases.PersonalData;
+
+public class PersonalDataService : IPersonalDataService
+{
+    private readonly IEventSourcingSettings eventSourcingSettings;
+    private readonly IPersonalDataStore personalDataStore;
+
+    public PersonalDataService(
+        IPersonalDataStore store, IEventSourcingSettings eventSourcingSettings)
+    {
+        personalDataStore = store;
+        this.eventSourcingSettings = eventSourcingSettings;
+    }
+
+    public async Task StripAndStoreAsync(IEvent e)
+    {
+        if (!eventSourcingSettings.EnablePersonalDataStore)
+            return;
+
+        var entity = GetEntityFromEvent(e);
+        if (entity is null)
+            return;
+
+        var serializedEntity = JsonConvert.SerializeObject(entity);
+        var copiedEntity = JsonConvert.DeserializeObject(serializedEntity, entity.GetType());
+        
+        if (copiedEntity is null)
+            throw new PersonalDataException(&quot;Failed to copy entity for personal data stripping.&quot;);
+        
+        SetEntityOnEvent(e, copiedEntity);
+        
+        var dict = new Dictionary&lt;string, object?&gt;();
+        StripPersonalData(copiedEntity, dict, &quot;&quot;);
+
+        if (dict.Count &gt; 0)
+            await personalDataStore.StoreAsync(e.Id, dict);
+    }
+
+    public async Task RestoreAsync(IEvent e)
+    {
+        if (!eventSourcingSettings.EnablePersonalDataStore)
+            return;
+
+        var entity = GetEntityFromEvent(e);
+        if (entity is null)
+            return;
+
+        var data = await personalDataStore.RetrieveAsync(e.Id);
+        if (data.Count &gt; 0)
+            RestorePersonalData(entity, data, &quot;&quot;);
+    }
+
+    private object? GetEntityFromEvent(IEvent e)
+    {
+        var entityProp = e.GetType()
+            .GetProperty(&quot;Entity&quot;, BindingFlags.Public | BindingFlags.Instance);
+        return entityProp?.GetValue(e);
+    }
+    
+    private void SetEntityOnEvent(IEvent e, object entity)
+    {
+        var entityProp = e.GetType()
+            .GetProperty(&quot;Entity&quot;, BindingFlags.Public | BindingFlags.Instance);
+        entityProp?.SetValue(e, entity);
+    }
+
+    private void StripPersonalData(object obj, Dictionary&lt;string, object?&gt; dict, string path)
+    {
+        var type = obj.GetType();
+
+        if (obj is System.Collections.IEnumerable enumerable &amp;&amp; type != typeof(string))
+        {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null &amp;&amp; !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $&quot;{path}[{index}]&quot;;
+                    StripPersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return; 
+        }
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length &gt; 0)
+                continue;
+
+            if (!prop.CanRead || !prop.CanWrite)
+                continue;
+
+            var value = prop.GetValue(obj);
+            var propPath = string.IsNullOrEmpty(path) ? prop.Name : $&quot;{path}.{prop.Name}&quot;;
+
+            if (prop.GetCustomAttribute&lt;PersonalDataAttribute&gt;() != null)
+            {
+                dict[propPath] = value;
+                prop.SetValue(obj, null);
+            }
+            else if (value != null &amp;&amp; !IsPrimitive(prop.PropertyType))
+            {
+                StripPersonalData(value, dict, propPath);
+            }
+        }
+    }
+
+    private void RestorePersonalData(object obj, Dictionary&lt;string, object?&gt; dict, string path)
+    {
+        var type = obj.GetType();
+
+        if (obj is System.Collections.IEnumerable enumerable &amp;&amp; type != typeof(string))
+        {
+            var index = 0;
+            foreach (var item in enumerable)
+            {
+                if (item != null &amp;&amp; !IsPrimitive(item.GetType()))
+                {
+                    var itemPath = $&quot;{path}[{index}]&quot;;
+                    RestorePersonalData(item, dict, itemPath);
+                }
+                index++;
+            }
+            return;
+        }
+
+        foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (prop.GetIndexParameters().Length &gt; 0)
+                continue;
+
+            if (!prop.CanRead || !prop.CanWrite)
+                continue;
+
+            var propPath = string.IsNullOrEmpty(path) ? prop.Name : $&quot;{path}.{prop.Name}&quot;;
+
+            if (dict.TryGetValue(propPath, out var val))
+            {
+                prop.SetValue(obj, val);
+            }
+            else
+            {
+                var value = prop.GetValue(obj);
+                if (value != null &amp;&amp; !IsPrimitive(prop.PropertyType))
+                {
+                    RestorePersonalData(value, dict, propPath);
+                }
+            }
+        }
+    }
+
+    private bool IsPrimitive(Type type)
+    {
+        return type.IsPrimitive
+               || type.IsEnum
+               || type == typeof(string)
+               || type == typeof(decimal)
+               || type == typeof(DateTime)
+               || type == typeof(Guid);
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[20,5,21,80,1],[22,5,22,6,1],[23,9,23,35,1],[24,9,24,60,1],[25,5,25,6,1],[28,5,28,6,1],[29,9,29,60,1],[30,13,30,20,1],[32,9,32,44,1],[33,9,33,28,1],[34,13,34,20,1],[36,9,36,68,1],[37,9,37,94,1],[39,9,39,34,1],[40,13,40,99,0],[42,9,42,43,1],[44,9,44,54,1],[45,9,45,51,1],[47,9,47,28,1],[48,13,48,60,1],[49,5,49,6,1],[52,5,52,6,1],[53,9,53,60,1],[54,13,54,20,1],[56,9,56,44,1],[57,9,57,28,1],[58,13,58,20,1],[60,9,60,64,1],[61,9,61,28,1],[62,13,62,51,1],[63,5,63,6,1],[66,5,66,6,1],[67,9,68,81,1],[69,9,69,40,1],[70,5,70,6,1],[73,5,73,6,1],[74,9,75,81,1],[76,9,76,41,1],[77,5,77,6,1],[80,5,80,6,1],[81,9,81,34,1],[83,9,83,88,1],[84,9,84,10,1],[85,13,85,27,1],[86,13,86,20,1],[86,22,86,30,1],[86,31,86,33,1],[86,34,86,44,1],[87,13,87,14,1],[88,17,88,66,1],[89,17,89,18,1],[90,21,90,55,1],[91,21,91,61,1],[92,17,92,18,1],[93,17,93,25,1],[94,13,94,14,1],[95,13,95,20,1],[98,9,98,16,1],[98,18,98,26,1],[98,27,98,29,1],[98,30,98,93,1],[99,9,99,10,1],[100,13,100,54,1],[101,17,101,26,0],[103,13,103,49,1],[104,17,104,26,0],[106,13,106,44,1],[107,13,107,91,1],[109,13,109,74,1],[110,13,110,14,1],[111,17,111,40,1],[112,17,112,42,1],[113,13,113,14,1],[114,18,114,71,1],[115,13,115,14,1],[116,17,116,58,1],[117,13,117,14,1],[118,9,118,10,1],[119,5,119,6,1],[122,5,122,6,1],[123,9,123,34,1],[125,9,125,88,1],[126,9,126,10,1],[127,13,127,27,1],[128,13,128,20,1],[128,22,128,30,1],[128,31,128,33,1],[128,34,128,44,1],[129,13,129,14,1],[130,17,130,66,1],[131,17,131,18,1],[132,21,132,55,1],[133,21,133,63,1],[134,17,134,18,1],[135,17,135,25,1],[136,13,136,14,1],[137,13,137,20,1],[140,9,140,16,1],[140,18,140,26,1],[140,27,140,29,1],[140,30,140,93,1],[141,9,141,10,1],[142,13,142,54,1],[143,17,143,26,0],[145,13,145,49,1],[146,17,146,26,0],[148,13,148,91,1],[150,13,150,57,1],[151,13,151,14,1],[152,17,152,41,1],[153,13,153,14,1],[155,13,155,14,1],[156,17,156,48,1],[157,17,157,70,1],[158,17,158,18,1],[159,21,159,64,1],[160,17,160,18,1],[161,13,161,14,1],[162,9,162,10,1],[163,5,163,6,1],[166,5,166,6,1],[167,9,172,40,1],[173,5,173,6,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\AddressService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.Exceptions;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class AddressService : IAddressService
+{
+    private readonly IRepository&lt;Address&gt; addressRepository;
+    private readonly ICountryService countryService;
+
+    public AddressService(IRepository&lt;Address&gt; addressRepository, ICountryService countryService)
+    {
+        this.addressRepository = addressRepository;
+        this.countryService = countryService;
+    }
+
+    public async Task&lt;Guid&gt; CreateIfNotExistsAsync(AddressDto addressDto)
+    {
+        var existing = await addressRepository.ReadByFilterAsync(a =&gt;
+            a.CompanyName == addressDto.CompanyName
+            &amp;&amp; a.Email == addressDto.Email
+            &amp;&amp; a.Phone == addressDto.Phone
+            &amp;&amp; a.Attention == addressDto.Attention
+            &amp;&amp; a.CountryId == addressDto.Country.Id
+            &amp;&amp; a.ZipCode == addressDto.ZipCode
+            &amp;&amp; a.AddressLine1 == addressDto.AddressLine1
+            &amp;&amp; a.AddressLine2 == addressDto.AddressLine2
+            &amp;&amp; a.City == addressDto.City
+        );
+
+        if (existing is not null)
+            return existing.Id;
+
+        var country = await countryService.GetCountryByIdAsync(addressDto.Country.Id);
+        if (country is null)
+        {
+            country = await countryService.GetCountryByCodeAsync(addressDto.Country.Code);
+            if (country is null)
+                throw new NotFoundException(
+                    $&quot;Country with country code &#39;{addressDto.Country.Code}&#39; not found.&quot;
+                );
+
+            addressDto.Country = country;
+        }
+
+        addressDto.Id = addressDto.Id == default ? Guid.NewGuid() : addressDto.Id;
+
+        var addressDomain = addressDto.ToDomain();
+        await addressRepository.CreateAsync(addressDomain);
+
+        return addressDomain.Id;
+    }
+
+    public async Task&lt;AddressDto?&gt; GetAddressByIdAsync(Guid addressId)
+    {
+        var address = await addressRepository.ReadByIdAsync(addressId);
+        if (address is null)
+            return null;
+
+        var country = await countryService.GetCountryByIdAsync(address.CountryId);
+        if (country is null)
+            throw new NotFoundException(
+                $&quot;Country with id &#39;{address.CountryId}&#39; not found for Address with id &#39;{addressId}&#39;.&quot;
+            );
+
+        return address.ToDto(country);
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;AddressDto&gt;&gt; GetAllAddressesAsync()
+    {
+        var addresses = await addressRepository.ReadAllAsync();
+        var dtos = await Task.WhenAll(addresses.Select(FillAddressDtoAsync));
+        return dtos;
+    }
+
+    private async Task&lt;AddressDto&gt; FillAddressDtoAsync(Address address)
+    {
+        var country = await countryService.GetCountryByIdAsync(address.CountryId);
+        if (country is null)
+            throw new NotFoundException($&quot;Country with id &#39;{address.CountryId}&#39; not found.&quot;);
+
+        return address.ToDto(country);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,5,15,98,1],[16,5,16,6,1],[17,9,17,52,1],[18,9,18,46,1],[19,5,19,6,1],[22,5,22,6,1],[23,9,33,11,1],[35,9,35,34,1],[36,13,36,32,1],[38,9,38,87,1],[39,9,39,29,1],[40,9,40,10,1],[41,13,41,91,1],[42,13,42,33,1],[43,17,45,19,1],[47,13,47,42,1],[48,9,48,10,1],[50,9,50,83,1],[52,9,52,51,1],[53,9,53,60,1],[55,9,55,33,1],[56,5,56,6,1],[59,5,59,6,1],[60,9,60,72,1],[61,9,61,29,1],[62,13,62,25,1],[64,9,64,83,1],[65,9,65,29,1],[66,13,68,15,1],[70,9,70,39,1],[71,5,71,6,1],[74,5,74,6,1],[75,9,75,64,1],[76,9,76,78,1],[77,9,77,21,1],[78,5,78,6,1],[81,5,81,6,1],[82,9,82,83,1],[83,9,83,29,1],[84,13,84,94,0],[86,9,86,39,1],[87,5,87,6,1]]);
+    </script>
+  </body>
+</html>

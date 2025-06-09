@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\Services\TransactionManager.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
+
+namespace EventSourcingFramework.Infrastructure.Repositories.Services;
+
+public class TransactionManager : ITransactionManager
+{
+    private Queue&lt;(Func&lt;Task&gt; commit, Func&lt;Task&gt; rollback)&gt;? actions;
+    private Queue&lt;Func&lt;Task&gt;&gt;? rollbackActions;
+    private Dictionary&lt;Type, List&lt;object&gt;&gt;? trackedDeletedEntities;
+    private Dictionary&lt;Type, List&lt;object&gt;&gt;? trackedUpsertedEntities;
+    public bool IsActive =&gt; actions is not null;
+    public Guid TransactionId { get; private set; } = Guid.NewGuid();
+
+    public void Begin()
+    {
+        if (IsActive)
+            throw new TransactionException(&quot;Transaction already started.&quot;);
+
+        TransactionId = Guid.NewGuid();
+        actions = new Queue&lt;(Func&lt;Task&gt;, Func&lt;Task&gt;)&gt;();
+        rollbackActions = new Queue&lt;Func&lt;Task&gt;&gt;();
+        trackedUpsertedEntities = new Dictionary&lt;Type, List&lt;object&gt;&gt;();
+        trackedDeletedEntities = new Dictionary&lt;Type, List&lt;object&gt;&gt;();
+    }
+
+    public void TrackUpsertedEntity&lt;T&gt;(T entity)
+        where T : IEntity
+    {
+        if (!IsActive)
+            throw new TransactionException(&quot;No active transaction.&quot;);
+
+        if (!trackedUpsertedEntities!.TryGetValue(typeof(T), out var list))
+        {
+            list = new List&lt;object&gt;();
+            trackedUpsertedEntities.Add(typeof(T), list);
+            
+            if (GetTrackedDeletedEntities&lt;T&gt;().Any(e=&gt; e.Id == entity.Id))
+                trackedDeletedEntities![typeof(T)].Remove(entity);
+        }
+
+        list.Add(entity);
+    }
+
+    public void TrackDeletedEntity&lt;T&gt;(T entity)
+        where T : IEntity
+    {
+        if (!IsActive)
+            throw new TransactionException(&quot;No active transaction.&quot;);
+
+        if (!trackedDeletedEntities!.TryGetValue(typeof(T), out var list))
+        {
+            list = new List&lt;object&gt;();
+            trackedDeletedEntities.Add(typeof(T), list);
+            
+            if (GetTrackedUpsertedEntities&lt;T&gt;().Any(e =&gt; e.Id == entity.Id))
+                trackedUpsertedEntities![typeof(T)].Remove(entity);
+        }
+
+        list.Add(entity);
+    }
+
+    public void Enlist(Func&lt;Task&gt; commit, Func&lt;Task&gt; rollback)
+    {
+        if (!IsActive)
+            throw new TransactionException(&quot;No active transaction.&quot;);
+
+        actions!.Enqueue((commit, rollback));
+    }
+
+    public async Task CommitAsync()
+    {
+        if (!IsActive)
+            throw new TransactionException(&quot;No active transaction.&quot;);
+
+        while (actions!.Count &gt; 0)
+        {
+            var (commit, rollback) = actions.Dequeue();
+            await commit();
+            rollbackActions!.Enqueue(rollback);
+        }
+
+        Clear();
+    }
+
+    public async Task RollbackAsync()
+    {
+        if (!IsActive)
+            throw new TransactionException(&quot;No active transaction.&quot;);
+
+        while (rollbackActions!.Count &gt; 0)
+        {
+            var rollback = rollbackActions.Dequeue();
+            await rollback();
+        }
+
+        Clear();
+    }
+
+    public IEnumerable&lt;T&gt; GetTrackedUpsertedEntities&lt;T&gt;()
+        where T : IEntity
+    {
+        if (!IsActive)
+            return Enumerable.Empty&lt;T&gt;();
+
+        return trackedUpsertedEntities!.TryGetValue(typeof(T), out var list)
+            ? list.Cast&lt;T&gt;()
+            : Enumerable.Empty&lt;T&gt;();
+    }
+
+    public IEnumerable&lt;T&gt; GetTrackedDeletedEntities&lt;T&gt;()
+        where T : IEntity
+    {
+        if (!IsActive)
+            return Enumerable.Empty&lt;T&gt;();
+
+        return trackedDeletedEntities!.TryGetValue(typeof(T), out var list)
+            ? list.Cast&lt;T&gt;()
+            : Enumerable.Empty&lt;T&gt;();
+    }
+
+    private void Clear()
+    {
+        actions = null;
+        rollbackActions = null;
+        trackedUpsertedEntities = null;
+        trackedDeletedEntities = null;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[13,29,13,48,1],[14,33,14,37,1],[14,38,14,50,1],[14,55,14,69,1],[17,5,17,6,1],[18,9,18,22,1],[19,13,19,76,1],[21,9,21,40,1],[22,9,22,57,1],[23,9,23,51,1],[24,9,24,72,1],[25,9,25,71,1],[26,5,26,6,1],[30,5,30,6,1],[31,9,31,23,1],[32,13,32,70,0],[34,9,34,76,1],[35,9,35,10,1],[36,13,36,39,1],[37,13,37,58,1],[39,13,39,56,1],[39,56,39,73,1],[39,73,39,75,1],[40,17,40,67,0],[41,9,41,10,1],[43,9,43,26,1],[44,5,44,6,1],[48,5,48,6,1],[49,9,49,23,1],[50,13,50,70,0],[52,9,52,75,1],[53,9,53,10,1],[54,13,54,39,1],[55,13,55,57,1],[57,13,57,58,1],[57,58,57,75,1],[57,75,57,77,1],[58,17,58,68,1],[59,9,59,10,1],[61,9,61,26,1],[62,5,62,6,1],[65,5,65,6,1],[66,9,66,23,1],[67,13,67,70,1],[69,9,69,46,1],[70,5,70,6,1],[73,5,73,6,1],[74,9,74,23,1],[75,13,75,70,1],[77,9,77,35,1],[78,9,78,10,1],[79,13,79,56,1],[80,13,80,28,1],[81,13,81,48,1],[82,9,82,10,1],[84,9,84,17,1],[85,5,85,6,1],[88,5,88,6,1],[89,9,89,23,1],[90,13,90,70,1],[92,9,92,43,1],[93,9,93,10,1],[94,13,94,54,1],[95,13,95,30,1],[96,9,96,10,1],[98,9,98,17,1],[99,5,99,6,1],[103,5,103,6,1],[104,9,104,23,1],[105,13,105,42,1],[107,9,109,37,1],[110,5,110,6,1],[114,5,114,6,1],[115,9,115,23,1],[116,13,116,42,1],[118,9,120,37,1],[121,5,121,6,1],[124,5,124,6,1],[125,9,125,24,1],[126,9,126,32,1],[127,9,127,40,1],[128,9,128,39,1],[129,5,129,6,1]]);
+    </script>
+  </body>
+</html>

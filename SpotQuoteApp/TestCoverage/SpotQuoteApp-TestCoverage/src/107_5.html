@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\CostType.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record CostType(string Value) : IComparable
+{
+    public static readonly CostType PerShipment = new(&quot;Per Shipment&quot;);
+    public static readonly CostType PerKg = new(&quot;Per Kg&quot;);
+    public static readonly CostType PerCbm = new(&quot;Per Cbm&quot;);
+
+    public override string ToString() =&gt; Value;
+    
+    public static CostType FromString(string value) =&gt;
+        GetAll().FirstOrDefault(c =&gt; c.Value.Equals(value, StringComparison.OrdinalIgnoreCase))
+        ?? throw new ArgumentException($&quot;Invalid {nameof(CostType)}: {value}&quot;);
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is CostType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(CostType)}&quot;);
+    }
+
+    public static IReadOnlyCollection&lt;CostType&gt; GetAll() =&gt;
+        typeof(CostType)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f =&gt; f.GetValue(null))
+            .OfType&lt;CostType&gt;()
+            .ToList();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,23,0],[5,5,5,71,1],[6,5,6,59,1],[7,5,7,61,1],[9,42,9,47,0],[12,9,12,38,1],[12,38,12,95,1],[12,95,13,79,1],[16,5,16,6,0],[17,9,17,35,0],[18,13,18,81,0],[20,9,20,76,0],[21,5,21,6,0],[24,9,28,26,1],[28,26,28,42,1],[28,42,30,22,1]]);
+    </script>
+  </body>
+</html>

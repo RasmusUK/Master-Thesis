@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\SpotQuoteService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
+using FluentValidation;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.Exceptions;
+using SpotQuoteApp.Core.Validators;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class SpotQuoteService : ISpotQuoteService
+{
+    private readonly IRepository&lt;SpotQuote&gt; spotQuoteRepository;
+    private readonly IAddressService addressService;
+    private readonly ICustomerService customerService;
+    private readonly SpotQuoteValidator spotQuoteValidator;
+    private readonly IBuyingRateService buyingRateService;
+    private readonly ITransactionManager transactionManager;
+
+    public SpotQuoteService(
+        IRepository&lt;SpotQuote&gt; spotQuoteRepository,
+        IAddressService addressService,
+        ICustomerService customerService,
+        SpotQuoteValidator spotQuoteValidator,
+        IBuyingRateService buyingRateService,
+        ITransactionManager transactionManager
+    )
+    {
+        this.spotQuoteRepository = spotQuoteRepository;
+        this.addressService = addressService;
+        this.customerService = customerService;
+        this.spotQuoteValidator = spotQuoteValidator;
+        this.buyingRateService = buyingRateService;
+        this.transactionManager = transactionManager;
+    }
+
+    public Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote) =&gt;
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: false);
+
+    public Task UpdateSpotQuoteAsync(SpotQuoteDto spotQuote) =&gt;
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: true);
+
+    public async Task&lt;SpotQuoteDto?&gt; GetSpotQuoteByIdAsync(Guid id)
+    {
+        var spotQuote = await spotQuoteRepository.ReadByIdAsync(id);
+        if (spotQuote is null)
+            return null;
+
+        return await FillSpotQuoteDtoAsync(spotQuote);
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;SpotQuoteDto&gt;&gt; GetAllSpotQuotesAsync()
+    {
+        var spotQuotes = await spotQuoteRepository.ReadAllAsync();
+        var dtos = await Task.WhenAll(spotQuotes.Select(FillSpotQuoteDtoAsync));
+        return dtos;
+    }
+
+    private async Task HandleSpotQuoteUpsertAsync(SpotQuoteDto spotQuote, bool isUpdate)
+    {
+        transactionManager.Begin();
+
+        try
+        {
+            var addressFromId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressFrom);
+            var addressToId = await addressService.CreateIfNotExistsAsync(spotQuote.AddressTo);
+            spotQuote.AddressFrom.Id = addressFromId;
+            spotQuote.AddressTo.Id = addressToId;
+
+            await buyingRateService.UpsertBuyingRatesAsync(spotQuote);
+
+            var spotQuoteDomain = spotQuote.ToDomain();
+
+            if (!spotQuote.IsDraft())
+            {
+                var validationResult = await spotQuoteValidator.ValidateAsync(spotQuoteDomain);
+                if (!validationResult.IsValid)
+                    throw new ValidationException(validationResult.Errors);
+            }
+
+            if (isUpdate)
+                await spotQuoteRepository.UpdateAsync(spotQuoteDomain);
+            else
+                await spotQuoteRepository.CreateAsync(spotQuoteDomain);
+
+            await transactionManager.CommitAsync();
+        }
+        catch
+        {
+            await transactionManager.RollbackAsync();
+            throw;
+        }
+    }
+
+    private async Task&lt;SpotQuoteDto&gt; FillSpotQuoteDtoAsync(SpotQuote spotQuote)
+    {
+        var customer = await customerService.GetCustomerByIdAsync(spotQuote.CustomerId);
+        if (customer is null)
+            throw new NotFoundException(
+                $&quot;Customer with id &#39;{spotQuote.CustomerId}&#39; not found for SpotQuote with id &#39;{spotQuote.Id}&#39;.&quot;
+            );
+
+        var users = customer
+            .Users.Where(u =&gt; spotQuote.MailOptions.RecipientUserIds.Contains(u.Id))
+            .ToList();
+
+        var addressFrom = await addressService.GetAddressByIdAsync(spotQuote.AddressFromId);
+        if (addressFrom is null)
+            throw new NotFoundException(
+                $&quot;Address with id &#39;{spotQuote.AddressFromId}&#39; not found for SpotQuote with id &#39;{spotQuote.Id}&#39;.&quot;
+            );
+        var addressTo = await addressService.GetAddressByIdAsync(spotQuote.AddressToId);
+        if (addressTo is null)
+            throw new NotFoundException(
+                $&quot;Address with id &#39;{spotQuote.AddressToId}&#39; not found for SpotQuote with id &#39;{spotQuote.Id}&#39;.&quot;
+            );
+
+        return spotQuote.ToDto(customer, addressFrom, addressTo, users);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[22,5,29,6,1],[30,5,30,6,1],[31,9,31,56,1],[32,9,32,46,1],[33,9,33,48,1],[34,9,34,54,1],[35,9,35,52,1],[36,9,36,54,1],[37,5,37,6,1],[40,9,40,63,1],[43,9,43,62,1],[46,5,46,6,1],[47,9,47,69,1],[48,9,48,31,1],[49,13,49,25,1],[51,9,51,55,1],[52,5,52,6,1],[55,5,55,6,1],[56,9,56,67,1],[57,9,57,81,1],[58,9,58,21,1],[59,5,59,6,1],[62,5,62,6,1],[63,9,63,36,1],[66,9,66,10,1],[67,13,67,100,1],[68,13,68,96,1],[69,13,69,54,1],[70,13,70,50,1],[72,13,72,71,1],[74,13,74,56,1],[76,13,76,38,1],[77,13,77,14,1],[78,17,78,96,1],[79,17,79,47,1],[80,21,80,76,1],[81,13,81,14,0],[83,13,83,26,1],[84,17,84,72,1],[86,17,86,72,1],[88,13,88,52,1],[89,9,89,10,1],[90,9,90,14,1],[91,9,91,10,1],[92,13,92,54,1],[93,13,93,19,1],[94,9,94,10,0],[95,5,95,6,1],[98,5,98,6,1],[99,9,99,89,1],[100,9,100,30,1],[101,13,103,15,1],[105,9,106,31,1],[106,31,106,84,0],[106,84,107,23,1],[109,9,109,93,1],[110,9,110,33,1],[111,13,113,15,1],[114,9,114,89,1],[115,9,115,31,1],[116,13,118,15,1],[120,9,120,73,1],[121,5,121,6,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\Supplier.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record Supplier(string Value) : IComparable
+{
+    public static readonly Supplier DHL = new(&quot;DHL&quot;);
+    public static readonly Supplier FedEx = new(&quot;FedEx&quot;);
+    public static readonly Supplier UPS = new(&quot;UPS&quot;);
+    public static readonly Supplier Aramex = new(&quot;Aramex&quot;);
+    public static readonly Supplier Maersk = new(&quot;Maersk&quot;);
+    public static readonly Supplier DB_Schenker = new(&quot;DB Schenker&quot;);
+
+    public override string ToString() =&gt; Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is ChargeType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(ChargeType)}&quot;);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,23,0],[5,5,5,54,1],[6,5,6,58,1],[7,5,7,54,1],[8,5,8,60,1],[9,5,9,60,1],[10,5,10,70,1],[12,42,12,47,0],[15,5,15,6,0],[16,9,16,37,0],[17,13,17,81,0],[19,9,19,78,0],[20,5,20,6,0]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\ColliType.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record ColliType(string Value) : IComparable
+{
+    public static readonly ColliType Pallet = new(&quot;Pallet&quot;);
+    public static readonly ColliType Box = new(&quot;Box&quot;);
+    public static readonly ColliType Container = new(&quot;Container&quot;);
+    public static readonly ColliType Envelope = new(&quot;Envelope&quot;);
+    public static readonly ColliType Crate = new(&quot;Crate&quot;);
+    public static readonly ColliType Drum = new(&quot;Drum&quot;);
+    public static readonly ColliType Roll = new(&quot;Roll&quot;);
+    public static readonly ColliType Bag = new(&quot;Bag&quot;);
+    public static readonly ColliType Bale = new(&quot;Bale&quot;);
+    public static readonly ColliType Barrel = new(&quot;Barrel&quot;);
+    public static readonly ColliType Bundle = new(&quot;Bundle&quot;);
+    public static readonly ColliType Case = new(&quot;Case&quot;);
+    public static readonly ColliType Sack = new(&quot;Sack&quot;);
+    public static readonly ColliType Tank = new(&quot;Tank&quot;);
+    public static readonly ColliType Tray = new(&quot;Tray&quot;);
+
+    public override string ToString() =&gt; Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is ColliType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(ColliType)}&quot;);
+    }
+
+    public static IReadOnlyCollection&lt;ColliType&gt; GetByTransportMode(TransportMode mode)
+    {
+        var colliTypes = new List&lt;ColliType&gt;();
+        if (mode == TransportMode.Air)
+            colliTypes = new List&lt;ColliType&gt; { Box, Pallet, Envelope, Crate, Bag, Case };
+        if (mode == TransportMode.Sea)
+            colliTypes = new List&lt;ColliType&gt;
+            {
+                Container,
+                Pallet,
+                Crate,
+                Drum,
+                Tank,
+                Barrel,
+                Bale,
+                Sack,
+            };
+        if (mode == TransportMode.Road)
+            colliTypes = new List&lt;ColliType&gt; { Pallet, Box, Crate, Drum, Roll, Bag, Tray, Bundle };
+        if (mode == TransportMode.Courier)
+            colliTypes = new List&lt;ColliType&gt; { Envelope, Box, Bag, Case };
+
+        return colliTypes.OrderBy(x =&gt; x.Value).ToList();
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,24,0],[5,5,5,61,1],[6,5,6,55,1],[7,5,7,67,1],[8,5,8,65,1],[9,5,9,59,1],[10,5,10,57,1],[11,5,11,57,1],[12,5,12,55,1],[13,5,13,57,1],[14,5,14,61,1],[15,5,15,61,1],[16,5,16,57,1],[17,5,17,57,1],[18,5,18,57,1],[19,5,19,57,1],[21,42,21,47,0],[24,5,24,6,0],[25,9,25,36,0],[26,13,26,81,0],[28,9,28,77,0],[29,5,29,6,0],[32,5,32,6,0],[33,9,33,48,0],[34,9,34,39,0],[35,13,35,90,0],[36,9,36,39,0],[37,13,47,15,0],[48,9,48,40,0],[49,13,49,100,0],[50,9,50,43,0],[51,13,51,75,0],[53,9,53,40,0],[53,40,53,47,0],[53,47,53,58,0],[54,5,54,6,0]]);
+    </script>
+  </body>
+</html>

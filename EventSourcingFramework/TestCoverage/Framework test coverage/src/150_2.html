@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\DI\RepositoriesExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
+using EventSourcingFramework.Infrastructure.Repositories.Services;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Infrastructure.Repositories.DI;
+
+public static class RepositoriesExtensions
+{
+    public static IServiceCollection AddRepositories(this IServiceCollection services)
+    {
+        services.AddSingleton(typeof(Repository&lt;&gt;))
+            .AddScoped&lt;ITransactionManager, TransactionManager&gt;()
+            .AddScoped(typeof(IRepository&lt;&gt;), typeof(SmartRepository&lt;&gt;));
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[11,5,11,6,1],[12,9,14,74,1],[16,9,16,25,1],[17,5,17,6,1]]);
+    </script>
+  </body>
+</html>

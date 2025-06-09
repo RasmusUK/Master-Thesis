@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Application\UseCases\Replay\ReplayService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Replay;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
+using EventSourcingFramework.Core.Enums;
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Core.Models.Events;
+
+namespace EventSourcingFramework.Application.UseCases.Replay;
+
+public class ReplayService : IReplayService
+{
+    private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
+    private readonly IReplayContext replayContext;
+    private readonly IReplayEnvironmentSwitcher replayEnvironmentSwitcher;
+    private readonly ISnapshotService snapshotService;
+    private readonly ISnapshotSettings snapshotSettings;
+
+    public ReplayService(
+        IEventStore eventStore,
+        IEntityStore entityStore,
+        IReplayContext replayContext,
+        ISnapshotService snapshotService,
+        IReplayEnvironmentSwitcher replayEnvironmentSwitcher, ISnapshotSettings snapshotSettings)
+    {
+        this.eventStore = eventStore;
+        this.entityStore = entityStore;
+        this.replayContext = replayContext;
+        this.snapshotService = snapshotService;
+        this.replayEnvironmentSwitcher = replayEnvironmentSwitcher;
+        this.snapshotSettings = snapshotSettings;
+    }
+
+    public async Task StartReplayAsync(ReplayMode mode = ReplayMode.Replay)
+    {
+        replayContext.StartReplay(mode);
+        if (mode == ReplayMode.Debug)
+            await replayEnvironmentSwitcher.UseDebugDatabaseAsync();
+        replayContext.IsLoading = true;
+        await TryTakeSnapshotAsync();
+        replayContext.IsLoading = false;
+    }
+
+    public async Task StopReplayAsync()
+    {
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        var latestSnapshot = await TryGetLastSnapshotAsync();
+        if (latestSnapshot is not null)
+        {
+            await TryRestoreSnapshotAsync(latestSnapshot.SnapshotId);
+            events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
+        }
+        else
+        {
+            events = await eventStore.GetEventsAsync();
+        }
+
+        await ProcessReplayEventsAsync(events);
+        if (replayContext.ReplayMode == ReplayMode.Debug)
+            await replayEnvironmentSwitcher.UseProductionDatabaseAsync();
+        replayContext.StopReplay();
+    }
+
+    public async Task ReplayAllAsync(bool autoStop = true, bool useSnapshot = true)
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        await TryRestoreSnapshotAsync(useSnapshot);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        if (useSnapshot)
+        {
+            var latestSnapshot = await TryGetLastSnapshotAsync();
+            if (latestSnapshot is null)
+                events = await eventStore.GetEventsAsync();
+            else
+                events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
+            
+            replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? latestSnapshot?.EventNumber ?? 0;
+        }
+        else
+        {
+            events = await eventStore.GetEventsAsync();
+            replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        }
+
+        await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayUntilAsync(
+        DateTime until,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        await TryRestoreSnapshotAsync(useSnapshot, until: until);
+        IReadOnlyCollection&lt;IEvent&gt; events = new List&lt;IEvent&gt;();
+        if (useSnapshot)
+        {
+            var latestSnapshot = await TryGetLastSnapshotAsync();
+            if (latestSnapshot is not null &amp;&amp; latestSnapshot.Timestamp &lt;= until)
+            {
+                events = await eventStore.GetEventsFromUntilAsync(latestSnapshot.Timestamp, until);
+            }
+            replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? latestSnapshot?.EventNumber ?? 0;
+        }
+        else
+        {
+            events = await eventStore.GetEventsUntilAsync(until);
+            replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        }
+        await ProcessReplayEventsAsync(events);
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayFromAsync(DateTime from, bool autoStop = true, bool useSnapshot = true)
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var (restored, _, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, from);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        
+        if (restored)
+            events = await eventStore.GetEventsFromAsync(eventNumber);
+        else
+            events = await eventStore.GetEventsAsync();
+        
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayFromUntilAsync(
+        DateTime from,
+        DateTime until,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, from);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        
+        if (restored)
+            events = await eventStore.GetEventsFromUntilAsync(snapshotFrom!.Value, until);
+        else
+            events = await eventStore.GetEventsUntilAsync(until);
+
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayEntityAsync(
+        Guid entityId,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var events = await eventStore.GetEventsByEntityIdAsync(entityId);
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayEntityUntilAsync(
+        Guid entityId,
+        DateTime until,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var events = await eventStore.GetEventsByEntityIdUntilAsync(entityId, until);
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayEntityFromUntilAsync(
+        Guid entityId,
+        DateTime from,
+        DateTime until,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var events = await eventStore.GetEventsByEntityIdFromUntilAsync(entityId, from, until);
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayEventsAsync(IReadOnlyCollection&lt;IEvent&gt; events, bool autoStop = true)
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public Task ReplayEventAsync(IEvent e, bool autoStop = true)
+    {
+        return ReplayEventsAsync(new[] { e }, autoStop);
+    }
+
+    public IReadOnlyCollection&lt;IEvent&gt; GetSimulatedEvents()
+    {
+        return replayContext.GetEvents();
+    }
+
+    public async Task ReplayFromEventNumberAsync(
+        long fromEventNumber,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+
+        if (restored)
+            events = await eventStore.GetEventsFromAsync(snapshotFrom!.Value);
+        else
+            events = await eventStore.GetEventsAsync();
+        
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayUntilEventNumberAsync(
+        long untilEventNumber,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Replay);
+        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, untilNumber: untilEventNumber);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        
+        if (restored)
+            events = await eventStore.GetEventsFromUntilAsync(eventNumber, untilEventNumber);
+        else
+            events = await eventStore.GetEventsUntilAsync(untilEventNumber);
+        
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public async Task ReplayFromUntilEventNumberAsync(
+        long fromEventNumber,
+        long untilEventNumber,
+        bool autoStop = true,
+        bool useSnapshot = true
+    )
+    {
+        await StartReplayIfNeeded(ReplayMode.Sandbox);
+        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
+        IReadOnlyCollection&lt;IEvent&gt; events;
+        
+        if (restored)
+            events = await eventStore.GetEventsFromUntilAsync(eventNumber, untilEventNumber);
+        else
+            events = await eventStore.GetEventsUntilAsync(untilEventNumber);
+
+        await ProcessReplayEventsAsync(events);
+        replayContext.EventNumber = events.Last().EventNumber;
+        await StopReplayIfNeeded(autoStop);
+    }
+
+    public bool IsRunning()
+    {
+        return replayContext.IsReplaying;
+    }
+
+    private async Task StartReplayIfNeeded(ReplayMode replayMode = ReplayMode.Strict)
+    {
+        if (!replayContext.IsReplaying)
+            await StartReplayAsync(replayMode);
+    }
+
+    private async Task StopReplayIfNeeded(bool autoStop)
+    {
+        if (autoStop)
+            await StopReplayAsync();
+    }
+
+    private async Task&lt;(bool restored, DateTime? timestamp, long eventNumber)&gt; TryRestoreSnapshotAsync(
+        bool useSnapshot,
+        DateTime? from = null,
+        DateTime? until = null,
+        long? fromNumber = null,
+        long? untilNumber = null
+    )
+    {
+        if (!useSnapshot || !snapshotSettings.Enabled)
+            return (false, null, 0);
+
+        string? snapshotId;
+
+        if (fromNumber.HasValue)
+            snapshotId = await snapshotService.GetLatestSnapshotBeforeAsync(fromNumber.Value);
+        else if (untilNumber.HasValue)
+            snapshotId = await snapshotService.GetLatestSnapshotBeforeAsync(untilNumber.Value);
+        else if (from.HasValue)
+            snapshotId = await snapshotService.GetLatestSnapshotBeforeAsync(from.Value);
+        else if (until.HasValue)
+            snapshotId = await snapshotService.GetLatestSnapshotBeforeAsync(until.Value);
+        else
+            snapshotId = await snapshotService.GetLastSnapshotIdAsync();
+
+        if (snapshotId is null) return (false, null, 0);
+        
+        var snapshot = await snapshotService.GetSnapshotMetadataAsync(snapshotId);
+        if (snapshot is null)
+            return (false, null, 0);
+        var restored = await snapshotService.RestoreSnapshotAsync(snapshotId);
+        return (restored, snapshot.Timestamp, snapshot.EventNumber);
+    }
+
+    private async Task&lt;SnapshotMetadata?&gt; TryGetLastSnapshotAsync()
+    {
+        if (!snapshotSettings.Enabled)
+            return null;
+        return await snapshotService.GetLastSnapshotAsync();
+    }
+
+    private async Task TryRestoreSnapshotAsync(string snapshotId)
+    {
+        if (!snapshotSettings.Enabled)
+            return;
+        await snapshotService.RestoreSnapshotAsync(snapshotId);
+    }
+
+    private async Task TryTakeSnapshotAsync()
+    {
+        if (!snapshotSettings.Enabled)
+            return;
+        await snapshotService.TakeSnapshotAsync(await eventStore.GetCurrentSequenceNumberAsync());
+    }
+
+    private async Task ProcessReplayEventsAsync(IEnumerable&lt;IEvent&gt; events)
+    {
+        foreach (var e in events)
+            switch (e)
+            {
+                case ICreateEvent&lt;IEntity&gt; create:
+                    await ProcessReplayCreateEvent((dynamic)create);
+                    break;
+                case IUpdateEvent&lt;IEntity&gt; update:
+                    await ProcessReplayUpdateEvent((dynamic)update);
+                    break;
+                case IDeleteEvent&lt;IEntity&gt; delete:
+                    await ProcessReplayDeleteEvent((dynamic)delete);
+                    break;
+                default:
+                    throw new InvalidOperationException($&quot;Unknown event type: {e.GetType().Name}&quot;);
+            }
+    }
+    
+    private Task ProcessReplayCreateEvent&lt;T&gt;(ICreateEvent&lt;T&gt; e)
+        where T : IEntity
+    {
+        return entityStore.UpsertEntityAsync(e.Entity);
+    }
+
+    private Task ProcessReplayUpdateEvent&lt;T&gt;(IUpdateEvent&lt;T&gt; e)
+        where T : IEntity
+    {
+        return entityStore.UpsertEntityAsync(e.Entity);
+    }
+
+    private Task ProcessReplayDeleteEvent&lt;T&gt;(IDeleteEvent&lt;T&gt; e)
+        where T : IEntity
+    {
+        return entityStore.DeleteEntityAsync(e.Entity);
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[20,5,25,98,1],[26,5,26,6,1],[27,9,27,38,1],[28,9,28,40,1],[29,9,29,44,1],[30,9,30,48,1],[31,9,31,68,1],[32,9,32,50,1],[33,5,33,6,1],[36,5,36,6,1],[37,9,37,41,1],[38,9,38,38,1],[39,13,39,69,1],[40,9,40,40,1],[41,9,41,38,1],[42,9,42,41,1],[43,5,43,6,1],[46,5,46,6,1],[48,9,48,62,1],[49,9,49,40,1],[50,9,50,10,1],[51,13,51,70,1],[52,13,52,86,1],[53,9,53,10,1],[55,9,55,10,1],[56,13,56,56,1],[57,9,57,10,1],[59,9,59,48,1],[60,9,60,58,1],[61,13,61,74,1],[62,9,62,36,1],[63,5,63,6,1],[66,5,66,6,1],[67,9,67,54,1],[68,9,68,52,1],[70,9,70,25,1],[71,9,71,10,1],[72,13,72,66,1],[73,13,73,40,1],[74,17,74,60,1],[76,17,76,90,1],[78,13,78,113,1],[79,9,79,10,1],[81,9,81,10,1],[82,13,82,56,1],[83,13,83,82,1],[84,9,84,10,1],[86,9,86,48,1],[87,9,87,44,1],[88,5,88,6,1],[95,5,95,6,1],[96,9,96,54,1],[97,9,97,66,1],[98,9,98,65,1],[99,9,99,25,1],[100,9,100,10,1],[101,13,101,66,1],[102,13,102,81,1],[103,13,103,14,0],[104,17,104,100,0],[105,13,105,14,0],[106,13,106,113,1],[107,9,107,10,1],[109,9,109,10,1],[110,13,110,66,1],[111,13,111,82,1],[112,9,112,10,1],[113,9,113,48,1],[114,9,114,44,1],[115,5,115,6,1],[118,5,118,6,1],[119,9,119,54,1],[120,9,120,91,1],[123,9,123,22,1],[124,13,124,71,0],[126,13,126,56,1],[128,9,128,48,1],[129,9,129,88,1],[130,9,130,44,1],[131,5,131,6,1],[139,5,139,6,1],[140,9,140,54,1],[141,9,141,102,1],[144,9,144,22,1],[145,13,145,91,1],[147,13,147,66,0],[149,9,149,48,1],[150,9,150,88,1],[151,9,151,44,1],[152,5,152,6,1],[159,5,159,6,1],[160,9,160,54,1],[161,9,161,74,1],[162,9,162,48,1],[163,9,163,78,1],[164,9,164,44,1],[165,5,165,6,1],[173,5,173,6,1],[174,9,174,54,1],[175,9,175,86,1],[176,9,176,48,1],[177,9,177,78,1],[178,9,178,44,1],[179,5,179,6,1],[188,5,188,6,1],[189,9,189,54,1],[190,9,190,96,1],[191,9,191,48,1],[192,9,192,78,1],[193,9,193,44,1],[194,5,194,6,1],[197,5,197,6,1],[198,9,198,54,1],[199,9,199,48,1],[200,9,200,78,1],[201,9,201,44,1],[202,5,202,6,1],[205,5,205,6,1],[206,9,206,57,1],[207,5,207,6,1],[210,5,210,6,1],[211,9,211,42,1],[212,5,212,6,1],[219,5,219,6,1],[220,9,220,54,1],[221,9,221,125,1],[224,9,224,22,1],[225,13,225,79,1],[227,13,227,56,1],[229,9,229,48,1],[230,9,230,88,1],[231,9,231,44,1],[232,5,232,6,1],[239,5,239,6,1],[240,9,240,54,1],[241,9,241,127,1],[244,9,244,22,1],[245,13,245,94,1],[247,13,247,77,1],[249,9,249,48,1],[250,9,250,88,1],[251,9,251,44,1],[252,5,252,6,1],[260,5,260,6,1],[261,9,261,55,1],[262,9,262,125,1],[265,9,265,22,1],[266,13,266,94,1],[268,13,268,77,1],[270,9,270,48,1],[271,9,271,63,1],[272,9,272,44,1],[273,5,273,6,1],[276,5,276,6,1],[277,9,277,42,1],[278,5,278,6,1],[281,5,281,6,1],[282,9,282,40,1],[283,13,283,48,1],[284,5,284,6,1],[287,5,287,6,1],[288,9,288,22,1],[289,13,289,37,1],[290,5,290,6,1],[299,5,299,6,1],[300,9,300,55,1],[301,13,301,37,1],[305,9,305,33,1],[306,13,306,95,1],[307,14,307,39,1],[308,13,308,96,1],[309,14,309,32,1],[310,13,310,89,1],[311,14,311,33,1],[312,13,312,90,1],[314,13,314,73,1],[316,9,316,32,1],[316,33,316,57,1],[318,9,318,83,1],[319,9,319,30,1],[320,13,320,37,0],[321,9,321,79,1],[322,9,322,69,1],[323,5,323,6,1],[326,5,326,6,1],[327,9,327,39,1],[328,13,328,25,1],[329,9,329,61,1],[330,5,330,6,1],[333,5,333,6,1],[334,9,334,39,1],[335,13,335,20,0],[336,9,336,64,1],[337,5,337,6,1],[340,5,340,6,1],[341,9,341,39,1],[342,13,342,20,1],[343,9,343,99,1],[344,5,344,6,1],[347,5,347,6,1],[348,9,348,16,1],[348,18,348,23,1],[348,24,348,26,1],[348,27,348,33,1],[349,13,349,23,1],[352,21,352,69,1],[353,21,353,27,1],[355,21,355,69,1],[356,21,356,27,1],[358,21,358,69,1],[359,21,359,27,1],[361,21,361,100,0],[363,5,363,6,1],[367,5,367,6,1],[368,9,368,56,1],[369,5,369,6,1],[373,5,373,6,1],[374,9,374,56,1],[375,5,375,6,1],[379,5,379,6,1],[380,9,380,56,1],[381,5,381,6,1]]);
+    </script>
+  </body>
+</html>

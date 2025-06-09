@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\CustomerMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.DomainObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class CustomerMapper
+{
+    public static CustomerDto ToDto(this Customer customer)
+    {
+        return new CustomerDto
+        {
+            Id = customer.Id,
+            Name = customer.Name,
+            Users = customer.Users.Select(UserMapper.ToDto).ToList(),
+            ConcurrencyVersion = customer.ConcurrencyVersion,
+        };
+    }
+
+    public static Customer ToDomain(this CustomerDto customerDto)
+    {
+        return new Customer(customerDto.Name)
+        {
+            Id = customerDto.Id,
+            Users = customerDto.Users.Select(UserMapper.ToDomain).ToList(),
+            ConcurrencyVersion = customerDto.ConcurrencyVersion,
+        };
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,6,1],[10,9,16,11,1],[17,5,17,6,1],[20,5,20,6,1],[21,9,26,11,1],[27,5,27,6,1]]);
+    </script>
+  </body>
+</html>

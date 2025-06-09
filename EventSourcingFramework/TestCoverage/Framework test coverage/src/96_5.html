@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Shared\Configuration\Options\SnapshotOptions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Snapshots;
+
+namespace EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+
+public class SnapshotOptions
+{
+    public bool Enabled { get; set; } = true;
+
+    public SnapshotTriggerOptions Trigger { get; set; } = new();
+
+    public SnapshotRetentionOptions Retention { get; set; } = new();
+}
+
+public class SnapshotTriggerOptions
+{
+    public SnapshotTriggerMode Mode { get; set; } = SnapshotTriggerMode.Either;
+
+    public SnapshotFrequency Frequency { get; set; } = SnapshotFrequency.Week;
+
+    public int EventThreshold { get; set; } = 1000;
+}
+
+public class SnapshotRetentionOptions
+{
+    public SnapshotRetentionStrategy Strategy { get; set; } = SnapshotRetentionStrategy.Count;
+
+    public int MaxCount { get; set; } = 20;
+
+    public int MaxAgeDays { get; set; } = 180;
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[7,27,7,31,1],[7,32,7,36,1],[7,41,7,45,1],[9,45,9,49,1],[9,50,9,54,1],[9,59,9,64,1],[11,49,11,53,1],[11,54,11,58,1],[11,63,11,68,1],[16,39,16,43,1],[16,44,16,48,1],[16,53,16,79,1],[18,42,18,46,1],[18,47,18,51,1],[18,56,18,78,1],[20,33,20,37,1],[20,38,20,42,1],[20,47,20,51,1],[25,49,25,53,1],[25,54,25,58,1],[25,63,25,94,1],[27,27,27,31,1],[27,32,27,36,1],[27,41,27,43,1],[29,29,29,33,1],[29,34,29,38,1],[29,43,29,46,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Stores\DI\StoresExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Infrastructure.Stores.EventStore;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Infrastructure.Stores.DI;
+
+public static class StoresExtensions
+{
+    public static IServiceCollection AddStores(this IServiceCollection services)
+    {
+        services
+            .AddSingleton&lt;IEventSequenceGenerator, EventSequenceGenerator&gt;()
+            .AddSingleton&lt;IEntityStore, EntityStore.EntityStore&gt;()
+            .AddSingleton&lt;IEventStore, EventStore.EventStore&gt;()
+            .AddSingleton&lt;IPersonalDataStore, PersonalDataStore.PersonalDataStore&gt;()
+            .AddSingleton&lt;IApiResponseStore, ApiResponseStore.ApiResponseStore&gt;();
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[11,5,11,6,1],[12,9,17,83,1],[19,9,19,25,1],[20,5,20,6,1]]);
+    </script>
+  </body>
+</html>

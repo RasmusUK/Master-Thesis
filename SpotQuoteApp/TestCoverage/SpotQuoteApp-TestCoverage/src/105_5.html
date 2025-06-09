@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\ChargeType.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record ChargeType(string Value) : IComparable
+{
+    public static readonly ChargeType Freight = new(&quot;Freight&quot;);
+    public static readonly ChargeType FuelSurcharge = new(&quot;Fuel Surcharge&quot;);
+    public static readonly ChargeType CustomsClearance = new(&quot;Customs Clearance&quot;);
+    public static readonly ChargeType DutiesAndTaxes = new(&quot;Duties and Taxes&quot;);
+    public static readonly ChargeType Insurance = new(&quot;Insurance&quot;);
+    public static readonly ChargeType Documentation = new(&quot;Documentation&quot;);
+    public static readonly ChargeType PortHandling = new(&quot;Port/Terminal Handling&quot;);
+    public static readonly ChargeType Inspection = new(&quot;Inspection&quot;);
+    public static readonly ChargeType Demurrage = new(&quot;Demurrage&quot;);
+    public static readonly ChargeType Detention = new(&quot;Detention&quot;);
+    public static readonly ChargeType Storage = new(&quot;Storage&quot;);
+    public static readonly ChargeType Delivery = new(&quot;Door Delivery&quot;);
+    public static readonly ChargeType BondFee = new(&quot;Bond Fee&quot;);
+    public static readonly ChargeType ReeferSurcharge = new(&quot;Reefer Surcharge&quot;);
+    public static readonly ChargeType DangerousGoods = new(&quot;Dangerous Goods&quot;);
+    public static readonly ChargeType BunkerAdjustment = new(&quot;Bunker Adjustment (BAF)&quot;);
+    public static readonly ChargeType CurrencyAdjustment = new(&quot;Currency Adjustment (CAF)&quot;);
+
+    public override string ToString() =&gt; Value;
+    
+    public static ChargeType FromString(string value)
+    {
+        return value switch
+        {
+            &quot;Freight&quot; =&gt; Freight,
+            &quot;Fuel Surcharge&quot; =&gt; FuelSurcharge,
+            &quot;Customs Clearance&quot; =&gt; CustomsClearance,
+            &quot;Duties and Taxes&quot; =&gt; DutiesAndTaxes,
+            &quot;Insurance&quot; =&gt; Insurance,
+            &quot;Documentation&quot; =&gt; Documentation,
+            &quot;Port/Terminal Handling&quot; =&gt; PortHandling,
+            &quot;Inspection&quot; =&gt; Inspection,
+            &quot;Demurrage&quot; =&gt; Demurrage,
+            &quot;Detention&quot; =&gt; Detention,
+            &quot;Storage&quot; =&gt; Storage,
+            &quot;Door Delivery&quot; =&gt; Delivery,
+            &quot;Bond Fee&quot; =&gt; BondFee,
+            &quot;Reefer Surcharge&quot; =&gt; ReeferSurcharge,
+            &quot;Dangerous Goods&quot; =&gt; DangerousGoods,
+            &quot;Bunker Adjustment (BAF)&quot; =&gt; BunkerAdjustment,
+            &quot;Currency Adjustment (CAF)&quot; =&gt; CurrencyAdjustment,
+            _ =&gt; throw new ArgumentException($&quot;Invalid charge type: {value}&quot;)
+        };
+    }
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is ChargeType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(ChargeType)}&quot;);
+    }
+
+    public static IReadOnlyCollection&lt;ChargeType&gt; GetByTransportMode(TransportMode mode)
+    {
+        var charges = new List&lt;ChargeType&gt;();
+
+        if (mode == TransportMode.Air)
+            charges = new List&lt;ChargeType&gt;
+            {
+                Freight,
+                FuelSurcharge,
+                CustomsClearance,
+                Documentation,
+                Insurance,
+                DangerousGoods,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
+            };
+
+        if (mode == TransportMode.Sea)
+            charges = new List&lt;ChargeType&gt;
+            {
+                Freight,
+                BunkerAdjustment,
+                CurrencyAdjustment,
+                PortHandling,
+                CustomsClearance,
+                Demurrage,
+                Detention,
+                Insurance,
+                Documentation,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
+            };
+
+        if (mode == TransportMode.Road)
+            charges = new List&lt;ChargeType&gt;
+            {
+                Freight,
+                FuelSurcharge,
+                Delivery,
+                CustomsClearance,
+                Insurance,
+                Documentation,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
+            };
+
+        if (mode == TransportMode.Courier)
+            charges = new List&lt;ChargeType&gt;
+            {
+                Freight,
+                FuelSurcharge,
+                Delivery,
+                CustomsClearance,
+                Insurance,
+                DutiesAndTaxes,
+                Inspection,
+                Storage,
+                BondFee,
+                ReeferSurcharge,
+            };
+
+        return charges.OrderBy(x =&gt; x.Value).ToList();
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,25,0],[5,5,5,64,1],[6,5,6,77,1],[7,5,7,83,1],[8,5,8,80,1],[9,5,9,68,1],[10,5,10,76,1],[11,5,11,84,1],[12,5,12,70,1],[13,5,13,68,1],[14,5,14,68,1],[15,5,15,64,1],[16,5,16,71,1],[17,5,17,65,1],[18,5,18,81,1],[19,5,19,79,1],[20,5,20,89,1],[21,5,21,93,1],[23,42,23,47,0],[26,5,26,6,1],[27,9,29,26,1],[29,26,29,33,1],[29,33,30,33,1],[30,33,30,46,1],[30,46,31,36,1],[31,36,31,52,0],[31,52,32,35,1],[32,35,32,49,0],[32,49,33,28,1],[33,28,33,37,0],[33,37,34,32,1],[34,32,34,45,0],[34,45,35,41,1],[35,41,35,53,0],[35,53,36,29,1],[36,29,36,39,0],[36,39,37,28,1],[37,28,37,37,0],[37,37,38,28,1],[38,28,38,37,0],[38,37,39,26,1],[39,26,39,33,1],[39,33,40,32,1],[40,32,40,40,0],[40,40,41,27,1],[41,27,41,34,0],[41,34,42,35,1],[42,35,42,50,0],[42,50,43,34,1],[43,34,43,48,0],[43,48,44,42,1],[44,42,44,58,0],[44,58,45,44,1],[45,44,45,62,0],[45,62,46,18,1],[46,18,46,78,0],[46,78,47,11,1],[48,5,48,6,1],[51,5,51,6,0],[52,9,52,37,0],[53,13,53,81,0],[55,9,55,78,0],[56,5,56,6,0],[59,5,59,6,0],[60,9,60,46,0],[62,9,62,39,0],[63,13,76,15,0],[78,9,78,39,0],[79,13,95,15,0],[97,9,97,40,0],[98,13,111,15,0],[113,9,113,43,0],[114,13,126,15,0],[128,9,128,37,0],[128,37,128,44,0],[128,44,128,55,0],[129,5,129,6,0]]);
+    </script>
+  </body>
+</html>

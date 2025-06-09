@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Migrations\DI\MigrationsExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Migrations;
+using EventSourcingFramework.Infrastructure.Migrations.Services;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Infrastructure.Migrations.DI;
+
+public static class MigrationsExtensions
+{
+    public static IServiceCollection AddMigrations(this IServiceCollection services)
+    {
+        services
+            .AddSingleton&lt;IMigrationTypeRegistry, MigrationTypeRegistry&gt;()
+            .AddSingleton&lt;IEntityMigrator, EntityMigrator&gt;()
+            .AddSingleton&lt;IEntityUpgradeService, EntityUpgradeService&gt;();
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[10,5,10,6,1],[11,9,14,74,1],[16,9,16,25,1],[17,5,17,6,1]]);
+    </script>
+  </body>
+</html>

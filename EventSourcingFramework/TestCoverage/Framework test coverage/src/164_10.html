@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Stores\EventStore\EventSequenceGenerator.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using MongoDB.Bson;
+using MongoDB.Driver;
+
+namespace EventSourcingFramework.Infrastructure.Stores.EventStore;
+
+public class EventSequenceGenerator : IEventSequenceGenerator
+{
+    private readonly IMongoCollection&lt;BsonDocument&gt; counters;
+
+    public EventSequenceGenerator(IMongoDbService service)
+    {
+        counters = service.CounterCollection;
+    }
+
+    public async Task&lt;long&gt; GetNextSequenceNumberAsync()
+    {
+        var filter = Builders&lt;BsonDocument&gt;.Filter.Eq(&quot;_id&quot;, &quot;eventNumber&quot;);
+        var update = Builders&lt;BsonDocument&gt;.Update.Inc(&quot;seq&quot;, 1);
+
+        var options = new FindOneAndUpdateOptions&lt;BsonDocument&gt;
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var result = await counters.FindOneAndUpdateAsync(filter, update, options);
+        return result[&quot;seq&quot;].ToInt64();
+    }
+
+    public async Task&lt;long&gt; GetCurrentSequenceNumberAsync()
+    {
+        var filter = Builders&lt;BsonDocument&gt;.Filter.Eq(&quot;_id&quot;, &quot;eventNumber&quot;);
+        var result = await counters.Find(filter).FirstOrDefaultAsync();
+
+        if (result == null || !result.Contains(&quot;seq&quot;))
+            return 0;
+
+        return result[&quot;seq&quot;].ToInt64();
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[12,5,12,59,1],[13,5,13,6,1],[14,9,14,46,1],[15,5,15,6,1],[18,5,18,6,1],[19,9,19,77,1],[20,9,20,66,1],[22,9,26,11,1],[28,9,28,84,1],[29,9,29,40,1],[30,5,30,6,1],[33,5,33,6,1],[34,9,34,77,1],[35,9,35,72,1],[37,9,37,55,1],[38,13,38,22,1],[40,9,40,40,1],[41,5,41,6,1]]);
+    </script>
+  </body>
+</html>

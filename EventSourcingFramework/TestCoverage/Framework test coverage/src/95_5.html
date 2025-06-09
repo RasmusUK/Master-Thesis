@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Shared\Configuration\Options\MongoDbOptions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+
+public class MongoDbOptions
+{
+    public const string MongoDb = &quot;MongoDb&quot;;
+    public DatabaseOptions EventStore { get; set; } = new();
+    public DatabaseOptions EntityStore { get; set; } = new();
+    public DatabaseOptions DebugEntityStore { get; set; } = new();
+    public DatabaseOptions PersonalDataStore { get; set; } = new();
+    public DatabaseOptions ApiResponseStore { get; set; } = new();
+}
+
+public class DatabaseOptions
+{
+    public string? ConnectionString { get; set; }
+    public string? DatabaseName { get; set; }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[6,41,6,45,1],[6,46,6,50,1],[6,55,6,60,1],[7,42,7,46,1],[7,47,7,51,1],[7,56,7,61,1],[8,47,8,51,1],[8,52,8,56,1],[8,61,8,66,1],[9,48,9,52,1],[9,53,9,57,1],[9,62,9,67,1],[10,47,10,51,1],[10,52,10,56,1],[10,61,10,66,1],[15,39,15,43,1],[15,44,15,48,1],[16,35,16,39,1],[16,40,16,44,1]]);
+    </script>
+  </body>
+</html>

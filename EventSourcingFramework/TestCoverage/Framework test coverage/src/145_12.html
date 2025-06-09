@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Http\DI\HttpExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
+using EventSourcingFramework.Infrastructure.Http.Services;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Infrastructure.Http.DI;
+
+public static class HttpExtensions
+{
+    public static IServiceCollection AddHttp(this IServiceCollection services)
+    {
+        services.AddHttpClient&lt;IApiGateway, ApiGateway&gt;();
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[10,5,10,6,1],[11,9,11,59,1],[13,9,13,25,1],[14,5,14,6,1]]);
+    </script>
+  </body>
+</html>

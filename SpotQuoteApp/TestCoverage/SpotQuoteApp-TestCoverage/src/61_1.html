@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\ProfitMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.ValueObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class ProfitMapper
+{
+    public static ProfitDto ToDto(this Profit profit)
+    {
+        return new ProfitDto { Value = profit.Value, IsPercentage = profit.IsPercentage };
+    }
+
+    public static Profit ToDomain(this ProfitDto profitDto)
+    {
+        return new Profit(profitDto.Value, profitDto.IsPercentage);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,6,1],[10,9,10,91,1],[11,5,11,6,1],[14,5,14,6,1],[15,9,15,68,1],[16,5,16,6,1]]);
+    </script>
+  </body>
+</html>

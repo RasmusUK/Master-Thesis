@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Application\DI\ApplicationExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.EntityHistory;
+using EventSourcingFramework.Application.Abstractions.PersonalData;
+using EventSourcingFramework.Application.Abstractions.Replay;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.UseCases.EntityHistory;
+using EventSourcingFramework.Application.UseCases.PersonalData;
+using EventSourcingFramework.Application.UseCases.Replay;
+using EventSourcingFramework.Application.UseCases.ReplayContext;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Application.DI;
+
+public static class ApplicationExtensions
+{
+    public static IServiceCollection AddApplications(this IServiceCollection services)
+    {
+        services
+            .AddSingleton&lt;IPersonalDataService, PersonalDataService&gt;()
+            .AddSingleton&lt;IEntityHistoryService, EntityHistoryService&gt;()
+            .AddSingleton&lt;IReplayService, ReplayService&gt;()
+            .AddSingleton&lt;IReplayContext, ReplayContext&gt;();
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[16,5,16,6,1],[17,9,21,60,1],[23,9,23,25,1],[24,5,24,6,1]]);
+    </script>
+  </body>
+</html>

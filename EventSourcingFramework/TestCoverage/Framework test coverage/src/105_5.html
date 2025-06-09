@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Shared\Models\MongoApiResponse.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using MongoDB.Bson;
+
+namespace EventSourcingFramework.Infrastructure.Shared.Models;
+
+public record MongoApiResponse
+{
+    public string Key { get; set; }
+    public BsonDocument Response { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public long EventNumber { get; set; } = 0;
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[5,15,5,31,0],[7,25,7,29,1],[7,30,7,34,1],[8,36,8,40,1],[8,41,8,45,1],[9,33,9,37,1],[9,38,9,42,1],[9,47,9,62,1],[10,31,10,35,1],[10,36,10,40,1],[10,45,10,46,1]]);
+    </script>
+  </body>
+</html>

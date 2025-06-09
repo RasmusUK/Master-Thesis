@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Repositories\Services\Repository.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using System.Linq.Expressions;
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
+using EventSourcingFramework.Core.Enums;
+using EventSourcingFramework.Core.Exceptions;
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Core.Models.Events;
+using EventSourcingFramework.Infrastructure.Repositories.Exceptions;
+using EventSourcingFramework.Infrastructure.Shared.Models.Events;
+
+namespace EventSourcingFramework.Infrastructure.Repositories.Services;
+
+public class Repository&lt;T&gt; : IRepository&lt;T&gt;
+    where T : IEntity
+{
+    private readonly IEntityStore entityStore;
+    private readonly IEventStore eventStore;
+    private readonly IReplayContext replayContext;
+    private readonly ISnapshotService snapshotService;
+
+    public Repository(
+        IEntityStore entityStore,
+        IEventStore eventStore,
+        IReplayContext replayContext, ISnapshotService snapshotService)
+    {
+        this.entityStore = entityStore;
+        this.eventStore = eventStore;
+        this.replayContext = replayContext;
+        this.snapshotService = snapshotService;
+    }
+
+    public async Task CreateAsync(T entity)
+    {
+        var eventEmitted = false;
+        try
+        {
+            var e = new CreateEvent&lt;T&gt;(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.InsertEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new DeleteEvent&lt;T&gt;(entity);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $&quot;Failed to emit compensation event for entity of type &#39;{typeof(T).Name}&#39; with id &#39;{entity.Id}&#39;.&quot;
+                );
+            throw;
+        }
+    }
+
+    public async Task UpdateAsync(T entity)
+    {
+        var eventEmitted = false;
+        var snapshot = await entityStore.GetEntityByIdAsync&lt;T&gt;(entity.Id);
+
+        if (snapshot is null)
+            throw new NotFoundException(
+                $&quot;Entity of type &#39;{typeof(T).Name}&#39; with id &#39;{entity.Id}&#39; not found.&quot;
+            );
+
+        try
+        {
+            var e = new UpdateEvent&lt;T&gt;(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.UpdateEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new UpdateEvent&lt;T&gt;(snapshot);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $&quot;Failed to emit compensation event for entity of type &#39;{typeof(T).Name}&#39; with id &#39;{entity.Id}&#39;.&quot;
+                );
+            throw;
+        }
+    }
+
+    public async Task DeleteAsync(T entity)
+    {
+        var eventEmitted = false;
+        try
+        {
+            var e = new DeleteEvent&lt;T&gt;(entity);
+            eventEmitted = await HandleEventAsync(e);
+            await entityStore.DeleteEntityAsync(entity);
+            await snapshotService.TakeSnapshotIfNeededAsync(await eventStore.GetCurrentSequenceNumberAsync());
+        }
+        catch
+        {
+            if (!eventEmitted)
+                throw;
+
+            var e = new CreateEvent&lt;T&gt;(entity);
+            eventEmitted = await HandleEventAsync(e);
+            if (!eventEmitted)
+                throw new RepositoryException(
+                    $&quot;Failed to emit compensation event for entity of type &#39;{typeof(T).Name}&#39; with id &#39;{entity.Id}&#39;.&quot;
+                );
+            throw;
+        }
+    }
+
+    public Task&lt;T?&gt; ReadByIdAsync(Guid id) =&gt; entityStore.GetEntityByIdAsync&lt;T&gt;(id);
+
+    public Task&lt;T?&gt; ReadByFilterAsync(Expression&lt;Func&lt;T, bool&gt;&gt; filter) =&gt; entityStore.GetEntityByFilterAsync(filter);
+
+    public Task&lt;TProjection?&gt; ReadProjectionByIdAsync&lt;TProjection&gt;(
+        Guid id,
+        Expression&lt;Func&lt;T, TProjection&gt;&gt; projection
+    ) =&gt; entityStore.GetProjectionByFilterAsync(x =&gt; x.Id == id, projection);
+
+    public Task&lt;TProjection?&gt; ReadProjectionByFilterAsync&lt;TProjection&gt;(
+        Expression&lt;Func&lt;T, bool&gt;&gt; filter,
+        Expression&lt;Func&lt;T, TProjection&gt;&gt; projection
+    ) =&gt; entityStore.GetProjectionByFilterAsync(filter, projection);
+
+    public Task&lt;IReadOnlyCollection&lt;T&gt;&gt; ReadAllAsync() =&gt; entityStore.GetAllAsync&lt;T&gt;();
+
+    public Task&lt;IReadOnlyCollection&lt;T&gt;&gt; ReadAllByFilterAsync(Expression&lt;Func&lt;T, bool&gt;&gt; filter) =&gt;
+        entityStore.GetAllByFilterAsync(filter);
+
+    public Task&lt;IReadOnlyCollection&lt;TProjection&gt;&gt; ReadAllProjectionsAsync&lt;TProjection&gt;(
+        Expression&lt;Func&lt;T, TProjection&gt;&gt; projection
+    ) =&gt; entityStore.GetAllProjectionsAsync(projection);
+
+    public Task&lt;IReadOnlyCollection&lt;TProjection&gt;&gt; ReadAllProjectionsByFilterAsync&lt;TProjection&gt;(
+        Expression&lt;Func&lt;T, TProjection&gt;&gt; projection,
+        Expression&lt;Func&lt;T, bool&gt;&gt; filter
+    ) =&gt; entityStore.GetAllProjectionsByFilterAsync(projection, filter);
+
+    public virtual async Task CreateAsync(T entity, Guid transactionId)
+    {
+        var e = new CreateEvent&lt;T&gt;(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
+        await entityStore.InsertEntityAsync(entity);
+    }
+
+    public virtual async Task UpdateAsync(T entity, Guid transactionId)
+    {
+        var e = new UpdateEvent&lt;T&gt;(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
+        await entityStore.UpdateEntityAsync(entity);
+    }
+
+    public virtual async Task DeleteAsync(T entity, Guid transactionId)
+    {
+        var e = new DeleteEvent&lt;T&gt;(entity) { TransactionId = transactionId };
+        await HandleEventAsync(e);
+        await entityStore.DeleteEntityAsync(entity);
+    }
+
+    public async Task&lt;Guid&gt; CreateCompensationAsync(T entity, Guid transactionId)
+    {
+        var e = new CreateEvent&lt;T&gt;(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
+        await entityStore.InsertEntityAsync(entity);
+        return entity.Id;
+    }
+
+    public async Task UpdateCompensationAsync(T entity, Guid transactionId)
+    {
+        var e = new UpdateEvent&lt;T&gt;(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
+        await entityStore.UpsertEntityAsync(entity);
+    }
+
+    public async Task DeleteCompensationAsync(T entity, Guid transactionId)
+    {
+        var e = new DeleteEvent&lt;T&gt;(entity) { TransactionId = transactionId, Compensation = true };
+        await HandleEventAsync(e);
+        await entityStore.DeleteEntityAsync(entity);
+    }
+
+    private async Task&lt;bool&gt; HandleEventAsync(IEvent e)
+    {
+        if (replayContext.IsReplaying)
+            switch (replayContext.ReplayMode)
+            {
+                case ReplayMode.Strict:
+                    throw new RepositoryException(
+                        $&quot;Cannot emit events during replay in strict mode. Event: {e.GetType().Name}&quot;
+                    );
+                case ReplayMode.Sandbox:
+                case ReplayMode.Debug:
+                case ReplayMode.Replay:
+                default:
+                    replayContext.AddEvent(e);
+                    return true;
+            }
+
+        await eventStore.InsertEventAsync(e);
+        return true;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[22,5,25,72,1],[26,5,26,6,1],[27,9,27,40,1],[28,9,28,38,1],[29,9,29,44,1],[30,9,30,48,1],[31,5,31,6,1],[34,5,34,6,1],[35,9,35,34,1],[37,9,37,10,1],[38,13,38,48,1],[39,13,39,54,1],[40,13,40,57,1],[41,13,41,111,1],[42,9,42,10,1],[43,9,43,14,1],[44,9,44,10,1],[45,13,45,31,1],[46,17,46,23,1],[48,13,48,48,1],[49,13,49,54,1],[50,13,50,31,1],[51,17,53,19,0],[54,13,54,19,1],[55,9,55,10,0],[56,5,56,6,1],[59,5,59,6,1],[60,9,60,34,1],[61,9,61,75,1],[63,9,63,30,1],[64,13,66,15,1],[69,9,69,10,1],[70,13,70,48,1],[71,13,71,54,1],[72,13,72,57,1],[73,13,73,111,1],[74,9,74,10,1],[75,9,75,14,1],[76,9,76,10,1],[77,13,77,31,1],[78,17,78,23,0],[80,13,80,50,1],[81,13,81,54,1],[82,13,82,31,1],[83,17,85,19,0],[86,13,86,19,1],[87,9,87,10,0],[88,5,88,6,1],[91,5,91,6,1],[92,9,92,34,1],[94,9,94,10,1],[95,13,95,48,1],[96,13,96,54,1],[97,13,97,57,1],[98,13,98,111,1],[99,9,99,10,1],[100,9,100,14,1],[101,9,101,10,1],[102,13,102,31,1],[103,17,103,23,0],[105,13,105,48,1],[106,13,106,54,1],[107,13,107,31,1],[108,17,110,19,0],[111,13,111,19,1],[112,9,112,10,0],[113,5,113,6,1],[115,47,115,84,1],[117,76,117,118,1],[122,10,122,77,1],[127,10,127,68,1],[129,59,129,87,1],[132,9,132,48,1],[136,10,136,56,1],[141,10,141,72,1],[144,5,144,6,1],[145,9,145,78,1],[146,9,146,35,1],[147,9,147,53,1],[148,5,148,6,1],[151,5,151,6,1],[152,9,152,78,1],[153,9,153,35,1],[154,9,154,53,1],[155,5,155,6,1],[158,5,158,6,1],[159,9,159,78,1],[160,9,160,35,1],[161,9,161,53,1],[162,5,162,6,1],[165,5,165,6,1],[166,9,166,99,1],[167,9,167,35,1],[168,9,168,53,1],[169,9,169,26,1],[170,5,170,6,1],[173,5,173,6,1],[174,9,174,99,1],[175,9,175,35,1],[176,9,176,53,1],[177,5,177,6,1],[180,5,180,6,1],[181,9,181,99,1],[182,9,182,35,1],[183,9,183,53,1],[184,5,184,6,1],[187,5,187,6,1],[188,9,188,39,1],[189,13,189,46,1],[192,21,194,23,1],[199,21,199,47,1],[200,21,200,33,1],[203,9,203,46,1],[204,9,204,21,1],[205,5,205,6,1]]);
+    </script>
+  </body>
+</html>

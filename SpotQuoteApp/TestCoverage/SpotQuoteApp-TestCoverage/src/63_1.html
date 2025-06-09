@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\SellingCostMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.ValueObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class SellingCostMapper
+{
+    public static SellingCostDto ToDto(this SellingCost sellingCost)
+    {
+        return new SellingCostDto
+        {
+            Value = sellingCost.Value,
+            ChargeType = sellingCost.ChargeType,
+            CostType = sellingCost.CostType,
+            Weight = sellingCost.Weight,
+            Cbm = sellingCost.Cbm,
+            Total = sellingCost.Total,
+            MinimumValue = sellingCost.MinimumValue,
+            MaximumValue = sellingCost.MaximumValue,
+            Profit = sellingCost.Profit,
+            Comment = sellingCost.Comment,
+        };
+    }
+
+    public static SellingCost ToDomain(this SellingCostDto sellingCostDto)
+    {
+        return new SellingCost(
+            sellingCostDto.ChargeType,
+            sellingCostDto.CostType,
+            sellingCostDto.Value,
+            sellingCostDto.Weight,
+            sellingCostDto.Cbm,
+            sellingCostDto.Comment,
+            sellingCostDto.MinimumValue,
+            sellingCostDto.MaximumValue,
+            sellingCostDto.Profit
+        );
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,6,1],[10,9,22,11,1],[23,5,23,6,1],[26,5,26,6,1],[27,9,37,11,1],[38,5,38,6,1]]);
+    </script>
+  </body>
+</html>

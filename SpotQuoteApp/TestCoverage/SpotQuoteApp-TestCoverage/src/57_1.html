@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\CountryMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.DomainObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class CountryMapper
+{
+    public static CountryDto ToDto(this Country country)
+    {
+        return new CountryDto
+        {
+            Id = country.Id,
+            Name = country.Name,
+            Code = country.Code,
+            ConcurrencyVersion = country.ConcurrencyVersion,
+        };
+    }
+
+    public static Country ToDomain(this CountryDto countryDto)
+    {
+        return new Country(countryDto.Name, countryDto.Code)
+        {
+            Id = countryDto.Id,
+            ConcurrencyVersion = countryDto.ConcurrencyVersion,
+        };
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,6,1],[10,9,16,11,1],[17,5,17,6,1],[20,5,20,6,0],[21,9,25,11,0],[26,5,26,6,0]]);
+    </script>
+  </body>
+</html>

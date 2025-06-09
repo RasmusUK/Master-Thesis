@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\SupplierService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record SupplierService(string Name, ForwarderService ForwarderService)
+{
+    public static readonly SupplierService DHLJetline = new(
+        &quot;DHL SameDay Jetline&quot;,
+        ForwarderService.DHLSameDay
+    );
+    public static readonly SupplierService DHLSprintline = new(
+        &quot;DHL SameDay Sprintline&quot;,
+        ForwarderService.DHLSameDay
+    );
+    public static readonly SupplierService DHLSpeedline = new(
+        &quot;DHL SameDay Speedline&quot;,
+        ForwarderService.DHLSameDay
+    );
+    public static readonly SupplierService DHLExpressWorldwide = new(
+        &quot;DHL Express Worldwide&quot;,
+        ForwarderService.DHLExpress
+    );
+    public static readonly SupplierService DHLExpress12 = new(
+        &quot;DHL Express 12:00&quot;,
+        ForwarderService.DHLExpress
+    );
+    public static readonly SupplierService DHLFreightClassic = new(
+        &quot;DHL Freight Classic&quot;,
+        ForwarderService.DHLFreight
+    );
+    public static readonly SupplierService DHLFreightPremium = new(
+        &quot;DHL Freight Premium&quot;,
+        ForwarderService.DHLFreight
+    );
+    public static readonly SupplierService FedExInternationalPriority = new(
+        &quot;FedEx International Priority&quot;,
+        ForwarderService.FedExExpress
+    );
+    public static readonly SupplierService FedExFirstOvernight = new(
+        &quot;FedEx First Overnight&quot;,
+        ForwarderService.FedExExpress
+    );
+    public static readonly SupplierService FedExHomeDelivery = new(
+        &quot;FedEx Home Delivery&quot;,
+        ForwarderService.FedExGround
+    );
+    public static readonly SupplierService FedExSmartPost = new(
+        &quot;FedEx SmartPost&quot;,
+        ForwarderService.FedExGround
+    );
+    public static readonly SupplierService UPSWorldwideSaver = new(
+        &quot;UPS Worldwide Saver&quot;,
+        ForwarderService.UPSExpress
+    );
+    public static readonly SupplierService UPSNextDayAir = new(
+        &quot;UPS Next Day Air&quot;,
+        ForwarderService.UPSExpress
+    );
+    public static readonly SupplierService UPSFreightLTL = new(
+        &quot;UPS Freight LTL&quot;,
+        ForwarderService.UPSFreight
+    );
+    public static readonly SupplierService UPSFreightTruckload = new(
+        &quot;UPS Freight Truckload&quot;,
+        ForwarderService.UPSFreight
+    );
+    public static readonly SupplierService AramexPriorityExpress = new(
+        &quot;Aramex Priority Express&quot;,
+        ForwarderService.AramexExpress
+    );
+    public static readonly SupplierService AramexNextDay = new(
+        &quot;Aramex Next Day&quot;,
+        ForwarderService.AramexExpress
+    );
+    public static readonly SupplierService MaerskSpot = new(
+        &quot;Maersk Spot&quot;,
+        ForwarderService.MaerskOcean
+    );
+    public static readonly SupplierService MaerskDailyMaersk = new(
+        &quot;Maersk Daily Maersk&quot;,
+        ForwarderService.MaerskOcean
+    );
+    public static readonly SupplierService DBSchenkerLandBasic = new(
+        &quot;DB Schenker Land Basic&quot;,
+        ForwarderService.DBSchenkerLand
+    );
+    public static readonly SupplierService DBSchenkerLandPremium = new(
+        &quot;DB Schenker Land Premium&quot;,
+        ForwarderService.DBSchenkerLand
+    );
+
+    public override string ToString() =&gt; Name;
+
+    public static IReadOnlyCollection&lt;SupplierService&gt; GetByForwarderService(
+        ForwarderService service
+    ) =&gt; GetAll().Where(s =&gt; s.ForwarderService == service).ToList();
+
+    public static IReadOnlyCollection&lt;SupplierService&gt; GetByTransportMode(TransportMode mode) =&gt;
+        GetAll().Where(s =&gt; s.ForwarderService.Mode == mode).ToList();
+
+    public static IReadOnlyCollection&lt;SupplierService&gt; GetAll() =&gt;
+        typeof(SupplierService)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f =&gt; f.GetValue(null))
+            .OfType&lt;SupplierService&gt;()
+            .ToList();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,30,0],[5,5,8,7,1],[9,5,12,7,1],[13,5,16,7,1],[17,5,20,7,1],[21,5,24,7,1],[25,5,28,7,1],[29,5,32,7,1],[33,5,36,7,1],[37,5,40,7,1],[41,5,44,7,1],[45,5,48,7,1],[49,5,52,7,1],[53,5,56,7,1],[57,5,60,7,1],[61,5,64,7,1],[65,5,68,7,1],[69,5,72,7,1],[73,5,76,7,1],[77,5,80,7,1],[81,5,84,7,1],[85,5,88,7,1],[90,42,90,46,0],[94,10,94,30,0],[94,30,94,59,0],[94,59,94,69,0],[97,9,97,29,0],[97,29,97,60,0],[97,60,97,70,0],[100,9,104,26,0],[104,26,104,42,0],[104,42,106,22,0]]);
+    </script>
+  </body>
+</html>

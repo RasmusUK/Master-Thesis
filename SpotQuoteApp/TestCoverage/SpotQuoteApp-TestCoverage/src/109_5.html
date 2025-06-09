@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\ForwarderService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record ForwarderService(string Name, Supplier Supplier, TransportMode Mode)
+{
+    public static readonly ForwarderService DHLSameDay = new(
+        &quot;DHL SameDay&quot;,
+        Supplier.DHL,
+        TransportMode.Air
+    );
+    public static readonly ForwarderService DHLExpress = new(
+        &quot;DHL Express&quot;,
+        Supplier.DHL,
+        TransportMode.Courier
+    );
+    public static readonly ForwarderService DHLFreight = new(
+        &quot;DHL Freight&quot;,
+        Supplier.DHL,
+        TransportMode.Road
+    );
+    public static readonly ForwarderService FedExExpress = new(
+        &quot;FedEx Express&quot;,
+        Supplier.FedEx,
+        TransportMode.Air
+    );
+    public static readonly ForwarderService FedExGround = new(
+        &quot;FedEx Ground&quot;,
+        Supplier.FedEx,
+        TransportMode.Road
+    );
+    public static readonly ForwarderService UPSExpress = new(
+        &quot;UPS Express&quot;,
+        Supplier.UPS,
+        TransportMode.Courier
+    );
+    public static readonly ForwarderService UPSFreight = new(
+        &quot;UPS Freight&quot;,
+        Supplier.UPS,
+        TransportMode.Road
+    );
+    public static readonly ForwarderService AramexExpress = new(
+        &quot;Aramex Express&quot;,
+        Supplier.Aramex,
+        TransportMode.Courier
+    );
+    public static readonly ForwarderService MaerskOcean = new(
+        &quot;Maersk Ocean&quot;,
+        Supplier.Maersk,
+        TransportMode.Sea
+    );
+    public static readonly ForwarderService DBSchenkerLand = new(
+        &quot;DB Schenker Land&quot;,
+        Supplier.DB_Schenker,
+        TransportMode.Road
+    );
+
+    public override string ToString() =&gt; Name;
+
+    public static IReadOnlyCollection&lt;ForwarderService&gt; GetBySupplier(Supplier supplier) =&gt;
+        GetAll().Where(f =&gt; f.Supplier == supplier).OrderBy(s =&gt; s.Name).ToList();
+
+    public static IReadOnlyCollection&lt;ForwarderService&gt; GetByTransportMode(TransportMode mode) =&gt;
+        GetAll().Where(f =&gt; f.Mode == mode).OrderBy(s =&gt; s.Name).ToList();
+
+    public static IReadOnlyCollection&lt;Supplier&gt; GetSuppliersByTransportMode(TransportMode mode) =&gt;
+        GetByTransportMode(mode).Select(f =&gt; f.Supplier).Distinct().OrderBy(s =&gt; s.Value).ToList();
+
+    public static IReadOnlyCollection&lt;ForwarderService&gt; GetAll() =&gt;
+        typeof(ForwarderService)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f =&gt; f.GetValue(null))
+            .OfType&lt;ForwarderService&gt;()
+            .ToList();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,31,0],[5,5,9,7,1],[10,5,14,7,1],[15,5,19,7,1],[20,5,24,7,1],[25,5,29,7,1],[30,5,34,7,1],[35,5,39,7,1],[40,5,44,7,1],[45,5,49,7,1],[50,5,54,7,1],[56,42,56,46,0],[59,9,59,29,0],[59,29,59,51,0],[59,51,59,66,0],[59,66,59,72,0],[59,72,59,82,0],[62,9,62,29,0],[62,29,62,43,0],[62,43,62,58,0],[62,58,62,64,0],[62,64,62,74,0],[65,9,65,46,0],[65,46,65,56,0],[65,56,65,82,0],[65,82,65,89,0],[65,89,65,99,0],[68,9,72,26,0],[72,26,72,42,0],[72,42,74,22,0]]);
+    </script>
+  </body>
+</html>

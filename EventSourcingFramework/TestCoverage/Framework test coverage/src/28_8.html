@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\DI\DomainConfigurationExtensions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Migrations;
+using EventSourcingFramework.Infrastructure.Migrations.Services;
+using EventSourcingFramework.Infrastructure.MongoDb.Services;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace EventSourcingFramework.Infrastructure.DI;
+
+public static class DomainConfigurationExtensions
+{
+    public static IServiceCollection AddDomainConfiguration(this IServiceCollection services,
+        DomainConfigurator configureDomain)
+    {
+        var schemaRegistry = new SchemaVersionRegistry();
+        var migrationRegistry = new MigrationTypeRegistry();
+        var migrator = new EntityMigrator();
+        var mongoDbRegistrationService = new MongoDbRegistrationService();
+        
+        configureDomain(schemaRegistry, migrationRegistry, migrator, mongoDbRegistrationService);
+
+        var collectionNameProvider = new EntityCollectionNameProvider();
+        var registered = mongoDbRegistrationService.GetRegistered();
+        foreach (var (type, collectionName) in registered)
+        {
+            collectionNameProvider.Register(type, collectionName);
+            foreach (var migrationType in migrationRegistry.GetTypeToVersionedTypes(type))
+            {
+                if (migrationType == type)
+                    continue;
+                collectionNameProvider.RegisterMigrationTypes(type, migrationType);
+            }
+        }
+        
+        services
+            .AddSingleton&lt;ISchemaVersionRegistry&gt;(schemaRegistry)
+            .AddSingleton&lt;IMigrationTypeRegistry&gt;(migrationRegistry)
+            .AddSingleton&lt;IEntityMigrator&gt;(migrator)
+            .AddSingleton&lt;IEntityCollectionNameProvider&gt;(collectionNameProvider)
+            .AddSingleton&lt;IMongoDbRegistrationService&gt;(mongoDbRegistrationService);
+
+        return services;
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[13,5,13,6,1],[14,9,14,58,1],[15,9,15,61,1],[16,9,16,45,1],[17,9,17,75,1],[19,9,19,98,1],[21,9,21,73,1],[22,9,22,69,1],[23,9,23,16,1],[23,18,23,44,1],[23,45,23,47,1],[23,48,23,58,1],[24,9,24,10,1],[25,13,25,67,1],[26,13,26,20,1],[26,22,26,39,1],[26,40,26,42,1],[26,43,26,90,1],[27,13,27,14,1],[28,17,28,43,1],[29,21,29,30,1],[30,17,30,84,1],[31,13,31,14,1],[32,9,32,10,1],[34,9,39,84,1],[41,9,41,25,1],[42,5,42,6,1]]);
+    </script>
+  </body>
+</html>

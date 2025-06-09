@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\CustomerService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.Exceptions;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class CustomerService : ICustomerService
+{
+    private readonly IRepository&lt;Customer&gt; customerRepository;
+    private readonly IRepository&lt;SpotQuote&gt; spotQuoteRepository;
+
+    public CustomerService(
+        IRepository&lt;Customer&gt; customerRepository,
+        IRepository&lt;SpotQuote&gt; spotQuoteRepository
+    )
+    {
+        this.customerRepository = customerRepository;
+        this.spotQuoteRepository = spotQuoteRepository;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;CustomerDto&gt;&gt; GetAllCustomersAsync()
+    {
+        var customers = await customerRepository.ReadAllAsync();
+        return customers.Select(CustomerMapper.ToDto).ToList();
+    }
+
+    public async Task&lt;CustomerDto?&gt; GetCustomerByIdAsync(Guid customerId)
+    {
+        var customer = await customerRepository.ReadByIdAsync(customerId);
+        return customer?.ToDto();
+    }
+
+    public Task AddCustomerAsync(CustomerDto customer) =&gt;
+        customerRepository.CreateAsync(customer.ToDomain());
+
+    public async Task DeleteCustomerAsync(CustomerDto customer)
+    {
+        var spotQuotes = await spotQuoteRepository.ReadAllProjectionsByFilterAsync(
+            x =&gt; x.Id,
+            x =&gt; x.CustomerId == customer.Id
+        );
+
+        if (spotQuotes.Any())
+            throw new InvalidOperationException(
+                $&quot;Cannot delete customer &#39;{customer.Id}&#39; because there are spot quotes associated with this customer.&quot;
+            );
+
+        await customerRepository.DeleteAsync(customer.ToDomain());
+    }
+
+    public async Task AddUserAsync(Guid customerId, UserDto user)
+    {
+        var customer = await customerRepository.ReadByIdAsync(customerId);
+        if (customer is null)
+            throw new NotFoundException($&quot;Customer with id &#39;{customerId}&#39; not found.&quot;);
+
+        var userDomain = user.ToDomain();
+        customer.Users.Add(userDomain);
+
+        await customerRepository.UpdateAsync(customer);
+    }
+
+    public async Task DeleteUserAsync(Guid customerId, Guid userId)
+    {
+        var customer = await customerRepository.ReadByIdAsync(customerId);
+        if (customer is null)
+            throw new NotFoundException($&quot;Customer with id &#39;{customerId}&#39; not found.&quot;);
+
+        var spotQuotes = (
+            await spotQuoteRepository.ReadAllProjectionsByFilterAsync(
+                x =&gt; new { x.Id, x.MailOptions },
+                x =&gt; x.CustomerId == customerId
+            )
+        ).Where(x =&gt; x.MailOptions.RecipientUserIds.Contains(userId));
+
+        if (spotQuotes.Any())
+            throw new InvalidOperationException(
+                $&quot;Cannot delete user &#39;{userId}&#39; from customer &#39;{customerId}&#39; because there are spot quotes associated with this user.&quot;
+            );
+
+        var user = customer.Users.FirstOrDefault(u =&gt; u.Id == userId);
+        if (user is null)
+            throw new NotFoundException(
+                $&quot;User with id &#39;{userId}&#39; not found in customer &#39;{customerId}&#39;.&quot;
+            );
+
+        customer.Users.Remove(user);
+        await customerRepository.UpdateAsync(customer);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,5,18,6,1],[19,5,19,6,1],[20,9,20,54,1],[21,9,21,56,1],[22,5,22,6,1],[25,5,25,6,1],[26,9,26,65,1],[27,9,27,64,1],[28,5,28,6,1],[31,5,31,6,1],[32,9,32,75,1],[33,9,33,34,1],[34,5,34,6,1],[37,9,37,60,1],[40,5,40,6,1],[41,9,44,11,1],[46,9,46,30,1],[47,13,49,15,1],[51,9,51,67,1],[52,5,52,6,1],[55,5,55,6,1],[56,9,56,75,1],[57,9,57,30,1],[58,13,58,88,1],[60,9,60,42,1],[61,9,61,40,1],[63,9,63,56,1],[64,5,64,6,1],[67,5,67,6,1],[68,9,68,75,1],[69,9,69,30,1],[70,13,70,88,1],[72,9,77,22,1],[77,22,77,69,1],[77,69,77,71,1],[79,9,79,30,1],[80,13,82,15,1],[84,9,84,55,1],[84,55,84,69,1],[84,69,84,71,1],[85,9,85,26,1],[86,13,88,15,1],[90,9,90,37,1],[91,9,91,56,1],[92,5,92,6,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Stores\EventStore\EventStore.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Application.Abstractions.PersonalData;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Core.Models.Events;
+using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Infrastructure.Shared.Models.Events;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+
+namespace EventSourcingFramework.Infrastructure.Stores.EventStore;
+
+public class EventStore : IEventStore
+{
+    private readonly IMongoCollection&lt;MongoEventBase&gt; collection;
+    private readonly EventSourcingOptions eventSourcingOptions;
+    private readonly IPersonalDataService personalDataService;
+    private readonly IEventSequenceGenerator sequenceGenerator;
+
+    public EventStore(
+        IMongoDbService mongoDbService,
+        IEventSequenceGenerator sequenceGenerator,
+        IPersonalDataService personalDataService,
+        IOptions&lt;EventSourcingOptions&gt; eventSourcingOptions
+    )
+    {
+        this.sequenceGenerator = sequenceGenerator;
+        this.personalDataService = personalDataService;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
+        collection = mongoDbService.EventCollection;
+    }
+
+    public async Task InsertEventAsync(IEvent e)
+    {
+        if (!eventSourcingOptions.EnableEventStore)
+            return;
+
+        if (e is not MongoEventBase eventBase)
+            throw new ArgumentException(&quot;Event must be of type EventBase&quot;, nameof(e));
+
+        if (await EventExistsAsync(eventBase))
+            return;
+
+        eventBase.EventNumber = await sequenceGenerator.GetNextSequenceNumberAsync();
+
+        await personalDataService.StripAndStoreAsync(eventBase);
+
+        await collection.InsertOneAsync(eventBase);
+    }
+
+    public async Task&lt;IEvent?&gt; GetEventByIdAsync(Guid id)
+    {
+        var evt = await collection.Find(e =&gt; e.Id == id).FirstOrDefaultAsync();
+        if (evt is not null)
+            await personalDataService.RestoreAsync(evt);
+        return evt;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsAsync()
+    {
+        var events = await collection.Find(_ =&gt; true).ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsUntilAsync(DateTime until)
+    {
+        var events = await collection.Find(e =&gt; e.Timestamp &lt;= until).ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsFromAsync(DateTime from)
+    {
+        var events = await collection.Find(e =&gt; e.Timestamp &gt;= from).ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsFromUntilAsync(
+        DateTime from,
+        DateTime until
+    )
+    {
+        var events = await collection
+            .Find(e =&gt; e.Timestamp &gt;= from &amp;&amp; e.Timestamp &lt;= until)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsByEntityIdAsync(Guid entityId)
+    {
+        var events = await collection.Find(e =&gt; e.EntityId == entityId).ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsByEntityIdUntilAsync(
+        Guid entityId,
+        DateTime until
+    )
+    {
+        var events = await collection
+            .Find(e =&gt; e.EntityId == entityId &amp;&amp; e.Timestamp &lt;= until)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsByEntityIdFromUntilAsync(
+        Guid entityId,
+        DateTime from,
+        DateTime until
+    )
+    {
+        var events = await collection
+            .Find(e =&gt; e.EntityId == entityId &amp;&amp; e.Timestamp &gt;= from &amp;&amp; e.Timestamp &lt;= until)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsFromAsync(long fromEventNumber)
+    {
+        var events = await collection
+            .Find(e =&gt; e.EventNumber &gt;= fromEventNumber)
+            .SortBy(e =&gt; e.EventNumber)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsUntilAsync(long untilEventNumber)
+    {
+        var events = await collection
+            .Find(e =&gt; e.EventNumber &lt;= untilEventNumber)
+            .SortBy(e =&gt; e.EventNumber)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;IEvent&gt;&gt; GetEventsFromUntilAsync(
+        long fromEventNumber,
+        long untilEventNumber
+    )
+    {
+        var events = await collection
+            .Find(e =&gt; e.EventNumber &gt;= fromEventNumber &amp;&amp; e.EventNumber &lt;= untilEventNumber)
+            .SortBy(e =&gt; e.EventNumber)
+            .ToListAsync();
+        await Task.WhenAll(events.Select(e =&gt; personalDataService.RestoreAsync(e)));
+        return events;
+    }
+
+    public Task&lt;long&gt; GetCurrentSequenceNumberAsync() =&gt; sequenceGenerator.GetCurrentSequenceNumberAsync();
+
+    private Task&lt;bool&gt; EventExistsAsync(MongoEventBase e)
+    {
+        return collection.Find(x =&gt; x.Id == e.Id).AnyAsync();
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[21,5,26,6,1],[27,5,27,6,1],[28,9,28,52,1],[29,9,29,56,1],[30,9,30,64,1],[31,9,31,53,1],[32,5,32,6,1],[35,5,35,6,1],[36,9,36,52,1],[37,13,37,20,1],[39,9,39,47,1],[40,13,40,87,0],[42,9,42,47,1],[43,13,43,20,1],[45,9,45,86,1],[47,9,47,65,1],[49,9,49,52,1],[50,5,50,6,1],[53,5,53,6,1],[54,9,54,80,1],[55,9,55,29,1],[56,13,56,57,1],[57,9,57,20,1],[58,5,58,6,1],[61,5,61,6,1],[62,9,62,69,1],[63,9,63,47,1],[63,47,63,82,1],[63,82,63,85,1],[64,9,64,23,1],[65,5,65,6,1],[68,5,68,6,1],[69,9,69,85,1],[70,9,70,47,1],[70,47,70,82,1],[70,82,70,85,1],[71,9,71,23,1],[72,5,72,6,1],[75,5,75,6,1],[76,9,76,84,1],[77,9,77,47,1],[77,47,77,82,1],[77,82,77,85,1],[78,9,78,23,1],[79,5,79,6,1],[85,5,85,6,1],[86,9,88,28,1],[89,9,89,47,1],[89,47,89,82,1],[89,82,89,85,1],[90,9,90,23,1],[91,5,91,6,1],[94,5,94,6,1],[95,9,95,87,1],[96,9,96,47,1],[96,47,96,82,1],[96,82,96,85,1],[97,9,97,23,1],[98,5,98,6,1],[104,5,104,6,1],[105,9,107,28,1],[108,9,108,47,1],[108,47,108,82,1],[108,82,108,85,1],[109,9,109,23,1],[110,5,110,6,1],[117,5,117,6,1],[118,9,120,28,1],[121,9,121,47,1],[121,47,121,82,1],[121,82,121,85,1],[122,9,122,23,1],[123,5,123,6,1],[126,5,126,6,1],[127,9,130,28,1],[131,9,131,47,1],[131,47,131,82,1],[131,82,131,85,1],[132,9,132,23,1],[133,5,133,6,1],[136,5,136,6,1],[137,9,140,28,1],[141,9,141,47,1],[141,47,141,82,1],[141,82,141,85,1],[142,9,142,23,1],[143,5,143,6,1],[149,5,149,6,1],[150,9,153,28,1],[154,9,154,47,1],[154,47,154,82,1],[154,82,154,85,1],[155,9,155,23,1],[156,5,156,6,1],[158,58,158,107,1],[161,5,161,6,1],[162,9,162,62,1],[163,5,163,6,1]]);
+    </script>
+  </body>
+</html>

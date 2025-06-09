@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\BookingStatus.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record BookingStatus(string Value) : IComparable
+{
+    public static readonly BookingStatus SpotQuote = new(&quot;Spot Quote&quot;);
+    public static readonly BookingStatus Accepted = new(&quot;Accepted&quot;);
+    public static readonly BookingStatus Draft = new(&quot;Draft&quot;);
+    public static readonly BookingStatus Requote = new(&quot;Requote&quot;);
+    public static readonly BookingStatus PendingSubmit = new(&quot;Pending Submit&quot;);
+    public static readonly BookingStatus NotAccepted = new(&quot;Not Accepted&quot;);
+
+    public override string ToString() =&gt; Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is BookingStatus other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(BookingStatus)}&quot;);
+    }
+
+    public static IReadOnlyCollection&lt;BookingStatus&gt; GetAll() =&gt;
+        typeof(BookingStatus)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f =&gt; f.GetValue(null))
+            .OfType&lt;BookingStatus&gt;()
+            .ToList();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,28,0],[5,5,5,72,1],[6,5,6,69,1],[7,5,7,63,1],[8,5,8,67,1],[9,5,9,80,1],[10,5,10,76,1],[12,42,12,47,0],[15,5,15,6,0],[16,9,16,40,0],[17,13,17,81,0],[19,9,19,81,0],[20,5,20,6,0],[23,9,27,26,0],[27,26,27,42,0],[27,42,29,22,0]]);
+    </script>
+  </body>
+</html>

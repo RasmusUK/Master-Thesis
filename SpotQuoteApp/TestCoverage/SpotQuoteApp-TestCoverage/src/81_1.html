@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\BuyingRateService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
+using EventSourcingFramework.Core.Interfaces;
+using Microsoft.Extensions.Options;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.DTOs.Api.Requests;
+using SpotQuoteApp.Application.DTOs.Api.Responses;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Application.Options;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.ValueObjects;
+using SpotQuoteApp.Core.ValueObjects.Enums;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class BuyingRateService : IBuyingRateService
+{
+    private readonly IRepository&lt;BuyingRate&gt; buyingRateRepository;
+    private readonly ILocationService locationService;
+    private readonly IApiGateway apiGateway;
+    private readonly string buyingRateApiUrl;
+
+    public BuyingRateService(
+        IRepository&lt;BuyingRate&gt; buyingRateRepository,
+        ILocationService locationService,
+        IApiGateway apiGateway,
+        IOptions&lt;MockApiOptions&gt; options
+    )
+    {
+        this.buyingRateRepository = buyingRateRepository;
+        this.locationService = locationService;
+        this.apiGateway = apiGateway;
+        buyingRateApiUrl = $&quot;{options.Value.BaseUrl}/api/buying-rates&quot;;
+    }
+
+    public async Task UpsertBuyingRatesAsync(SpotQuoteDto spotQuoteDto)
+    {
+        foreach (var quoteDto in spotQuoteDto.Quotes)
+        {
+            foreach (var supplierCostDto in quoteDto.Costs.Select(c =&gt; c.SupplierCost))
+            {
+                var addressFromId = await CreateLocationIfNotExistsAsync(
+                    spotQuoteDto.AddressFrom,
+                    spotQuoteDto.TransportMode
+                );
+                var addressToId = await CreateLocationIfNotExistsAsync(
+                    spotQuoteDto.AddressTo,
+                    spotQuoteDto.TransportMode
+                );
+
+                var supplierCost = supplierCostDto.ToDomain();
+
+                var buyingRate = new BuyingRate(
+                    spotQuoteDto.TransportMode,
+                    quoteDto.Supplier,
+                    quoteDto.SupplierService,
+                    quoteDto.ForwarderService,
+                    addressFromId,
+                    addressToId,
+                    DateTime.UtcNow,
+                    spotQuoteDto.ValidUntil!.Value,
+                    supplierCost
+                );
+
+                var existingBuyingRate = await buyingRateRepository.ReadByFilterAsync(b =&gt;
+                    b.ForwarderService == quoteDto.ForwarderService
+                    &amp;&amp; b.SupplierService == quoteDto.SupplierService
+                    &amp;&amp; b.Supplier == quoteDto.Supplier
+                    &amp;&amp; b.OriginLocationId == addressFromId
+                    &amp;&amp; b.DestinationLocationId == addressToId
+                    &amp;&amp; b.SupplierCost == supplierCost
+                );
+
+                if (existingBuyingRate is null)
+                {
+                    await buyingRateRepository.CreateAsync(buyingRate);
+                    continue;
+                }
+
+                if (existingBuyingRate.ValidUntil &gt;= buyingRate.ValidUntil)
+                    continue;
+
+                existingBuyingRate.ValidUntil = buyingRate.ValidUntil;
+                await buyingRateRepository.UpdateAsync(existingBuyingRate);
+            }
+        }
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;BuyingRateDto&gt;&gt; SearchBuyingRatesAsync(
+        AddressDto addressFrom,
+        AddressDto addressTo,
+        TransportMode transportMode,
+        Supplier supplier,
+        SupplierService supplierService,
+        ForwarderService forwarderService
+    )
+    {
+        var request = new BuyingRateRequest(
+            supplier.Value,
+            forwarderService.Name,
+            supplierService.Name,
+            addressFrom.Country.Code,
+            addressTo.Country.Code,
+            transportMode.ToString()
+        );
+
+        var fetchedRates = (
+            await apiGateway.PostAsync&lt;BuyingRateRequest, BuyingRateResponseBatch&gt;(
+                url: buyingRateApiUrl,
+                body: request
+            )
+        ).Rates.Select(r =&gt; new BuyingRateDto
+        {
+            TransportMode = TransportMode.FromString(r.TransportMode),
+            Supplier = supplier,
+            SupplierService = supplierService,
+            ForwarderService = forwarderService,
+            ValidFrom = r.ValidFrom,
+            ValidUntil = r.ValidTo,
+            Origin = new LocationDto
+            {
+                Country = addressFrom.Country,
+                Code = addressFrom.ZipCode,
+                Name = addressFrom.City,
+                Type = LocationType.ZipCode,
+            },
+            Destination = new LocationDto
+            {
+                Country = addressTo.Country,
+                Code = addressTo.ZipCode,
+                Name = addressTo.City,
+                Type = LocationType.ZipCode,
+            },
+            SupplierCost = new SupplierCostDto
+            {
+                ChargeType = ChargeType.FromString(r.ChargeType),
+                CostType = CostType.FromString(r.CostType),
+                Value = r.Price,
+            },
+        });
+
+        LocationDto? fromLocation;
+        LocationDto? toLocation;
+
+        if (transportMode == TransportMode.Sea)
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.Port!,
+                addressFrom.Country.Code,
+                LocationType.Port
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.Port!,
+                addressTo.Country.Code,
+                LocationType.Port
+            );
+        }
+        else if (transportMode == TransportMode.Air)
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.Airport!,
+                addressFrom.Country.Code,
+                LocationType.Airport
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.Airport!,
+                addressTo.Country.Code,
+                LocationType.Airport
+            );
+        }
+        else
+        {
+            fromLocation = await locationService.SearchLocationIdAsync(
+                addressFrom.ZipCode,
+                addressFrom.Country.Code,
+                LocationType.ZipCode
+            );
+            toLocation = await locationService.SearchLocationIdAsync(
+                addressTo.ZipCode,
+                addressTo.Country.Code,
+                LocationType.ZipCode
+            );
+        }
+
+        if (fromLocation is null || toLocation is null)
+            return fetchedRates.ToList();
+
+        var buyingRates = await buyingRateRepository.ReadAllByFilterAsync(b =&gt;
+            b.OriginLocationId == fromLocation.Id
+            &amp;&amp; b.DestinationLocationId == toLocation.Id
+            &amp;&amp; b.ValidUntil &gt;= DateTime.UtcNow
+            &amp;&amp; b.Supplier == supplier
+            &amp;&amp; b.SupplierService == supplierService
+            &amp;&amp; b.ForwarderService == forwarderService
+        );
+
+        return buyingRates
+            .Select(b =&gt; new BuyingRateDto
+            {
+                Id = b.Id,
+                TransportMode = b.TransportMode,
+                Supplier = b.Supplier,
+                SupplierService = b.SupplierService,
+                ForwarderService = b.ForwarderService,
+                Origin = fromLocation,
+                Destination = toLocation,
+                ValidFrom = b.ValidFrom,
+                ValidUntil = b.ValidUntil,
+                SupplierCost = b.SupplierCost.ToDto(),
+            })
+            .Concat(fetchedRates)
+            .ToList();
+    }
+
+    private Task&lt;Guid&gt; CreateLocationIfNotExistsAsync(
+        AddressDto address,
+        TransportMode transportMode
+    )
+    {
+        var code = string.Empty;
+        var name = string.Empty;
+        var countryCode = address.Country.Code;
+        var locationType = LocationType.ZipCode;
+
+        if (transportMode == TransportMode.Air)
+        {
+            code = address.Airport;
+            name = $&quot;Aiport {address.Airport}&quot;;
+            locationType = LocationType.Airport;
+        }
+        else if (transportMode == TransportMode.Sea)
+        {
+            code = address.Port;
+            name = $&quot;Port {address.Port}&quot;;
+            locationType = LocationType.Port;
+        }
+        else
+        {
+            code = address.ZipCode;
+            name = $&quot;ZipCode {address.ZipCode}&quot;;
+        }
+
+        return locationService.CreateLocationIfNotExistsAsync(
+            code,
+            name,
+            countryCode,
+            locationType
+        );
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[23,5,28,6,1],[29,5,29,6,1],[30,9,30,58,1],[31,9,31,48,1],[32,9,32,38,1],[33,9,33,72,1],[34,5,34,6,1],[37,5,37,6,1],[38,9,38,16,1],[38,18,38,30,1],[38,31,38,33,1],[38,34,38,53,1],[39,9,39,10,1],[40,13,40,20,1],[40,22,40,41,1],[40,42,40,44,1],[40,45,40,72,1],[40,72,40,86,1],[40,86,40,87,1],[41,13,41,14,1],[42,17,45,19,1],[46,17,49,19,1],[51,17,51,63,1],[53,17,63,19,1],[65,17,72,19,1],[74,17,74,48,1],[75,17,75,18,1],[76,21,76,72,1],[77,21,77,30,1],[80,17,80,76,1],[81,21,81,30,0],[83,17,83,71,1],[84,17,84,76,1],[85,13,85,14,1],[86,9,86,10,1],[87,5,87,6,1],[97,5,97,6,1],[98,9,105,11,1],[107,9,112,29,1],[112,29,140,10,1],[140,10,140,12,1],[145,9,145,48,1],[146,9,146,10,1],[147,13,151,15,1],[152,13,156,15,1],[157,9,157,10,1],[158,14,158,53,1],[159,9,159,10,1],[160,13,164,15,1],[165,13,169,15,1],[170,9,170,10,1],[172,9,172,10,1],[173,13,177,15,1],[178,13,182,15,1],[183,9,183,10,1],[185,9,185,56,1],[186,13,186,42,1],[188,9,195,11,1],[197,9,198,26,1],[198,26,210,14,1],[210,14,212,23,1],[213,5,213,6,1],[219,5,219,6,1],[220,9,220,33,1],[221,9,221,33,1],[222,9,222,48,1],[223,9,223,49,1],[225,9,225,48,1],[226,9,226,10,1],[227,13,227,36,1],[228,13,228,48,1],[229,13,229,49,1],[230,9,230,10,1],[231,14,231,53,1],[232,9,232,10,1],[233,13,233,33,1],[234,13,234,43,1],[235,13,235,46,1],[236,9,236,10,1],[238,9,238,10,1],[239,13,239,36,1],[240,13,240,49,1],[241,9,241,10,1],[243,9,248,11,1],[249,5,249,6,1]]);
+    </script>
+  </body>
+</html>

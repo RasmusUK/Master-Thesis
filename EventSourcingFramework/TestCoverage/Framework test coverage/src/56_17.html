@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Migrations\Services\EntityUpgradeService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Migrations;
+using EventSourcingFramework.Core.Models.Entity;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
+
+namespace EventSourcingFramework.Infrastructure.Migrations.Services;
+
+public class EntityUpgradeService : IEntityUpgradeService
+{
+    private readonly IEntityCollectionNameProvider collectionNameProvider;
+    private readonly IMigrationTypeRegistry migrationTypeRegistry;
+    private readonly IEntityMigrator migrator;
+    private readonly IMongoDbService mongoDbService;
+    private readonly ISchemaVersionRegistry schemaVersionRegistry;
+
+    public EntityUpgradeService(
+        IEntityCollectionNameProvider collectionNameProvider,
+        ISchemaVersionRegistry schemaVersionRegistry,
+        IEntityMigrator migrator,
+        IMongoDbService mongoDbService,
+        IMigrationTypeRegistry migrationTypeRegistry
+    )
+    {
+        this.collectionNameProvider = collectionNameProvider;
+        this.schemaVersionRegistry = schemaVersionRegistry;
+        this.migrator = migrator;
+        this.mongoDbService = mongoDbService;
+        this.migrationTypeRegistry = migrationTypeRegistry;
+    }
+
+    public async Task MigrateAllEntitiesToLatestVersionAsync&lt;TEntity&gt;()
+        where TEntity : IEntity
+    {
+        var targetType = typeof(TEntity);
+        var currentVersion = schemaVersionRegistry.GetVersion(targetType);
+        var collectionName = collectionNameProvider.GetCollectionName(targetType);
+        var collection = mongoDbService.GetEntityCollection&lt;BsonDocument&gt;(collectionName);
+
+        var versionFilter =
+            Builders&lt;BsonDocument&gt;.Filter.Exists(&quot;SchemaVersion&quot;, false)
+            | Builders&lt;BsonDocument&gt;.Filter.Lt(&quot;SchemaVersion&quot;, currentVersion);
+
+        var outdatedDocs = await collection.Find(versionFilter).ToListAsync();
+        if (outdatedDocs.Count == 0)
+            return;
+
+        foreach (var doc in outdatedDocs)
+        {
+            var version = doc.Contains(&quot;SchemaVersion&quot;) ? doc[&quot;SchemaVersion&quot;].AsInt32 : 1;
+            var currentType = migrationTypeRegistry.GetVersionedType(targetType, version);
+            var currentInstance = (IEntity)BsonSerializer.Deserialize(doc, currentType);
+
+            while (version &lt; currentVersion)
+            {
+                var nextType = migrationTypeRegistry.GetVersionedType(targetType, version + 1);
+                currentInstance = migrator.Migrate(currentInstance, currentType, nextType, version);
+                currentType = nextType;
+                version++;
+            }
+
+            var migratedDoc = currentInstance.ToBsonDocument(targetType);
+            migratedDoc[&quot;SchemaVersion&quot;] = currentVersion;
+
+            var filter = Builders&lt;BsonDocument&gt;.Filter.Eq(&quot;_id&quot;, doc[&quot;_id&quot;]);
+            await collection.ReplaceOneAsync(filter, migratedDoc);
+        }
+    }
+
+    public async Task MigrateAllEntitiesAsync()
+    {
+        foreach (var (type, _) in collectionNameProvider.GetAllRegistered())
+        {
+            var method = typeof(EntityUpgradeService)
+                .GetMethod(nameof(MigrateAllEntitiesToLatestVersionAsync))!
+                .MakeGenericMethod(type);
+
+            await (Task)method.Invoke(this, null)!;
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[18,5,24,6,1],[25,5,25,6,1],[26,9,26,62,1],[27,9,27,60,1],[28,9,28,34,1],[29,9,29,46,1],[30,9,30,60,1],[31,5,31,6,1],[35,5,35,6,1],[36,9,36,42,1],[37,9,37,75,1],[38,9,38,83,1],[39,9,39,91,1],[41,9,43,81,1],[45,9,45,79,1],[46,9,46,37,1],[47,13,47,20,1],[49,9,49,16,1],[49,18,49,25,1],[49,26,49,28,1],[49,29,49,41,1],[50,9,50,10,1],[51,13,51,92,1],[52,13,52,91,1],[53,13,53,89,1],[55,13,55,45,1],[56,13,56,14,1],[57,17,57,96,1],[58,17,58,101,1],[59,17,59,40,1],[60,17,60,27,1],[61,13,61,14,1],[63,13,63,74,1],[64,13,64,59,1],[66,13,66,78,1],[67,13,67,67,1],[68,9,68,10,1],[69,5,69,6,1],[72,5,72,6,1],[73,9,73,16,1],[73,18,73,31,1],[73,32,73,34,1],[73,35,73,76,1],[74,9,74,10,1],[75,13,77,42,1],[79,13,79,52,1],[80,9,80,10,1],[81,5,81,6,1]]);
+    </script>
+  </body>
+</html>

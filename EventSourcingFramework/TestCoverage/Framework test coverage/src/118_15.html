@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.MongoDb\Services\MongoDbRegistrationService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Infrastructure.Shared.Models.Events;
+using MongoDB.Bson.Serialization;
+
+namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
+
+public class MongoDbRegistrationService : IMongoDbRegistrationService
+{
+    private readonly List &lt;(Type Type, string CollectionName)&gt; registered = new();
+    
+    public void Register(
+        params (Type Type, string CollectionName)[] entities
+    )
+    {
+        foreach (var (entityType, collectionName) in entities)
+        {
+            registered.Add((entityType, collectionName));
+            RegisterGenericEvent(typeof(CreateEvent&lt;&gt;), entityType);
+            RegisterGenericEvent(typeof(UpdateEvent&lt;&gt;), entityType);
+            RegisterGenericEvent(typeof(DeleteEvent&lt;&gt;), entityType);
+        }
+    }
+
+    public List&lt;(Type Type, string CollectionName)&gt; GetRegistered() =&gt; registered;
+
+    private void RegisterGenericEvent(Type genericEventType, Type entityType)
+    {
+        var closedType = genericEventType.MakeGenericType(entityType);
+
+        if (BsonClassMap.IsClassMapRegistered(closedType))
+            return;
+
+        var classMap = new BsonClassMap(closedType);
+        classMap.AutoMap();
+        classMap.SetDiscriminator(closedType.FullName);
+        classMap.SetDiscriminatorIsRequired(true);
+
+        BsonClassMap.RegisterClassMap(classMap);
+    }
+}
+
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,83,1],[14,5,14,6,1],[15,9,15,16,1],[15,18,15,50,1],[15,51,15,53,1],[15,54,15,62,1],[16,9,16,10,1],[17,13,17,58,1],[18,13,18,69,1],[19,13,19,69,1],[20,13,20,69,1],[21,9,21,10,1],[22,5,22,6,1],[24,72,24,82,1],[27,5,27,6,1],[28,9,28,71,1],[30,9,30,59,1],[31,13,31,20,1],[33,9,33,53,1],[34,9,34,28,1],[35,9,35,56,1],[36,9,36,51,1],[38,9,38,49,1],[39,5,39,6,1]]);
+    </script>
+  </body>
+</html>

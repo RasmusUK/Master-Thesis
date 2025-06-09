@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\CountryService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Core.DomainObjects;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class CountryService : ICountryService
+{
+    private readonly IRepository&lt;Country&gt; countryRepository;
+
+    public CountryService(IRepository&lt;Country&gt; countryRepository)
+    {
+        this.countryRepository = countryRepository;
+    }
+
+    public async Task&lt;IReadOnlyCollection&lt;CountryDto&gt;&gt; GetAllCountriesAsync()
+    {
+        var countries = await countryRepository.ReadAllAsync();
+        return countries.Select(CountryMapper.ToDto).ToList();
+    }
+
+    public async Task&lt;CountryDto?&gt; GetCountryByIdAsync(Guid countryId)
+    {
+        var country = await countryRepository.ReadByIdAsync(countryId);
+        return country?.ToDto();
+    }
+
+    public async Task&lt;CountryDto?&gt; GetCountryByCodeAsync(string code)
+    {
+        var country = await countryRepository.ReadByFilterAsync(c =&gt; c.Code == code);
+        return country?.ToDto();
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[13,5,13,66,1],[14,5,14,6,1],[15,9,15,52,1],[16,5,16,6,1],[19,5,19,6,1],[20,9,20,64,1],[21,9,21,63,1],[22,5,22,6,1],[25,5,25,6,1],[26,9,26,72,1],[27,9,27,33,1],[28,5,28,6,1],[31,5,31,6,1],[32,9,32,86,1],[33,9,33,33,1],[34,5,34,6,1]]);
+    </script>
+  </body>
+</html>

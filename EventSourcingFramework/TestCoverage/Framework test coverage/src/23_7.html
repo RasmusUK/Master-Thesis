@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Application\UseCases\ReplayContext\ReplayContext.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.ReplayContext;
+using EventSourcingFramework.Core.Enums;
+using EventSourcingFramework.Core.Models.Events;
+
+namespace EventSourcingFramework.Application.UseCases.ReplayContext;
+
+public class ReplayContext : IReplayContext
+{
+    private static readonly object LockObj = new();
+    private readonly List&lt;IEvent&gt; events = new();
+    private ApiReplayMode apiReplayMode = ApiReplayMode.CacheOnly;
+    private bool isLoading;
+    private long eventNumber;
+
+    private bool isReplaying;
+    private ReplayMode replayMode = ReplayMode.Strict;
+
+    public long EventNumber
+    {
+        get
+        {
+            lock (LockObj)
+            {
+                return eventNumber;
+            }
+        }
+        set
+        {
+            lock (LockObj)
+            {
+                eventNumber = value;
+            }
+        }
+    }
+    
+    public bool IsReplaying
+    {
+        get
+        {
+            lock (LockObj)
+            {
+                return isReplaying;
+            }
+        }
+    }
+
+    public bool IsLoading
+    {
+        get
+        {
+            lock (LockObj)
+            {
+                return isLoading;
+            }
+        }
+        set
+        {
+            lock (LockObj)
+            {
+                isLoading = value;
+            }
+        }
+    }
+
+    public ReplayMode ReplayMode
+    {
+        get
+        {
+            lock (LockObj)
+            {
+                return replayMode;
+            }
+        }
+    }
+
+    public ApiReplayMode ApiReplayMode
+    {
+        get
+        {
+            lock (LockObj)
+            {
+                return apiReplayMode;
+            }
+        }
+    }
+
+    public void StartReplay(ReplayMode mode = ReplayMode.Strict, ApiReplayMode apiMode = ApiReplayMode.CacheOnly)
+    {
+        lock (LockObj)
+        {
+            if (isReplaying)
+                throw new InvalidOperationException(&quot;Replay is already in progress.&quot;);
+
+            isReplaying = true;
+            replayMode = mode;
+            apiReplayMode = apiMode;
+            events.Clear();
+        }
+    }
+
+    public void StopReplay()
+    {
+        lock (LockObj)
+        {
+            if (!isReplaying)
+                throw new InvalidOperationException(&quot;Replay is not in progress.&quot;);
+
+            isReplaying = false;
+            replayMode = ReplayMode.Strict;
+            apiReplayMode = ApiReplayMode.CacheOnly;
+            eventNumber = 0;
+            events.Clear();
+        }
+    }
+
+    public IReadOnlyCollection&lt;IEvent&gt; GetEvents()
+    {
+        lock (LockObj)
+        {
+            if (!isReplaying)
+                throw new InvalidOperationException(&quot;Replay is not in progress.&quot;);
+
+            return events.AsReadOnly();
+        }
+    }
+
+    public void AddEvent(IEvent e)
+    {
+        lock (LockObj)
+        {
+            if (!isReplaying)
+                throw new InvalidOperationException(&quot;Replay is not in progress.&quot;);
+
+            events.Add(e);
+        }
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,52,1],[10,5,10,50,1],[11,5,11,67,1],[16,5,16,55,1],[21,9,21,10,1],[22,13,22,27,1],[23,13,23,14,1],[24,17,24,36,1],[26,9,26,10,1],[28,9,28,10,1],[29,13,29,27,1],[30,13,30,14,1],[31,17,31,37,1],[32,13,32,14,1],[33,9,33,10,1],[39,9,39,10,1],[40,13,40,27,1],[41,13,41,14,1],[42,17,42,36,1],[44,9,44,10,1],[50,9,50,10,1],[51,13,51,27,1],[52,13,52,14,1],[53,17,53,34,1],[55,9,55,10,1],[57,9,57,10,1],[58,13,58,27,1],[59,13,59,14,1],[60,17,60,35,1],[61,13,61,14,1],[62,9,62,10,1],[68,9,68,10,1],[69,13,69,27,1],[70,13,70,14,1],[71,17,71,35,1],[73,9,73,10,1],[79,9,79,10,1],[80,13,80,27,1],[81,13,81,14,1],[82,17,82,38,1],[84,9,84,10,1],[88,5,88,6,1],[89,9,89,23,1],[90,9,90,10,1],[91,13,91,29,1],[92,17,92,87,1],[94,13,94,32,1],[95,13,95,31,1],[96,13,96,37,1],[97,13,97,28,1],[98,9,98,10,1],[99,5,99,6,1],[102,5,102,6,1],[103,9,103,23,1],[104,9,104,10,1],[105,13,105,30,1],[106,17,106,83,1],[108,13,108,33,1],[109,13,109,44,1],[110,13,110,53,1],[111,13,111,29,1],[112,13,112,28,1],[113,9,113,10,1],[114,5,114,6,1],[117,5,117,6,1],[118,9,118,23,1],[119,9,119,10,1],[120,13,120,30,1],[121,17,121,83,1],[123,13,123,40,1],[125,5,125,6,1],[128,5,128,6,1],[129,9,129,23,1],[130,9,130,10,1],[131,13,131,30,1],[132,17,132,83,1],[134,13,134,27,1],[135,9,135,10,1],[136,5,136,6,1]]);
+    </script>
+  </body>
+</html>

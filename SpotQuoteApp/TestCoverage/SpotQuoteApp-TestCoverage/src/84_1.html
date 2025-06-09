@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Services\LocationService.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Application.Interfaces;
+using SpotQuoteApp.Application.Mappers;
+using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.Exceptions;
+using SpotQuoteApp.Core.ValueObjects.Enums;
+
+namespace SpotQuoteApp.Application.Services;
+
+public class LocationService : ILocationService
+{
+    private readonly IRepository&lt;Location&gt; locationRepository;
+    private readonly ICountryService countryService;
+
+    public LocationService(IRepository&lt;Location&gt; locationRepository, ICountryService countryService)
+    {
+        this.locationRepository = locationRepository;
+        this.countryService = countryService;
+    }
+
+    public async Task&lt;Guid&gt; CreateLocationIfNotExistsAsync(
+        string code,
+        string name,
+        string countryCode,
+        LocationType locationType
+    )
+    {
+        var country = await countryService.GetCountryByCodeAsync(countryCode);
+        if (country is null)
+            throw new NotFoundException($&quot;Country with code {countryCode} not found.&quot;);
+
+        var existing = await locationRepository.ReadByFilterAsync(l =&gt;
+            l.Code == code &amp;&amp; l.Name == name &amp;&amp; l.CountryId == country.Id &amp;&amp; l.Type == locationType
+        );
+
+        if (existing is not null)
+            return existing.Id;
+
+        var location = new Location(code, name, country.Id, locationType);
+        await locationRepository.CreateAsync(location);
+        return location.Id;
+    }
+
+    public async Task&lt;LocationDto?&gt; SearchLocationIdAsync(
+        string code,
+        string countryCode,
+        LocationType locationType
+    )
+    {
+        var country = await countryService.GetCountryByCodeAsync(countryCode);
+        if (country is null)
+            return null;
+
+        var location = await locationRepository.ReadByFilterAsync(l =&gt;
+            l.Code == code &amp;&amp; l.CountryId == country.Id &amp;&amp; l.Type == locationType
+        );
+
+        return location?.ToDto(country);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[16,5,16,101,1],[17,5,17,6,1],[18,9,18,54,1],[19,9,19,46,1],[20,5,20,6,1],[28,5,28,6,1],[29,9,29,79,1],[30,9,30,29,1],[31,13,31,88,1],[33,9,35,11,1],[37,9,37,34,1],[38,13,38,32,1],[40,9,40,75,1],[41,9,41,56,1],[42,9,42,28,1],[43,5,43,6,1],[50,5,50,6,1],[51,9,51,79,1],[52,9,52,29,1],[53,13,53,25,1],[55,9,57,11,1],[59,9,59,41,1],[60,5,60,6,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Quote.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Core.ValueObjects.Enums;
+
+namespace SpotQuoteApp.Core.ValueObjects;
+
+public record Quote
+{
+    public Quote(
+        Supplier supplier,
+        ForwarderService forwarderService,
+        SupplierService supplierService,
+        Profit profit,
+        bool isAllIn,
+        ICollection&lt;Cost&gt; costs,
+        string commentsExternal,
+        string commentsInternal,
+        BookingStatus status
+    )
+    {
+        Supplier = supplier;
+        ForwarderService = forwarderService;
+        SupplierService = supplierService;
+        Profit = profit;
+        IsAllIn = isAllIn;
+        Costs = costs;
+        CommentsExternal = commentsExternal;
+        CommentsInternal = commentsInternal;
+        Status = status;
+
+        (TotalPrice, TotalProfit) = CalculateTotal(costs, profit);
+    }
+
+    public Supplier Supplier { get; }
+    public ForwarderService ForwarderService { get; }
+    public SupplierService SupplierService { get; }
+    public Profit Profit { get; }
+    public BookingStatus Status { get; }
+    public bool IsAllIn { get; }
+    public ICollection&lt;Cost&gt; Costs { get; }
+    public string CommentsExternal { get; }
+    public string CommentsInternal { get; }
+
+    public double TotalPrice { get; }
+    public double TotalProfit { get; }
+
+    public static (double totalPrice, double totalProfit) CalculateTotal(
+        ICollection&lt;Cost&gt; costs,
+        Profit profit
+    )
+    {
+        var sellingValue = costs.Sum(c =&gt; c.SellingCost.Total);
+        var supplierValue = costs.Sum(c =&gt; c.SupplierCost.Total);
+        var profitValue = profit.CalculatedProfit(sellingValue);
+        var totalPrice = sellingValue + profitValue;
+        var totalProfit = sellingValue - supplierValue + profitValue;
+
+        return (totalPrice, totalProfit);
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[5,15,5,20,0],[7,5,17,6,1],[18,5,18,6,1],[19,9,19,29,1],[20,9,20,45,1],[21,9,21,43,1],[22,9,22,25,1],[23,9,23,27,1],[24,9,24,23,1],[25,9,25,45,1],[26,9,26,45,1],[27,9,27,25,1],[29,9,29,67,1],[30,5,30,6,1],[32,32,32,36,1],[33,48,33,52,1],[34,46,34,50,1],[35,28,35,32,1],[36,35,36,39,1],[37,27,37,31,1],[38,38,38,42,1],[39,38,39,42,1],[40,38,40,42,1],[42,32,42,36,1],[43,33,43,37,1],[49,5,49,6,1],[50,9,50,43,1],[50,43,50,62,1],[50,62,50,64,1],[51,9,51,44,1],[51,44,51,64,1],[51,64,51,66,1],[52,9,52,65,1],[53,9,53,53,1],[54,9,54,70,1],[56,9,56,42,1],[57,5,57,6,1]]);
+    </script>
+  </body>
+</html>

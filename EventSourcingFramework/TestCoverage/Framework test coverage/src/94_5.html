@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Shared\Configuration\Options\EventSourcingOptions.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
+
+namespace EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+
+public class EventSourcingOptions : IEventSourcingSettings
+{
+    public const string EventSourcing = &quot;EventSourcing&quot;;
+    public SnapshotOptions Snapshot { get; set; } = new();
+    public bool EnablePersonalDataStore { get; set; } = true;
+    public bool EnableEventStore { get; set; } = true;
+    public bool EnableEntityStore { get; set; } = true;
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[8,39,8,43,1],[8,44,8,48,1],[8,53,8,58,1],[9,43,9,47,1],[9,48,9,52,1],[9,57,9,61,1],[10,36,10,40,1],[10,41,10,45,1],[10,50,10,54,1],[11,37,11,41,1],[11,42,11,46,1],[11,51,11,55,1]]);
+    </script>
+  </body>
+</html>

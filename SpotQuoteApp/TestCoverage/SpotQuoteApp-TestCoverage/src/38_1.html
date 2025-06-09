@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\DTOs\CustomerDto.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Application.DTOs;
+
+public class CustomerDto
+{
+    public Guid Id { get; set; }
+    public int ConcurrencyVersion { get; set; }
+    public string Name { get; set; }
+    public ICollection&lt;UserDto&gt; Users { get; set; } = new List&lt;UserDto&gt;();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[5,22,5,26,1],[5,27,5,31,1],[6,37,6,41,1],[6,42,6,46,1],[7,26,7,30,1],[7,31,7,35,1],[8,41,8,45,1],[8,46,8,50,1],[8,55,8,74,1]]);
+    </script>
+  </body>
+</html>

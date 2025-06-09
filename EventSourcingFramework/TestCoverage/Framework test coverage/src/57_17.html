@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Migrations\Services\MigrationTypeRegistry.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Application.Abstractions.Migrations;
+
+namespace EventSourcingFramework.Infrastructure.Migrations.Services;
+
+public class MigrationTypeRegistry : IMigrationTypeRegistry
+{
+    private readonly Dictionary&lt;(Type targetType, int version), Type&gt; versionMap = new();
+
+    public void Register&lt;TEntity&gt;(int version, Type versionedType)
+    {
+        versionMap[(typeof(TEntity), version)] = versionedType;
+    }
+
+    public Type GetVersionedType(Type targetType, int version) =&gt; versionMap[(targetType, version)];
+
+    public IReadOnlyCollection&lt;Type&gt; GetTypeToVersionedTypes(Type targetType) =&gt; 
+        versionMap
+        .Where(kvp =&gt; kvp.Key.targetType == targetType)
+        .Select(kvp =&gt; kvp.Value)
+        .ToList();
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[7,5,7,90,1],[10,5,10,6,1],[11,9,11,64,1],[12,5,12,6,1],[14,67,14,100,1],[17,9,18,23,1],[18,23,18,55,1],[18,55,19,24,1],[19,24,19,33,1],[19,33,20,18,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Core\ValueObjects\Enums\Incoterm.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+namespace SpotQuoteApp.Core.ValueObjects.Enums;
+
+public record Incoterm(string Value) : IComparable
+{
+    public static readonly Incoterm EXW = new(&quot;EXW&quot;);
+    public static readonly Incoterm FCA = new(&quot;FCA&quot;);
+    public static readonly Incoterm FAS = new(&quot;FAS&quot;);
+    public static readonly Incoterm FOB = new(&quot;FOB&quot;);
+    public static readonly Incoterm CFR = new(&quot;CFR&quot;);
+    public static readonly Incoterm CIF = new(&quot;CIF&quot;);
+    public static readonly Incoterm CPT = new(&quot;CPT&quot;);
+    public static readonly Incoterm CIP = new(&quot;CIP&quot;);
+    public static readonly Incoterm DAP = new(&quot;DAP&quot;);
+    public static readonly Incoterm DPU = new(&quot;DPU&quot;);
+    public static readonly Incoterm DDP = new(&quot;DDP&quot;);
+    public static readonly Incoterm DDU = new(&quot;DDU&quot;);
+    public static readonly Incoterm DAT = new(&quot;DAT&quot;);
+
+    public override string ToString() =&gt; Value;
+
+    public int CompareTo(object? obj)
+    {
+        if (obj is Incoterm other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($&quot;Object is not a {nameof(Incoterm)}&quot;);
+    }
+
+    public static IReadOnlyCollection&lt;Incoterm&gt; GetAll() =&gt;
+        typeof(Incoterm)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
+            .Select(f =&gt; f.GetValue(null))
+            .OfType&lt;Incoterm&gt;()
+            .ToList();
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[3,15,3,23,0],[5,5,5,54,1],[6,5,6,54,1],[7,5,7,54,1],[8,5,8,54,1],[9,5,9,54,1],[10,5,10,54,1],[11,5,11,54,1],[12,5,12,54,1],[13,5,13,54,1],[14,5,14,54,1],[15,5,15,54,1],[16,5,16,54,1],[17,5,17,54,1],[19,42,19,47,0],[22,5,22,6,0],[23,9,23,35,0],[24,13,24,81,0],[26,9,26,76,0],[27,5,27,6,0],[30,9,34,26,1],[34,26,34,42,1],[34,42,36,22,1]]);
+    </script>
+  </body>
+</html>

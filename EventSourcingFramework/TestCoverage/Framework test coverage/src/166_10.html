@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\EventSourcingFramework\src\EventSourcingFramework.Infrastructure.Stores\PersonalDataStore\PersonalDataStore.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using EventSourcingFramework.Core.Interfaces;
+using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
+using EventSourcingFramework.Infrastructure.Shared.Interfaces;
+using EventSourcingFramework.Infrastructure.Shared.Models;
+using Microsoft.Extensions.Options;
+using MongoDB.Driver;
+
+namespace EventSourcingFramework.Infrastructure.Stores.PersonalDataStore;
+
+public class PersonalDataStore : IPersonalDataStore
+{
+    private readonly IMongoCollection&lt;MongoPersonalData&gt; collection;
+    private readonly EventSourcingOptions eventSourcingOptions;
+
+    public PersonalDataStore(
+        IMongoDbService mongoDbService,
+        IOptions&lt;EventSourcingOptions&gt; eventSourcingOptions
+    )
+    {
+        collection = mongoDbService.PersonalDataCollection;
+        this.eventSourcingOptions = eventSourcingOptions.Value;
+    }
+
+    public async Task StoreAsync(Guid eventId, Dictionary&lt;string, object?&gt; data)
+    {
+        if (!eventSourcingOptions.EnablePersonalDataStore)
+            return;
+
+        var record = new MongoPersonalData { EventId = eventId, Data = data };
+
+        await collection.ReplaceOneAsync(
+            Builders&lt;MongoPersonalData&gt;.Filter.Eq(r =&gt; r.EventId, eventId),
+            record,
+            new ReplaceOptions { IsUpsert = true }
+        );
+    }
+
+    public async Task&lt;Dictionary&lt;string, object?&gt;&gt; RetrieveAsync(Guid eventId)
+    {
+        if (!eventSourcingOptions.EnablePersonalDataStore)
+            return new Dictionary&lt;string, object?&gt;();
+
+        var record = await collection
+            .Find(Builders&lt;MongoPersonalData&gt;.Filter.Eq(r =&gt; r.EventId, eventId))
+            .FirstOrDefaultAsync();
+
+        return record?.Data ?? new Dictionary&lt;string, object?&gt;();
+    }
+}
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,5,18,6,1],[19,5,19,6,1],[20,9,20,60,1],[21,9,21,64,1],[22,5,22,6,1],[25,5,25,6,1],[26,9,26,59,1],[27,13,27,20,0],[29,9,29,79,1],[31,9,35,11,1],[36,5,36,6,1],[39,5,39,6,1],[40,9,40,59,1],[41,13,41,54,0],[43,9,45,36,1],[47,9,47,66,1],[48,5,48,6,1]]);
+    </script>
+  </body>
+</html>

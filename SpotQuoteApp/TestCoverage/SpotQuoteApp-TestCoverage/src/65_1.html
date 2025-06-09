@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\SpotQuoteMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.DomainObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class SpotQuoteMapper
+{
+    public static SpotQuoteDto ToDto(
+        this SpotQuote spotQuote,
+        CustomerDto customer,
+        AddressDto addressFrom,
+        AddressDto addressTo,
+        ICollection&lt;UserDto&gt; userRecipients
+    )
+    {
+        return new SpotQuoteDto
+        {
+            Id = spotQuote.Id,
+            Customer = customer,
+            AddressFrom = addressFrom,
+            AddressTo = addressTo,
+            CreatedAt = spotQuote.CreatedAt,
+            Direction = spotQuote.Direction,
+            Incoterm = spotQuote.Incoterm,
+            TransportMode = spotQuote.TransportMode,
+            ShippingDetails = spotQuote.ShippingDetails.ToDto(),
+            ValidUntil = spotQuote.ValidUntil,
+            Quotes = spotQuote.Quotes.Select(QuoteMapper.ToDto).ToList(),
+            MailOptions = spotQuote.MailOptions.ToDto(userRecipients),
+            InternalComments = spotQuote.InternalComments,
+            TotalWeight = spotQuote.TotalWeight,
+            TotalCbm = spotQuote.TotalCbm,
+            ConcurrencyVersion = spotQuote.ConcurrencyVersion,
+        };
+    }
+
+    public static SpotQuote ToDomain(this SpotQuoteDto spotQuoteDto)
+    {
+        return new SpotQuote(
+            spotQuoteDto.AddressFrom.Id,
+            spotQuoteDto.AddressTo.Id,
+            spotQuoteDto.Direction,
+            spotQuoteDto.TransportMode,
+            spotQuoteDto.Incoterm,
+            spotQuoteDto.ShippingDetails.ToDomain(),
+            spotQuoteDto.ValidUntil.Value,
+            spotQuoteDto.Customer.Id,
+            spotQuoteDto.MailOptions.ToDomain(),
+            spotQuoteDto.InternalComments,
+            spotQuoteDto.Quotes.Select(QuoteMapper.ToDomain).ToList()
+        )
+        {
+            Id = spotQuoteDto.Id,
+            ConcurrencyVersion = spotQuoteDto.ConcurrencyVersion,
+        };
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[15,5,15,6,1],[16,9,34,11,1],[35,5,35,6,1],[38,5,38,6,1],[39,9,55,11,1],[56,5,56,6,1]]);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>C:\Git\Master-Thesis\SpotQuoteApp\src\SpotQuoteApp.Application\Mappers\AddressMapper.cs</title>
+    <script type="text/javascript" src="../js/dotcover.sourceview.js"></script>
+    <link rel="stylesheet" type="text/css" href="../css/dotcover.report.css" />
+  </head>
+  <body>
+    <pre id="content" class="source-code">
+using SpotQuoteApp.Application.DTOs;
+using SpotQuoteApp.Core.DomainObjects;
+
+namespace SpotQuoteApp.Application.Mappers;
+
+public static class AddressMapper
+{
+    public static AddressDto ToDto(this Address address, CountryDto country)
+    {
+        return new AddressDto
+        {
+            Id = address.Id,
+            City = address.City,
+            AddressLine1 = address.AddressLine1,
+            ZipCode = address.ZipCode,
+            Country = country,
+            AddressLine2 = address.AddressLine2,
+            Attention = address.Attention,
+            Airport = address.Airport,
+            CompanyName = address.CompanyName,
+            Email = address.Email,
+            Phone = address.Phone,
+            Port = address.Port,
+            ConcurrencyVersion = address.ConcurrencyVersion,
+        };
+    }
+
+    public static Address ToDomain(this AddressDto addressDto)
+    {
+        return new Address(
+            addressDto.CompanyName,
+            addressDto.Country.Id,
+            addressDto.City,
+            addressDto.ZipCode,
+            addressDto.AddressLine1,
+            addressDto.AddressLine2,
+            addressDto.Email,
+            addressDto.Phone,
+            addressDto.Attention,
+            addressDto.Port,
+            addressDto.Airport
+        )
+        {
+            Id = addressDto.Id,
+            ConcurrencyVersion = addressDto.ConcurrencyVersion,
+        };
+    }
+}
+
+    </pre>
+    <script type="text/javascript">
+      highlightRanges([[9,5,9,6,1],[10,9,25,11,1],[26,5,26,6,1],[29,5,29,6,1],[30,9,46,11,1],[47,5,47,6,1]]);
+    </script>
+  </body>
+</html>
