@@ -486,6 +486,8 @@ public class AuditLogger
 ### Task
 Imagine you want to understand system activity by tracking how many events occurred recently.
 
-Implement the method `NrOfEventsTheLastHour()` in `SpotQuoteService.cs` under /* Part 10 */. It should return the number of events that occurred in the past hour.
+Implement the method `NrOfEventsTheLastHour()` in `SpotQuoteService.cs` under /* Part 10 */. 
+
+It should return the number of events that occurred in the past hour.
 
 **Tip**: Use `DateTime.UtcNow.AddHours(-1)` to define the lower bound of the query.
