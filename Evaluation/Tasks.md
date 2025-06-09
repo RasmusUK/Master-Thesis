@@ -121,13 +121,13 @@ Start by defining the core business objects for your domain. In this task, that 
 - `Customer` – represents the customer requesting a quote.  
 - `SpotQuote` – represents a quote and references a `Customer` by ID.
 
-### SpotQuote Properties:
-- `Guid CustomerId`
-- `double Price`
-
 ### Customer Properties:
 - `string FirstName`
 - `string LastName`
+
+### SpotQuote Properties:
+- `Guid CustomerId`
+- `double Price`
 
 ## 3. Register Your Entities
 Each domain entity must be explicitly registered with the framework to enable proper persistence, versioning, and change tracking. Registration allows the framework to:
