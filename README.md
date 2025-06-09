@@ -17,6 +17,10 @@ This repository contains the following projects:
 
   A minimal standalone project that supports the _How to Use the Event Sourcing Framework_ guide and the quick-start example from this README.
 
+- Evaluation
+
+  The development tasks and template solution for evaluating the event sourcing method.
+
 ## Spot Quote App
 
 ### Running the App
@@ -253,6 +257,8 @@ Snapshot Configuration
 All domain entities must inherit from the  `Entity` base class provided by the framework. There is no need to define an `Id` property manually, as it is already included in the Entity base class. 
 
 ```csharp
+using EventSourcingFramework.Core.Models.Entity;
+
 public class Customer : Entity
 {
   public string Name { get; set; }
@@ -342,6 +348,8 @@ You can now choose how to interact with your data:
 ### Option A: Inject Generic Repositories
 Inject `IRepository<T>` where you need it:
 ```csharp
+using EventSourcingFramework.Core.Interfaces;
+
 public class CustomerService
 {
   private readonly IRepository<Customer> repository;
@@ -361,6 +369,8 @@ public class CustomerService
 ### Option B: Create a Domain-Specific Repository
 If you prefer domain logic encapsulation:
 ```csharp
+using EventSourcingFramework.Core.Interfaces;
+
 public interface IOrderRepository
 {
   Task<Guid> CreateOrderAsync(Guid customerId);
@@ -414,6 +424,8 @@ services.AddScoped<IOrderRepository, OrderRepository>();
 ## Step 4: Using External API
 Use `IApiGateway` to perform HTTP-based integration from within your domain or service logic:
 ```csharp
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
+
 public class CustomerService
 {
   private readonly IApiGateway apiGateway;
@@ -448,6 +460,9 @@ public class CustomerService
 Inject `IReplayService` wherever you need to perform a replay operation, for example, to enable time-travel debugging, view the history of an entity, or completely restore the entity store from events:
 
 ```csharp
+using EventSourcingFramework.Application.Abstractions.EntityHistory;
+using EventSourcingFramework.Application.Abstractions.Replay;
+
 public class DebugService
 {
   private readonly IReplayService replayService;
@@ -483,6 +498,9 @@ public class DebugService
 Snapshots are handled automatically by the framework based on configuration. However, if needed, you can manually take, restore, or delete snapshots using `ISnapshotService`:
 
 ```csharp
+using EventSourcingFramework.Application.Abstractions.EventStore;
+using EventSourcingFramework.Application.Abstractions.Snapshots;
+
 public class SnapshotTool
 {
   private readonly ISnapshotService snapshotService;
@@ -578,6 +596,8 @@ Although the framework provides a complete event store behind the scenes, you ma
 
 You can easily fetch and log recent events using the IEventStore interface provided by the framework:
 ```csharp
+using EventSourcingFramework.Core.Interfaces;
+
 public class AuditLogger
 {
   private readonly IEventStore eventStore;
