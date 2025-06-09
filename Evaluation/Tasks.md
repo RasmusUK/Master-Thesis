@@ -58,7 +58,7 @@ Before using the framework’s features, you need to install it and register the
     }    
     ```
 3.  Load configuration in `Startup.cs`  
-    In your `Startup.cs` (or program file), load the configuration from the JSON file::
+    In your `Startup.cs` (or program file), load the configuration from the JSON file inside the `ConfigureServices`:
     ```csharp
     var configuration = new ConfigurationBuilder()
       .SetBasePath(Directory.GetCurrentDirectory())
@@ -66,7 +66,7 @@ Before using the framework’s features, you need to install it and register the
       .Build();
     ```
 3. Register the event sourcing services  
-  Still in `Startup.cs`, register the framework with the DI container:
+  Still in `Startup.cs` inside `ConfigureServices`, register the framework with the DI container:
     ```csharp
     using EventSourcingFramework.Infrastructure.DI;
 
@@ -79,8 +79,9 @@ Before using the framework’s features, you need to install it and register the
     });
     ```
 ## 2. Identify and Model Key Domain Entities
+The key domain entities must be identified and modelled following the guidelines:
 
-- All entities must inherit from the `Entity` base class, which includes a Guid ID.
+- All entities must inherit from the `Entity` base class, which includes a `Guid Id`.
 - Always reference other entities using their `Id` (e.g., `CustomerId`), not by embedding full objects.
 - You do **not** need to define any events yourself. The framework auto-generates events like `SpotQuoteCreated`, `CustomerUpdated`, etc.
 - Start simple. Implementing 1–2 entities is enough to get started.
@@ -135,6 +136,7 @@ Each domain entity must be explicitly registered with the framework to enable pr
 - Track the full event history of each entity.
 - Associate each entity with its corresponding MongoDB collection.
 - Support schema evolution through versioning and future migrations.
+- Enable the use of repositories.
 
 ### Example
 
@@ -250,6 +252,8 @@ All outbound HTTP requests should be routed through the framework’s API gatewa
 ### Example
 Suppose you want to fetch external car data from an endpoint. You can do this by injecting and using the `IApiGateway` interface. The example below uses the `GetAsync` method, but the framework also supports native `PostAsync` and a flexible `SendAsync` method that accepts a complete `HttpRequestMessage` for advanced scenarios:
 ```csharp
+using EventSourcingFramework.Application.Abstractions.ApiGateway;
+
 public class CarService
 {
   private readonly IApiGateway apiGateway;
@@ -259,9 +263,9 @@ public class CarService
     this.apiGateway = apiGateway;
   }
 
-  public Task <IReadOnlyCollection<Car>> FetchCarsExternally()
+  public async Task <IReadOnlyCollection<Car>> FetchCarsExternally()
   {
-    return apiGateway.GetAsync<IReadOnlyCollection<Car>>("/cars");
+    return await apiGateway.GetAsync<IReadOnlyCollection<Car>>("/cars");
   }
 }
 ```
@@ -290,6 +294,9 @@ Inject `IReplayService` wherever you need to initiate replay operations. This al
 - `AutoStop`: Set to true to return automatically to current state after replay (useful when restoring state).
 
 ```csharp
+using EventSourcingFramework.Application.Abstractions.EntityHistory;
+using EventSourcingFramework.Application.Abstractions.Replay;
+
 public class DebugService
 {
   private readonly IReplayService replayService;
@@ -302,23 +309,26 @@ public class DebugService
     this.entityHistoryService = entityHistoryService;
   }
   
-  public Task TimeTravelToAsync(DateTime dateTime)
+  public async Task TimeTravelToAsync(DateTime dateTime)
   {
-    return replayService.ReplayUntilAsync(dateTime, 
+    await replayService.ReplayUntilAsync(dateTime, 
       useSnapshot: true, 
       autoStop: false
     );
   }
 
-  public Task RestoreEntityStoreAsync()
+  public async Task RestoreEntityStoreAsync()
   {
-    return replayService.ReplayAllAsync(useSnapshot:false);
+    await replayService.ReplayAllAsync(
+      useSnapshot:false,
+      autoStop: true
+    );
   }
   
-  public Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>
+  public async Task<IReadOnlyCollection<T>> GetEntityHistoryAsync<T>
     (Guid entityId) where T : Entity
   {
-    return entityHistoryService.GetEntityHistoryAsync<T>(entityId);
+    return await entityHistoryService.GetEntityHistoryAsync<T>(entityId);
   }
 }
 ```

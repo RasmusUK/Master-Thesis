@@ -7,22 +7,22 @@ public class SpotQuoteService
     }
     
     /* Part 4 */
-    public async Task<Guid> CreateSpotQuote(string customerName, decimal price)
+    public async Task<Guid> CreateSpotQuote(Guid customerId, double price)
     {
         throw new NotImplementedException();
     }
     
     public async Task<SpotQuote?> GetSpotQuote(Guid spotQuoteId)
+    {        
+        throw new NotImplementedException();
+    }
+
+    public async Task UpdateSpotQuotePrice(Guid spotQuoteId, double price)
     {
         throw new NotImplementedException();
     }
 
-    public async Task UpdateSpotQuotePrice(Guid spotQuoteId, decimal price)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task DeleteSpotQuote(Guid id)
+    public async Task DeleteSpotQuote(Guid spotQuoteId)
     {
         throw new NotImplementedException();
     }
@@ -35,7 +35,7 @@ public class SpotQuoteService
     
     /* Part 6 */
     public async Task<IReadOnlyCollection<SpotQuote>> FetchExternalSpotQuotes()
-    {
+    {        
         throw new NotImplementedException();
     }
 

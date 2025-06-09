@@ -1,5 +1,7 @@
-﻿namespace FrameworkEvaluation;
+﻿using EventSourcingFramework.Core.Models.Entity;
 
-public class Customer
+namespace FrameworkEvaluation;
+
+public class Customer : Entity
 {
 }
