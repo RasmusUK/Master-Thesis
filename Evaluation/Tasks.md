@@ -461,16 +461,16 @@ using EventSourcingFramework.Core.Interfaces;
 
 public class CarService
 {
-  private readonly IEventStore eventStore;
+  private readonly IEventStore _eventStore;
 
   public CarService(IEventStore eventStore)
   {
-    this.eventStore = eventStore;
+    _eventStore = eventStore;
   }
 
   public async Task<int> TotalNrOfEvents()
   {
-    var events = await eventStore.GetEventsAsync();
+    var events = await _eventStore.GetEventsAsync();
     return events.Count;
   }
 }
