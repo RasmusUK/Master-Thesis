@@ -122,12 +122,12 @@ Start by defining the core business objects for your domain. In this task, that 
 - `SpotQuote` – represents a quote and references a `Customer` by ID.
 
 ### Customer Properties:
-- `string FirstName`
-- `string LastName`
+- `public string FirstName { get; set; }`
+- `public string LastName { get; set; }`
 
 ### SpotQuote Properties:
-- `Guid CustomerId`
-- `double Price`
+- `public Guid CustomerId { get; set; }`
+- `public double Price { get; set; }`
 
 ## 3. Register Your Entities
 Each domain entity must be explicitly registered with the framework to enable proper persistence, versioning, and change tracking. Registration allows the framework to:
@@ -173,36 +173,36 @@ using EventSourcingFramework.Core.Interfaces;
 
 public class CarService
 {
-  private readonly IRepository<Car> carRepository;
+  private readonly IRepository<Car> _carRepository;
   
   public CarService(IRepository<Car> carRepository)
   {
-    this.carRepository = carRepository;
+    _carRepository = carRepository;
   }
 
   public async Task<Guid> CreateCar(string model, int year)
   {
     var car = new Car(model, year);
-    await carRepository.CreateAsync(car);
+    await _carRepository.CreateAsync(car);
     return car.Id;
   }
 
   public async Task<Car?> GetCarById(Guid carId)
   {
-    return await carRepository.ReadByIdAsync(carId);
+    return await _carRepository.ReadByIdAsync(carId);
   }
 
   public async Task UpdateCarYear(Guid carId, int year)
   {
-    var car = await carRepository.ReadByIdAsync(carId);
+    var car = await _carRepository.ReadByIdAsync(carId);
     car.Year = year;
-    await carRepository.UpdateAsync(car);
+    await _carRepository.UpdateAsync(car);
   }
 
   public async Task DeleteCar(Guid carId)
   {
-    var car = await carRepository.ReadByIdAsync(carId);
-    await carRepository.DeleteAsync(car);
+    var car = await _carRepository.ReadByIdAsync(carId);
+    await _carRepository.DeleteAsync(car);
   }
 }
 ```
@@ -230,7 +230,7 @@ Suppose you need to find all car models for a given year. The projection `car =>
 ```csharp
 public async Task<IReadOnlyCollection<string>> GetCarModelsForYear(int year)
 {
-    return await carRepository.ReadAllProjectionsByFilterAsync
+    return await _carRepository.ReadAllProjectionsByFilterAsync
     (
       car => car.Model, //Projection
       car => car.Year == year //Filter
@@ -256,16 +256,16 @@ using EventSourcingFramework.Application.Abstractions.ApiGateway;
 
 public class CarService
 {
-  private readonly IApiGateway apiGateway;
+  private readonly IApiGateway _apiGateway;
 
   public CarService(IApiGateway apiGateway)
   {
-    this.apiGateway = apiGateway;
+    _apiGateway = apiGateway;
   }
 
   public async Task <IReadOnlyCollection<Car>> FetchCarsExternally()
   {
-    return await apiGateway.GetAsync<IReadOnlyCollection<Car>>("/cars");
+    return await _apiGateway.GetAsync<IReadOnlyCollection<Car>>("/cars");
   }
 }
 ```
@@ -299,19 +299,19 @@ using EventSourcingFramework.Application.Abstractions.Replay;
 
 public class DebugService
 {
-  private readonly IReplayService replayService;
-  private readonly IEntityHistoryService entityHistoryService;
+  private readonly IReplayService _replayService;
+  private readonly IEntityHistoryService _entityHistoryService;
 
   public DebugService(IReplayService replayService, 
     IEntityHistoryService entityHistoryService)
   {
-    this.replayService = replayService;
-    this.entityHistoryService = entityHistoryService;
+    _replayService = replayService;
+    _entityHistoryService = entityHistoryService;
   }
   
   public async Task DebugTo(DateTime dateTime)
   {
-    await replayService.ReplayUntilAsync(dateTime, 
+    await _replayService.ReplayUntilAsync(dateTime, 
       useSnapshot: true, 
       autoStop: false
     );
@@ -319,7 +319,7 @@ public class DebugService
 
   public async Task RestoreEntityStore()
   {
-    await replayService.ReplayAllAsync(
+    await _replayService.ReplayAllAsync(
       useSnapshot:false,
       autoStop: true
     );
@@ -327,7 +327,7 @@ public class DebugService
   
   public async Task<IReadOnlyCollection<Car>> GetCarHistory(Guid carId)
   {
-    return await entityHistoryService.GetEntityHistoryAsync<Car>(carId);
+    return await _entityHistoryService.GetEntityHistoryAsync<Car>(carId);
   }
 }
 ```
@@ -354,7 +354,7 @@ As your domain model changes, you can safely update it without breaking existing
 - This ensures long-term maintainability and consistency across your system.
 
 ### Example
-Suppose we want to upgrade our `Car` entity and change the model to an enum instead. Assume we have created all models as enums and added a custom `CarModel.ParseFromString` method. 
+Suppose we want to upgrade our `Car` entity and change the model to an enum instead. Assume we have created all car models as enums and added a custom `CarModel.ParseFromString` method. 
 
 1. First we change the name of our existing class and set the `SchemaVersion = 1`. 
 
@@ -381,14 +381,14 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
       public int Year { get; set; }
       public int SchmeaVersion { get; set; } = 2;
       
-      public Car(Model model, int year)
+      public Car(CarModel CarModel, int year)
       {
-        Model = model;
+        CarModel = CarModel;
         Year = year;  
       }
     }
     ```
-3. Inside the event sourcing registration method in `Startup.cs` or equivalent, register the entity versions, migrations, and a migration function to upgrade from the old version to the new one:    
+3. Inside the event sourcing registration method in `Startup.cs` or equivalent, register the entity versions, migrations, and a migration function to upgrade from the old version to the new one. Important to remember to set the `Id`.    
     ```csharp
     services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
     {
@@ -403,15 +403,17 @@ Suppose we want to upgrade our `Car` entity and change the model to an enum inst
         migrations.Register<Car>(2, typeof(Car));
 
         migrator.Register<CarV1, Car>(1, v1 => 
-        new Car(CarModel.ParseFromString(v1.CarModel), v1.Year));
+        new Car(CarModel.ParseFromString(v1.CarModel), v1.Year)
+          { Id = v1.Id }
+        );
     });
     ```
 
 ### Task
 
 1. Update existing class name `Customer` to `CustomerV1`.
-2. Create a new `Customer` class version with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`. Remember to add the `SchemaVersions` in the classes.
-3. Register the schema version, the migrations, and the migration function in `Startup.cs`. The `Name` of the new `Customer` should be the `FirstName` of `CustomerV1`.
+2. Create a new `Customer` class with a `Name` property instead of `FirstName` and `LastName`. So now you have `Customer` and `CustomerV1`. Remember to add the `SchemaVersions` in the classes.
+3. Register the schema version, the migrations, and the migration function in `Startup.cs`. The `Name` of the new `Customer` should be the `FirstName` of `CustomerV1`. Remember to add the `Id`.
 
 
 ## 9. Handle Personal Data Securely and in Compliance with Regulations
@@ -426,6 +428,8 @@ Suppose that we have an `User` entity with the following properties:
 
 To ensure these values are not stored in the immutable event log, but instead handled seperately, annotate them like this:
 ```csharp
+using EventSourcingFramework.Core.Attributes;
+
 public class User : Entity
 {
   [PersonalData]
@@ -453,6 +457,8 @@ While the framework captures all domain changes in an immutable event store, it 
 ### Example
 Suppose you want to analyze recent system activity. Since all domain changes are events, you can simply query the event store and transform the data however you like. Here's an example that logs the most recent 50 events:
 ```csharp
+using EventSourcingFramework.Core.Interfaces;
+
 public class CarService
 {
   private readonly IEventStore eventStore;
