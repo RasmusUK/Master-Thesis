@@ -455,7 +455,7 @@ Update the Customer entity you previously created to mark the `Name` property as
 While the framework captures all domain changes in an immutable event store, it does not enforce any specific operational logging or audit trail mechanisms. Instead, it provides a foundation upon which you can build domain-specific logging and monitoring features.
 
 ### Example
-Suppose you want to analyze recent system activity. Since all domain changes are events, you can simply query the event store and transform the data however you like. Here's an example that logs the most recent 50 events:
+Suppose you want to analyze recent system activity. Since all domain changes are events, you can simply query the event store and transform the data however you like. There are nomerous methods on the `IEventStore` that provides different ways to query events. Here's a simple example that returns the total count of events:
 ```csharp
 using EventSourcingFramework.Core.Interfaces;
 
