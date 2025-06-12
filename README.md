@@ -1,4 +1,5 @@
 # Master Thesis
+This master's thesis explores how to simplify the adoption of event sourcing for small companies by abstracting away low-level event handling. The goal is to allow developers to focus on the conceptual model through a familiar CRUD interface, lowering the barrier to entry.
 
 This repository contains the following projects:
 
