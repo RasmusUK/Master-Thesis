@@ -532,7 +532,7 @@ public class SnapshotTool
 ```
 
 ## Step 7: Evolving Your Domain Model
-When you need to make breaking changes to your domain objects:
+When you need to make breaking changes to your domain objects, such as renaming fields, changing data types, or restructuring objects, explicit versioning is required to maintain backward compatibility and enable safe migrations. For non-breaking changes like adding or removing fields, MongoDB’s flexible schema typically makes versioning unnecessary.
 
 1. Version the current entity:
     - Rename the existing class to e.g. `CustomerV1` and set `SchemaVersion = 1`.
