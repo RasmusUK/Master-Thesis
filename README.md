@@ -591,7 +591,47 @@ It is the developers responsibility to determine what constitutes personal data 
 The framework provides the mechanism, but you must define which fields are sensitive and ensure compliance, including implementing appropriate data retention strategies (e.g., scheduled jobs to purge expired records).
 
 
-## Step 9: Logging And Auditing (Optional)
+## Step 9: Transactions
+The framework supports transactions with atomic-like operations via with the `ITransactionManager`:
+
+```csharp
+using EventSourcingFramework.Infrastructure.Repositories.Interfaces;
+
+public class OrderRepository : IOrderRepository
+{
+  private readonly IRepository<Order> orderRepository;
+  private readonly ITransactionManager transactionManager;
+
+  public OrderRepository(IRepository<Order> orderRepository, ITransactionManager transactionManager)
+  {
+    this.orderRepository = orderRepository;
+    this.transactionManager = transactionManager;
+  }
+
+  public async Task DeleteAllOrdersForCustomerIdAsync(Guid customerId)
+  {
+    var orders = await orderRepository.ReadAllByFilterAsync(o => o.CustomerId == customerId);
+    
+    transactionManager.Begin();
+
+    try
+    {
+        foreach (var order in orders)
+        {
+            await orderRepository.DeleteAsync(order);
+        }
+        await transactionManager.CommitAsync();
+    }
+    catch
+    {
+        await transactionManager.RollbackAsync();
+        throw;
+    }
+  }
+}
+```
+
+## Step 10: Logging And Auditing
 Although the framework provides a complete event store behind the scenes, you may want to expose events for operational logging, audit trails, or debugging.
 
 You can easily fetch and log recent events using the IEventStore interface provided by the framework:
