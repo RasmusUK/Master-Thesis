@@ -74,7 +74,7 @@ public class ReplayService : IReplayService
                 events = await eventStore.GetEventsAsync();
             else
                 events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
-            
+
             replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? latestSnapshot?.EventNumber ?? 0;
         }
         else
@@ -100,9 +100,7 @@ public class ReplayService : IReplayService
         {
             var latestSnapshot = await TryGetLastSnapshotAsync();
             if (latestSnapshot is not null && latestSnapshot.Timestamp <= until)
-            {
                 events = await eventStore.GetEventsFromUntilAsync(latestSnapshot.Timestamp, until);
-            }
             replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? latestSnapshot?.EventNumber ?? 0;
         }
         else
@@ -110,6 +108,7 @@ public class ReplayService : IReplayService
             events = await eventStore.GetEventsUntilAsync(until);
             replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? 0;
         }
+
         await ProcessReplayEventsAsync(events);
         await StopReplayIfNeeded(autoStop);
     }
@@ -119,12 +118,12 @@ public class ReplayService : IReplayService
         await StartReplayIfNeeded(ReplayMode.Replay);
         var (restored, _, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, from);
         IReadOnlyCollection<IEvent> events;
-        
+
         if (restored)
             events = await eventStore.GetEventsFromAsync(eventNumber);
         else
             events = await eventStore.GetEventsAsync();
-        
+
         await ProcessReplayEventsAsync(events);
         replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
         await StopReplayIfNeeded(autoStop);
@@ -140,7 +139,7 @@ public class ReplayService : IReplayService
         await StartReplayIfNeeded(ReplayMode.Replay);
         var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, from);
         IReadOnlyCollection<IEvent> events;
-        
+
         if (restored)
             events = await eventStore.GetEventsFromUntilAsync(snapshotFrom!.Value, until);
         else
@@ -218,14 +217,15 @@ public class ReplayService : IReplayService
     )
     {
         await StartReplayIfNeeded(ReplayMode.Replay);
-        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
+        var (restored, snapshotFrom, eventNumber) =
+            await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
         IReadOnlyCollection<IEvent> events;
 
         if (restored)
             events = await eventStore.GetEventsFromAsync(snapshotFrom!.Value);
         else
             events = await eventStore.GetEventsAsync();
-        
+
         await ProcessReplayEventsAsync(events);
         replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
         await StopReplayIfNeeded(autoStop);
@@ -238,14 +238,15 @@ public class ReplayService : IReplayService
     )
     {
         await StartReplayIfNeeded(ReplayMode.Replay);
-        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, untilNumber: untilEventNumber);
+        var (restored, snapshotFrom, eventNumber) =
+            await TryRestoreSnapshotAsync(useSnapshot, untilNumber: untilEventNumber);
         IReadOnlyCollection<IEvent> events;
-        
+
         if (restored)
             events = await eventStore.GetEventsFromUntilAsync(eventNumber, untilEventNumber);
         else
             events = await eventStore.GetEventsUntilAsync(untilEventNumber);
-        
+
         await ProcessReplayEventsAsync(events);
         replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? eventNumber;
         await StopReplayIfNeeded(autoStop);
@@ -259,9 +260,10 @@ public class ReplayService : IReplayService
     )
     {
         await StartReplayIfNeeded(ReplayMode.Sandbox);
-        var (restored, snapshotFrom, eventNumber) = await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
+        var (restored, snapshotFrom, eventNumber) =
+            await TryRestoreSnapshotAsync(useSnapshot, fromNumber: fromEventNumber);
         IReadOnlyCollection<IEvent> events;
-        
+
         if (restored)
             events = await eventStore.GetEventsFromUntilAsync(eventNumber, untilEventNumber);
         else
@@ -314,7 +316,7 @@ public class ReplayService : IReplayService
             snapshotId = await snapshotService.GetLastSnapshotIdAsync();
 
         if (snapshotId is null) return (false, null, 0);
-        
+
         var snapshot = await snapshotService.GetSnapshotMetadataAsync(snapshotId);
         if (snapshot is null)
             return (false, null, 0);
@@ -361,7 +363,7 @@ public class ReplayService : IReplayService
                     throw new InvalidOperationException($"Unknown event type: {e.GetType().Name}");
             }
     }
-    
+
     private Task ProcessReplayCreateEvent<T>(ICreateEvent<T> e)
         where T : IEntity
     {

@@ -10,10 +10,11 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.Migrations;
 [Collection("Integration")]
 public class MigrationTests : MongoIntegrationTestBase
 {
-    private readonly IEventStore eventStore;
     private readonly IEntityStore entityStore;
-    
-    public MigrationTests(IMongoDbService mongoDbService, IReplayContext replayContext, IEventStore eventStore, IEntityStore entityStore) : base(mongoDbService, replayContext)
+    private readonly IEventStore eventStore;
+
+    public MigrationTests(IMongoDbService mongoDbService, IReplayContext replayContext, IEventStore eventStore,
+        IEntityStore entityStore) : base(mongoDbService, replayContext)
     {
         this.eventStore = eventStore;
         this.entityStore = entityStore;

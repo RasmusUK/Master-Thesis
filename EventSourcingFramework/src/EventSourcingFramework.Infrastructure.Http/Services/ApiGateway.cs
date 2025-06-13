@@ -15,7 +15,8 @@ public class ApiGateway : IApiGateway
     private readonly IApiResponseStore responseStore;
     private readonly IEventSequenceGenerator sequenceGenerator;
 
-    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext, IEventSequenceGenerator sequenceGenerator)
+    public ApiGateway(HttpClient httpClient, IApiResponseStore responseStore, IReplayContext replayContext,
+        IEventSequenceGenerator sequenceGenerator)
     {
         this.httpClient = httpClient;
         this.responseStore = responseStore;

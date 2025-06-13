@@ -1,5 +1,4 @@
 using EventSourcingFramework.Infrastructure.DI;
-using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 

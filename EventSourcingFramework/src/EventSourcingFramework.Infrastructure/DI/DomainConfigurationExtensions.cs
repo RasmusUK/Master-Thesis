@@ -15,7 +15,7 @@ public static class DomainConfigurationExtensions
         var migrationRegistry = new MigrationTypeRegistry();
         var migrator = new EntityMigrator();
         var mongoDbRegistrationService = new MongoDbRegistrationService();
-        
+
         configureDomain(schemaRegistry, migrationRegistry, migrator, mongoDbRegistrationService);
 
         var collectionNameProvider = new EntityCollectionNameProvider();
@@ -30,7 +30,7 @@ public static class DomainConfigurationExtensions
                 collectionNameProvider.RegisterMigrationTypes(type, migrationType);
             }
         }
-        
+
         services
             .AddSingleton<ISchemaVersionRegistry>(schemaRegistry)
             .AddSingleton<IMigrationTypeRegistry>(migrationRegistry)

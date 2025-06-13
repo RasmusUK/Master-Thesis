@@ -1,6 +1,5 @@
 using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
-using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Events;
 using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
@@ -155,7 +154,10 @@ public class EventStore : IEventStore
         return events;
     }
 
-    public Task<long> GetCurrentSequenceNumberAsync() => sequenceGenerator.GetCurrentSequenceNumberAsync();
+    public Task<long> GetCurrentSequenceNumberAsync()
+    {
+        return sequenceGenerator.GetCurrentSequenceNumberAsync();
+    }
 
     private Task<bool> EventExistsAsync(MongoEventBase e)
     {

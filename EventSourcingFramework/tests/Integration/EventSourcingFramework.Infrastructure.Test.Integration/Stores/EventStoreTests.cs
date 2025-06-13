@@ -1,7 +1,6 @@
 using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
-using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
@@ -21,7 +20,8 @@ public class EventStoreTests : MongoIntegrationTestBase
     private readonly IPersonalDataService personalDataService;
 
     public EventStoreTests(IMongoDbService mongoDbService, IReplayContext replayContext, IEventStore eventStore,
-        IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService) : base(mongoDbService, replayContext)
+        IEventSequenceGenerator eventSequenceGenerator, IPersonalDataService personalDataService) : base(mongoDbService,
+        replayContext)
     {
         this.eventStore = eventStore;
         this.eventSequenceGenerator = eventSequenceGenerator;

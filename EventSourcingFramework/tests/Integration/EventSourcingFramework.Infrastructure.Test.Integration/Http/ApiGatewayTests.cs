@@ -9,7 +9,6 @@ using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Http.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models;
-using EventSourcingFramework.Infrastructure.Stores.EventStore;
 using EventSourcingFramework.Test.Utilities;
 using MongoDB.Bson;
 using MongoDB.Driver;

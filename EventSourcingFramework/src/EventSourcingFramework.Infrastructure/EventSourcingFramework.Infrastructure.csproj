@@ -5,7 +5,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <Version>1.0.1</Version>
-        <Authors>RUK</Authors>        
+        <Authors>RUK</Authors>
         <Description>Simplified CRUD-based event sourcing</Description>
         <PackageId>EventSourcing.CRUD.Infrastructure</PackageId>
         <RepositoryUrl>https://github.com/RasmusUK/Master-Thesis</RepositoryUrl>

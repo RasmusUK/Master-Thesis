@@ -6,7 +6,7 @@ public class EntityCollectionNameProvider : IEntityCollectionNameProvider
 {
     private readonly Dictionary<Type, string> collectionNames = new();
     private readonly Dictionary<Type, Type> migrationToBaseTypes = new();
-    
+
     public void Register(Type type, string collectionName)
     {
         if (type == null)
@@ -30,7 +30,7 @@ public class EntityCollectionNameProvider : IEntityCollectionNameProvider
     {
         if (!collectionNames.ContainsKey(type))
             type = migrationToBaseTypes.GetValueOrDefault(type, type);
-        
+
         if (!collectionNames.TryGetValue(type, out var name))
             throw new InvalidOperationException(
                 $"No collection name registered for type '{type.FullName}'"
