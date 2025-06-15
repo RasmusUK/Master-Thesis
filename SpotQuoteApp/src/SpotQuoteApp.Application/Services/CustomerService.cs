@@ -33,8 +33,10 @@ public class CustomerService : ICustomerService
         return customer?.ToDto();
     }
 
-    public Task AddCustomerAsync(CustomerDto customer) =>
-        customerRepository.CreateAsync(customer.ToDomain());
+    public Task AddCustomerAsync(CustomerDto customer)
+    {
+        return customerRepository.CreateAsync(customer.ToDomain());
+    }
 
     public async Task DeleteCustomerAsync(CustomerDto customer)
     {

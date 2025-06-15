@@ -20,9 +20,9 @@ public class RepositoryTests : MongoIntegrationTestBase
 {
     private readonly IEntityStore entityStore;
     private readonly IEventStore eventStore;
+    private readonly IRepository<PersonEntity> personRepository;
     private readonly IReplayContext replayContext;
     private readonly IRepository<TestEntity> repository;
-    private readonly IRepository<PersonEntity> personRepository;
     private readonly ISnapshotService snapshotService;
 
     public RepositoryTests(
@@ -318,22 +318,22 @@ public class RepositoryTests : MongoIntegrationTestBase
         entity.Address.City = "Anytown";
         entity.Address.Location.Latitude = 10;
         entity.Address.Location.Longitude = 12;
-        entity.Addresses = new List<Address> {  new() { Street = "Street" } };
+        entity.Addresses = new List<Address> { new() { Street = "Street" } };
         entity.Phone = new Phone
         {
             Number = "123456789",
             Type = "Mobile"
         };
-        
+
         // Act
         await personRepository.CreateAsync(entity);
-        
+
         // Assert
         var collection = MongoDbService.EventCollection;
-        var e = (ICreateEvent<PersonEntity>) await collection.Find(
+        var e = (ICreateEvent<PersonEntity>)await collection.Find(
             e => e.EntityId == entity.Id
         ).FirstOrDefaultAsync();
-        
+
         Assert.Null(e.Entity.Name);
         Assert.Null(e.Entity.Email);
         Assert.Null(e.Entity.Address.Street);
@@ -344,7 +344,7 @@ public class RepositoryTests : MongoIntegrationTestBase
         Assert.Equal(0, e.Entity.Address.Location.Latitude);
         Assert.Equal(0, e.Entity.Address.Location.Longitude);
     }
-    
+
     [Fact]
     public async Task PersonalDataIsPreservedInStoredEntity()
     {
@@ -356,19 +356,19 @@ public class RepositoryTests : MongoIntegrationTestBase
         entity.Address.City = "Anytown";
         entity.Address.Location.Latitude = 10;
         entity.Address.Location.Longitude = 12;
-        entity.Addresses = new List<Address> {  new() { Street = "Street" } };
+        entity.Addresses = new List<Address> { new() { Street = "Street" } };
         entity.Phone = new Phone
         {
             Number = "123456789",
             Type = "Mobile"
         };
-        
+
         // Act
         await personRepository.CreateAsync(entity);
-        
+
         // Assert
         var fetchedEntity = await personRepository.ReadByIdAsync(entity.Id);
-        
+
         Assert.NotNull(fetchedEntity);
         Assert.Equal("John Doe", fetchedEntity.Name);
         Assert.Equal("mail", fetchedEntity.Email);

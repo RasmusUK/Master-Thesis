@@ -9,13 +9,16 @@ public record Supplier(string Value) : IComparable
     public static readonly Supplier Maersk = new("Maersk");
     public static readonly Supplier DB_Schenker = new("DB Schenker");
 
-    public override string ToString() => Value;
-
     public int CompareTo(object? obj)
     {
         if (obj is ChargeType other)
             return string.Compare(Value, other.Value, StringComparison.Ordinal);
 
         throw new ArgumentException($"Object is not a {nameof(ChargeType)}");
+    }
+
+    public override string ToString()
+    {
+        return Value;
     }
 }

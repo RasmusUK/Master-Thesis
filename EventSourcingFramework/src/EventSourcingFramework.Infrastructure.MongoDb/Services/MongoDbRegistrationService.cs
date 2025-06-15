@@ -6,8 +6,8 @@ namespace EventSourcingFramework.Infrastructure.MongoDb.Services;
 
 public class MongoDbRegistrationService : IMongoDbRegistrationService
 {
-    private readonly List <(Type Type, string CollectionName)> registered = new();
-    
+    private readonly List<(Type Type, string CollectionName)> registered = new();
+
     public void Register(
         params (Type Type, string CollectionName)[] entities
     )
@@ -21,7 +21,10 @@ public class MongoDbRegistrationService : IMongoDbRegistrationService
         }
     }
 
-    public List<(Type Type, string CollectionName)> GetRegistered() => registered;
+    public List<(Type Type, string CollectionName)> GetRegistered()
+    {
+        return registered;
+    }
 
     private void RegisterGenericEvent(Type genericEventType, Type entityType)
     {
@@ -38,4 +41,3 @@ public class MongoDbRegistrationService : IMongoDbRegistrationService
         BsonClassMap.RegisterClassMap(classMap);
     }
 }
-

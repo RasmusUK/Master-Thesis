@@ -1,14 +1,12 @@
+using System.Collections;
 using System.Reflection;
 using EventSourcingFramework.Application.Abstractions.EventSourcingSettings;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
 using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Exceptions;
 using EventSourcingFramework.Core.Interfaces;
-using EventSourcingFramework.Core.Models.Entity;
 using EventSourcingFramework.Core.Models.Events;
-using MongoDB.Bson.IO;
 using Newtonsoft.Json;
-using JsonConvert = Newtonsoft.Json.JsonConvert;
 
 namespace EventSourcingFramework.Application.UseCases.PersonalData;
 
@@ -30,17 +28,17 @@ public class PersonalDataService : IPersonalDataService
             return;
 
         var entity = GetEntityFromEvent(e);
-        if (entity is null)
+        if (entity == null)
             return;
 
         var serializedEntity = JsonConvert.SerializeObject(entity);
         var copiedEntity = JsonConvert.DeserializeObject(serializedEntity, entity.GetType());
-        
-        if (copiedEntity is null)
+
+        if (copiedEntity == null)
             throw new PersonalDataException("Failed to copy entity for personal data stripping.");
-        
+
         SetEntityOnEvent(e, copiedEntity);
-        
+
         var dict = new Dictionary<string, object?>();
         StripPersonalData(copiedEntity, dict, "");
 
@@ -54,7 +52,7 @@ public class PersonalDataService : IPersonalDataService
             return;
 
         var entity = GetEntityFromEvent(e);
-        if (entity is null)
+        if (entity == null)
             return;
 
         var data = await personalDataStore.RetrieveAsync(e.Id);
@@ -68,7 +66,7 @@ public class PersonalDataService : IPersonalDataService
             .GetProperty("Entity", BindingFlags.Public | BindingFlags.Instance);
         return entityProp?.GetValue(e);
     }
-    
+
     private void SetEntityOnEvent(IEvent e, object entity)
     {
         var entityProp = e.GetType()
@@ -80,7 +78,7 @@ public class PersonalDataService : IPersonalDataService
     {
         var type = obj.GetType();
 
-        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
+        if (obj is IEnumerable enumerable && type != typeof(string))
         {
             var index = 0;
             foreach (var item in enumerable)
@@ -90,9 +88,11 @@ public class PersonalDataService : IPersonalDataService
                     var itemPath = $"{path}[{index}]";
                     StripPersonalData(item, dict, itemPath);
                 }
+
                 index++;
             }
-            return; 
+
+            return;
         }
 
         foreach (var prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance))
@@ -122,7 +122,7 @@ public class PersonalDataService : IPersonalDataService
     {
         var type = obj.GetType();
 
-        if (obj is System.Collections.IEnumerable enumerable && type != typeof(string))
+        if (obj is IEnumerable enumerable && type != typeof(string))
         {
             var index = 0;
             foreach (var item in enumerable)
@@ -132,8 +132,10 @@ public class PersonalDataService : IPersonalDataService
                     var itemPath = $"{path}[{index}]";
                     RestorePersonalData(item, dict, itemPath);
                 }
+
                 index++;
             }
+
             return;
         }
 
@@ -154,10 +156,7 @@ public class PersonalDataService : IPersonalDataService
             else
             {
                 var value = prop.GetValue(obj);
-                if (value != null && !IsPrimitive(prop.PropertyType))
-                {
-                    RestorePersonalData(value, dict, propPath);
-                }
+                if (value != null && !IsPrimitive(prop.PropertyType)) RestorePersonalData(value, dict, propPath);
             }
         }
     }

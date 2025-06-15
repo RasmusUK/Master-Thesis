@@ -17,6 +17,8 @@ app.post('/api/buying-rates', (req, res) => {
   const chargeTypes = ['Freight', 'Fuel Surcharge', 'Storage'];
   const costTypes = ['Per Shipment', 'Per Kg', 'Per Cbm'];
 
+  const oneDayMs = 24 * 60 * 60 * 1000;
+
   const Rates = chargeTypes.map((ChargeType, index) => ({
     Supplier,
     ForwarderService,
@@ -24,9 +26,9 @@ app.post('/api/buying-rates', (req, res) => {
     CountryFrom,
     CountryTo,
     TransportMode,
-    Price: Math.round((Math.random() * 1000 + 100) * 100) / 100,
+    Price: Math.round((Math.random() * 1000 + 100)),
     ValidFrom: new Date().toISOString(),
-    ValidTo: new Date(Date.now() + 30 * 86400000).toISOString(),
+    ValidTo: new Date(Date.now() + 30 * oneDayMs).toISOString(),
     ChargeType,
     CostType: costTypes[index]
   }));

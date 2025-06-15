@@ -1,5 +1,4 @@
 using System.Reflection;
-using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.ReplayContext;
 using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Enums;
@@ -17,9 +16,9 @@ public class SnapshotService : ISnapshotService
     private const string SnapshotMetadataCollection = "snapshots";
     private static readonly SemaphoreSlim SnapshotLock = new(1, 1);
     private readonly IEntityCollectionNameProvider entityCollectionNameProvider;
-    private readonly IReplayContext replayContext;
 
     private readonly IMongoDbService mongoDbService;
+    private readonly IReplayContext replayContext;
     private readonly object snapshotCacheLock = new();
     private readonly SnapshotOptions snapshotOptions;
     private SnapshotMetadata? lastSnapshotCached;
@@ -260,6 +259,7 @@ public class SnapshotService : ISnapshotService
         {
             SnapshotLock.Release();
         }
+
         return true;
     }
 

@@ -10,7 +10,7 @@ public class TransactionManager : ITransactionManager
     private Queue<Func<Task>>? rollbackActions;
     private Dictionary<Type, List<object>>? trackedDeletedEntities;
     private Dictionary<Type, List<object>>? trackedUpsertedEntities;
-    public bool IsActive => actions is not null;
+    public bool IsActive => actions != null;
     public Guid TransactionId { get; private set; } = Guid.NewGuid();
 
     public void Begin()
@@ -35,8 +35,8 @@ public class TransactionManager : ITransactionManager
         {
             list = new List<object>();
             trackedUpsertedEntities.Add(typeof(T), list);
-            
-            if (GetTrackedDeletedEntities<T>().Any(e=> e.Id == entity.Id))
+
+            if (GetTrackedDeletedEntities<T>().Any(e => e.Id == entity.Id))
                 trackedDeletedEntities![typeof(T)].Remove(entity);
         }
 
@@ -53,7 +53,7 @@ public class TransactionManager : ITransactionManager
         {
             list = new List<object>();
             trackedDeletedEntities.Add(typeof(T), list);
-            
+
             if (GetTrackedUpsertedEntities<T>().Any(e => e.Id == entity.Id))
                 trackedUpsertedEntities![typeof(T)].Remove(entity);
         }

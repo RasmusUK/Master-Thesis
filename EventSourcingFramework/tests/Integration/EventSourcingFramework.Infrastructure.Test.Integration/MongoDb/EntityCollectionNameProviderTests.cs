@@ -1,5 +1,4 @@
 ﻿using EventSourcingFramework.Application.Abstractions.ReplayContext;
-using EventSourcingFramework.Infrastructure.Migrations.Services;
 using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
@@ -79,7 +78,7 @@ public class EntityCollectionNameProviderTests : MongoIntegrationTestBase
         Assert.Contains(all, x => x.Type == typeof(TestEntity1) && x.CollectionName == "Test1");
         Assert.Contains(all, x => x.Type == typeof(TestEntity2) && x.CollectionName == "Test2");
     }
-    
+
     [Fact]
     public void RegisterMigrationTypes_Then_GetCollectionName_ResolvesBaseTypeCollection()
     {

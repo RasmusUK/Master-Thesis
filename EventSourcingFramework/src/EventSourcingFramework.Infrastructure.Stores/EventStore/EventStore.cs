@@ -1,6 +1,5 @@
 using EventSourcingFramework.Application.Abstractions.EventStore;
 using EventSourcingFramework.Application.Abstractions.PersonalData;
-using EventSourcingFramework.Application.Abstractions.Snapshots;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Core.Models.Events;
 using EventSourcingFramework.Infrastructure.Shared.Configuration.Options;
@@ -52,7 +51,7 @@ public class EventStore : IEventStore
     public async Task<IEvent?> GetEventByIdAsync(Guid id)
     {
         var evt = await collection.Find(e => e.Id == id).FirstOrDefaultAsync();
-        if (evt is not null)
+        if (evt != null)
             await personalDataService.RestoreAsync(evt);
         return evt;
     }
@@ -155,7 +154,10 @@ public class EventStore : IEventStore
         return events;
     }
 
-    public Task<long> GetCurrentSequenceNumberAsync() => sequenceGenerator.GetCurrentSequenceNumberAsync();
+    public Task<long> GetCurrentSequenceNumberAsync()
+    {
+        return sequenceGenerator.GetCurrentSequenceNumberAsync();
+    }
 
     private Task<bool> EventExistsAsync(MongoEventBase e)
     {

@@ -178,7 +178,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "WillBeUpdated" };
-        await repository.CreateAsync(entity); // make sure it exists
+        await repository.CreateAsync(entity); 
 
         var repo = new FailingRepository(
             entityStore,
@@ -194,8 +194,8 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         transactionManager.Begin();
 
         entity.Name = "Updated";
-        await smartRepo.UpdateAsync(entity); // commit succeeds
-        await smartRepo.DeleteAsync(entity); // commit fails
+        await smartRepo.UpdateAsync(entity);
+        await smartRepo.DeleteAsync(entity);
 
         // Act
         await Assert.ThrowsAsync<Exception>(() => transactionManager.CommitAsync());
@@ -204,7 +204,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
         // Assert
         var events = await eventStore.GetEventsByEntityIdAsync(entity.Id);
 
-        Assert.Equal(3, events.Count); // Create + Update + Compensation Update
+        Assert.Equal(3, events.Count);
         Assert.Contains(events, e => e is UpdateEvent<TestEntity> ue && ue.Compensation);
     }
 
@@ -246,10 +246,10 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
         transactionManager.Begin();
 
-        await smartRepo.CreateAsync(entity); // will commit
+        await smartRepo.CreateAsync(entity); 
         entity.Name = "Updated";
-        await smartRepo.UpdateAsync(entity); // will commit
-        await smartRepo.DeleteAsync(entity); // will fail
+        await smartRepo.UpdateAsync(entity);
+        await smartRepo.DeleteAsync(entity); 
 
         // Act
         await Assert.ThrowsAsync<Exception>(() => transactionManager.CommitAsync());
@@ -257,7 +257,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
 
         var events = await eventStore.GetEventsByEntityIdAsync(entity.Id);
 
-        Assert.Equal(4, events.Count); // Create + Update + Compensation Update + Compensation Delete
+        Assert.Equal(4, events.Count);
         Assert.Equal(1, events.Count(e => e is UpdateEvent<TestEntity> ue && ue.Compensation));
         Assert.Equal(1, events.Count(e => e is DeleteEvent<TestEntity> de && de.Compensation));
     }

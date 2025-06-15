@@ -9,8 +9,8 @@ public class ReplayContext : IReplayContext
     private static readonly object LockObj = new();
     private readonly List<IEvent> events = new();
     private ApiReplayMode apiReplayMode = ApiReplayMode.CacheOnly;
-    private bool isLoading;
     private long eventNumber;
+    private bool isLoading;
 
     private bool isReplaying;
     private ReplayMode replayMode = ReplayMode.Strict;
@@ -32,7 +32,7 @@ public class ReplayContext : IReplayContext
             }
         }
     }
-    
+
     public bool IsReplaying
     {
         get

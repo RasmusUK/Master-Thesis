@@ -11,7 +11,7 @@ namespace EventSourcingFramework.Infrastructure.Test.Integration.MongoDb;
 public class MongoDbRegistrationService : MongoIntegrationTestBase
 {
     private readonly IMongoDbRegistrationService mongoDbRegistrationService;
-    
+
     public MongoDbRegistrationService(
         IMongoDbService mongoDbService,
         IReplayContext replayContext, IMongoDbRegistrationService mongoDbRegistrationService)
@@ -19,6 +19,7 @@ public class MongoDbRegistrationService : MongoIntegrationTestBase
     {
         this.mongoDbRegistrationService = mongoDbRegistrationService;
     }
+
     [Fact]
     public void RegisterEntities_RegistersMultipleEntitiesWithCorrectNames()
     {

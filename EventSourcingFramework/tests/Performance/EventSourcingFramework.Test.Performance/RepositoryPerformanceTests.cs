@@ -4,49 +4,29 @@ using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Test.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit.Abstractions;
 
 namespace EventSourcingFramework.Test.Performance;
 
 [Collection("Integration")]
 public class RepositoryPerformanceTests : MongoIntegrationTestBase
 {
+    private readonly ITestOutputHelper testOutputHelper;
+
     public RepositoryPerformanceTests(
         IMongoDbService mongoDbService,
-        IReplayContext replayContext
-    )
+        IReplayContext replayContext, ITestOutputHelper testOutputHelper)
         : base(mongoDbService, replayContext)
     {
+        this.testOutputHelper = testOutputHelper;
     }
 
     [Trait("Category", "Performance")]
     [Theory]
-    [InlineData("S1", 100, true, true, true)]
-    [InlineData("S1", 100, true, true, false)]
-    [InlineData("S1", 100, true, false, true)]
-    [InlineData("S1", 100, true, false, false)]
-    [InlineData("S1", 100, false, true, false)]
-    [InlineData("S2", 100, true, true, true)]
-    [InlineData("S2", 100, true, true, false)]
-    [InlineData("S2", 100, true, false, true)]
-    [InlineData("S2", 100, true, false, false)]
-    [InlineData("S2", 100, false, true, false)]
-    [InlineData("S3", 100, true, true, true)]
-    [InlineData("S3", 100, true, true, false)]
-    [InlineData("S3", 100, true, false, true)]
-    [InlineData("S3", 100, true, false, false)]
-    [InlineData("S3", 100, false, true, false)]
-    [InlineData("S4", 100, true, true, true)]
-    [InlineData("S4", 100, true, true, false)]
-    [InlineData("S4", 100, true, false, true)]
-    [InlineData("S4", 100, true, false, false)]
-    [InlineData("S4", 100, false, true, false)]
-    [InlineData("S5", 100, true, true, true)]
-    [InlineData("S5", 100, true, true, false)]
-    [InlineData("S5", 100, true, false, true)]
-    [InlineData("S5", 100, true, false, false)]
-    [InlineData("S5", 100, false, true, false)]
+    [InlineData(10000, true, true, true)]
+    [InlineData(10000, true, true, false)]
+    [InlineData(10000, true, false, false)]
     public async Task CreatePerformance(
-        string entitySize,
         int count,
         bool eventStore,
         bool entityStore,
@@ -64,9 +44,8 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
 
         var repo = provider.GetRequiredService<IRepository<TestEntity>>();
         var durations = new List<long>();
-        var entity = TestEntityFactory.CreateEntityBySize(entitySize);
+        var entity = TestEntityFactory.CreateEntity();
 
-        //Warmup
         await repo.CreateAsync(entity);
 
         for (var i = 0; i < count; i++)
@@ -78,17 +57,6 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
             durations.Add(sw.ElapsedMilliseconds);
         }
 
-        CsvLogger.LogRepo(
-            nameof(CreatePerformance),
-            eventStore,
-            entityStore,
-            personalStore,
-            entitySize,
-            TestEntityFactory.GetBsonSizeInMb(entity),
-            count,
-            TestEntityFactory.GetPropertyCountBySizeName(entitySize),
-            TestEntityFactory.GetNodeCountBySizeName(entitySize),
-            durations
-        );
+        testOutputHelper.WriteLine($"Average duration: {durations.Average()} ms");
     }
 }

@@ -5,7 +5,7 @@ namespace EventSourcingFramework.Test.Utilities.Models;
 
 public class PersonEntity : Entity
 {
-    [PersonalData] public string Name { get; set; } 
+    [PersonalData] public string Name { get; set; }
 
     [PersonalData] public string Email { get; set; }
 
@@ -32,7 +32,7 @@ public class Location
 
 public record Phone
 {
-    [PersonalData] public string Number { get; set; } 
+    [PersonalData] public string Number { get; set; }
 
     [PersonalData] public string Type { get; set; }
 }

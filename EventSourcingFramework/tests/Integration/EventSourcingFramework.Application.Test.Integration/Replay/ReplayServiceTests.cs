@@ -86,9 +86,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayFromUntilAsync(
             start,
-            DateTime.UtcNow,
-            true,
-            true
+            DateTime.UtcNow
         );
 
         // Assert
@@ -112,9 +110,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayFromUntilEventNumberAsync(
             update.EventNumber,
-            update.EventNumber,
-            true,
-            true
+            update.EventNumber
         );
 
         // Assert
@@ -136,7 +132,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayEntityAsync(entity.Id, true, true);
+        await replayService.ReplayEntityAsync(entity.Id);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -175,7 +171,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await eventStore.InsertEventAsync(new CreateEvent<TestEntity>(entity));
 
         // Act
-        await replayService.ReplayAllAsync(true, true);
+        await replayService.ReplayAllAsync();
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -219,7 +215,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayUntilAsync(cutoff, true, true);
+        await replayService.ReplayUntilAsync(cutoff);
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);
@@ -242,8 +238,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Act
         await replayService.ReplayFromEventNumberAsync(
             update.EventNumber,
-            false,
-            true
+            false
         );
 
         // Assert
@@ -268,8 +263,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayEntityUntilAsync(
             entity.Id,
             until,
-            false,
-            true
+            false
         );
 
         // Assert
@@ -297,9 +291,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await replayService.ReplayEntityFromUntilAsync(
             entity.Id,
             from,
-            DateTime.UtcNow,
-            true,
-            true
+            DateTime.UtcNow
         );
 
         // Assert
@@ -324,9 +316,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
 
         // Act
         await replayService.ReplayUntilEventNumberAsync(
-            stopNumber,
-            true,
-            true
+            stopNumber
         );
 
         // Assert
@@ -356,7 +346,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(legacyEntity.Id);
         Assert.NotNull(result);
         Assert.Equal("Migrated - Entity", result!.Name);
-        Assert.Equal(3, result.SchemaVersion); // migrated to current version
+        Assert.Equal(3, result.SchemaVersion);
     }
 
     [Fact]
@@ -378,7 +368,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(v1.Id);
         Assert.NotNull(result);
-        Assert.Equal("Chain - Test", result.Name); // migrated fully
+        Assert.Equal("Chain - Test", result.Name);
     }
 
     [Fact]
@@ -442,7 +432,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         await entityStore.DeleteEntityAsync(entity);
 
         // Act
-        await replayService.ReplayAllAsync(true, true);
+        await replayService.ReplayAllAsync();
 
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(entity.Id);

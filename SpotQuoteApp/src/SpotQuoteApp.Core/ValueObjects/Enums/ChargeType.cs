@@ -20,8 +20,19 @@ public record ChargeType(string Value) : IComparable
     public static readonly ChargeType BunkerAdjustment = new("Bunker Adjustment (BAF)");
     public static readonly ChargeType CurrencyAdjustment = new("Currency Adjustment (CAF)");
 
-    public override string ToString() => Value;
-    
+    public int CompareTo(object? obj)
+    {
+        if (obj is ChargeType other)
+            return string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        throw new ArgumentException($"Object is not a {nameof(ChargeType)}");
+    }
+
+    public override string ToString()
+    {
+        return Value;
+    }
+
     public static ChargeType FromString(string value)
     {
         return value switch
@@ -43,16 +54,8 @@ public record ChargeType(string Value) : IComparable
             "Dangerous Goods" => DangerousGoods,
             "Bunker Adjustment (BAF)" => BunkerAdjustment,
             "Currency Adjustment (CAF)" => CurrencyAdjustment,
-            _ => throw new ArgumentException($"Invalid charge type: {value}")
+            _ => throw new ArgumentException($"Invalid charge type: {value}"),
         };
-    }
-
-    public int CompareTo(object? obj)
-    {
-        if (obj is ChargeType other)
-            return string.Compare(Value, other.Value, StringComparison.Ordinal);
-
-        throw new ArgumentException($"Object is not a {nameof(ChargeType)}");
     }
 
     public static IReadOnlyCollection<ChargeType> GetByTransportMode(TransportMode mode)

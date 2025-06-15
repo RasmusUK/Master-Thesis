@@ -60,7 +60,7 @@ public class Repository<T> : IRepository<T>
         var eventEmitted = false;
         var snapshot = await entityStore.GetEntityByIdAsync<T>(entity.Id);
 
-        if (snapshot is null)
+        if (snapshot == null)
             throw new NotFoundException(
                 $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
             );
@@ -112,33 +112,56 @@ public class Repository<T> : IRepository<T>
         }
     }
 
-    public Task<T?> ReadByIdAsync(Guid id) => entityStore.GetEntityByIdAsync<T>(id);
+    public Task<T?> ReadByIdAsync(Guid id)
+    {
+        return entityStore.GetEntityByIdAsync<T>(id);
+    }
 
-    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter) => entityStore.GetEntityByFilterAsync(filter);
+    public Task<T?> ReadByFilterAsync(Expression<Func<T, bool>> filter)
+    {
+        return entityStore.GetEntityByFilterAsync(filter);
+    }
 
     public Task<TProjection?> ReadProjectionByIdAsync<TProjection>(
         Guid id,
         Expression<Func<T, TProjection>> projection
-    ) => entityStore.GetProjectionByFilterAsync(x => x.Id == id, projection);
+    )
+    {
+        return entityStore.GetProjectionByFilterAsync(x => x.Id == id, projection);
+    }
 
     public Task<TProjection?> ReadProjectionByFilterAsync<TProjection>(
         Expression<Func<T, bool>> filter,
         Expression<Func<T, TProjection>> projection
-    ) => entityStore.GetProjectionByFilterAsync(filter, projection);
+    )
+    {
+        return entityStore.GetProjectionByFilterAsync(filter, projection);
+    }
 
-    public Task<IReadOnlyCollection<T>> ReadAllAsync() => entityStore.GetAllAsync<T>();
+    public Task<IReadOnlyCollection<T>> ReadAllAsync()
+    {
+        return entityStore.GetAllAsync<T>();
+    }
 
-    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter) =>
-        entityStore.GetAllByFilterAsync(filter);
+    public Task<IReadOnlyCollection<T>> ReadAllByFilterAsync(Expression<Func<T, bool>> filter)
+    {
+        return entityStore.GetAllByFilterAsync(filter);
+    }
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsAsync<TProjection>(
         Expression<Func<T, TProjection>> projection
-    ) => entityStore.GetAllProjectionsAsync(projection);
+    )
+    {
+        return entityStore.GetAllProjectionsAsync(projection);
+    }
 
     public Task<IReadOnlyCollection<TProjection>> ReadAllProjectionsByFilterAsync<TProjection>(
         Expression<Func<T, TProjection>> projection,
         Expression<Func<T, bool>> filter
-    ) => entityStore.GetAllProjectionsByFilterAsync(projection, filter);
+    )
+    {
+        return entityStore.GetAllProjectionsByFilterAsync(projection, filter);
+    }
 
     public virtual async Task CreateAsync(T entity, Guid transactionId)
     {

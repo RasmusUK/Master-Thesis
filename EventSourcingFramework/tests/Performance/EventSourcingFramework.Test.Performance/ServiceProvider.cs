@@ -1,5 +1,4 @@
 using EventSourcingFramework.Infrastructure.DI;
-using EventSourcingFramework.Infrastructure.MongoDb.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -34,7 +33,10 @@ public static class ServiceProvider
             ["MongoDb:DebugEntityStore:DatabaseName"] = "EntityStore_debug",
 
             ["MongoDb:PersonalDataStore:ConnectionString"] = "mongodb://localhost:27018",
-            ["MongoDb:PersonalDataStore:DatabaseName"] = "PersonalDataStore"
+            ["MongoDb:PersonalDataStore:DatabaseName"] = "PersonalDataStore",
+
+            ["MongoDb:ApiResponseStore:ConnectionString"] = "mongodb://localhost:27018",
+            ["MongoDb:ApiResponseStore:DatabaseName"] = "ApiResponseStore"
         };
 
         if (overrides != null)
@@ -48,10 +50,6 @@ public static class ServiceProvider
         var services = new ServiceCollection();
         services.AddEventSourcing(configuration, (schema, migrations, migrator, mongoDbRegistrationService) =>
         {
-            schema.Register(typeof(TestEntity), 1);
-
-            migrations.Register<TestEntity>(1, typeof(TestEntity));
-
             mongoDbRegistrationService.Register(
                 (typeof(TestEntity), "TestEntity")
             );

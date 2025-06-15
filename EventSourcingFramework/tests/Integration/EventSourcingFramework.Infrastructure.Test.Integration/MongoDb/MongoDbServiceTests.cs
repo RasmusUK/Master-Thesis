@@ -75,7 +75,7 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
 
         // Act
         await mongoDbService.UseProductionEntityDatabase();
-        var debugDb = mongoDbService.GetEntityDatabase(false);
+        var debugDb = mongoDbService.GetEntityDatabase();
         var debugCollections = await debugDb.ListCollectionNames().ToListAsync();
 
         // Assert

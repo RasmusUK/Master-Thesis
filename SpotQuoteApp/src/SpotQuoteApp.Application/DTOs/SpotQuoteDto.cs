@@ -20,5 +20,9 @@ public class SpotQuoteDto
     public string InternalComments { get; set; }
     public double TotalWeight { get; set; }
     public double TotalCbm { get; set; }
-    public bool IsDraft() => Quotes.Any(q => q.Status == BookingStatus.Draft);
+
+    public bool IsDraft()
+    {
+        return Quotes.Any(q => q.Status == BookingStatus.Draft);
+    }
 }

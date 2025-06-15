@@ -5,16 +5,16 @@ namespace EventSourcingFramework.Core.Interfaces;
 
 public interface IEntityStore
 {
-    Task InsertEntityAsync<TEntity>(TEntity IEntity)
+    Task InsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity;
 
-    Task UpsertEntityAsync<TEntity>(TEntity IEntity)
+    Task UpsertEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity;
 
-    Task UpdateEntityAsync<TEntity>(TEntity IEntity)
+    Task UpdateEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity;
 
-    Task DeleteEntityAsync<TEntity>(TEntity IEntity)
+    Task DeleteEntityAsync<TEntity>(TEntity entity)
         where TEntity : IEntity;
 
     Task<TEntity?> GetEntityByFilterAsync<TEntity>(Expression<Func<TEntity, bool>> filter)

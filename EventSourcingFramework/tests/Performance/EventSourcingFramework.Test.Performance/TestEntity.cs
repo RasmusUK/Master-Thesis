@@ -27,6 +27,4 @@ public class TestEntity : Entity
     public double Nr8 { get; set; }
     public double Nr9 { get; set; }
     public double Nr10 { get; set; }
-
-    public List<TestEntity> Children { get; set; } = new();
 }

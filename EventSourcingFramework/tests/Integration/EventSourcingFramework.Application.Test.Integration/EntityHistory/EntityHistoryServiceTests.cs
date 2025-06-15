@@ -53,8 +53,8 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
         var entityId = Guid.NewGuid();
         var deleted = new TestEntity { Id = entityId, Name = "Deleted" };
 
-        var MongoDeleteEvent = new DeleteEvent<TestEntity>(deleted);
-        await eventStore.InsertEventAsync(MongoDeleteEvent);
+        var mongoDeleteEvent = new DeleteEvent<TestEntity>(deleted);
+        await eventStore.InsertEventAsync(mongoDeleteEvent);
 
         // Act
         var result = await entityHistoryService.GetEntityHistoryWithEventsAsync<TestEntity>(
@@ -70,8 +70,8 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
         Assert.Equal(deleted.Id, returnedEntity.Id);
 
         // For event
-        Assert.Equal(MongoDeleteEvent.EntityId, returnedEvent.EntityId);
-        Assert.Equal(MongoDeleteEvent.Id, returnedEvent.Id);
-        Assert.Equal(MongoDeleteEvent.GetType(), returnedEvent.GetType());
+        Assert.Equal(mongoDeleteEvent.EntityId, returnedEvent.EntityId);
+        Assert.Equal(mongoDeleteEvent.Id, returnedEvent.Id);
+        Assert.Equal(mongoDeleteEvent.GetType(), returnedEvent.GetType());
     }
 }
