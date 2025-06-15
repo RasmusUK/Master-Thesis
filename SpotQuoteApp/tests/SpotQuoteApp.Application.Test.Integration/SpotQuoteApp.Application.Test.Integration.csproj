@@ -20,23 +20,23 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Update="appsettings.json">
-        <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-      </Content>
+        <Content Update="appsettings.json">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj" />
-      <ProjectReference Include="..\..\src\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj" />
-      <ProjectReference Include="..\..\src\SpotQuoteApp.Web\SpotQuoteApp.Web.csproj" />
+        <ProjectReference Include="..\..\..\EventSourcingFramework\src\EventSourcingFramework.Infrastructure\EventSourcingFramework.Infrastructure.csproj"/>
+        <ProjectReference Include="..\..\src\SpotQuoteApp.Application\SpotQuoteApp.Application.csproj"/>
+        <ProjectReference Include="..\..\src\SpotQuoteApp.Web\SpotQuoteApp.Web.csproj"/>
     </ItemGroup>
-    
+
     <ItemGroup>
-      <None Update="appsettings.json">
-        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      </None>
+        <None Update="appsettings.json">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>

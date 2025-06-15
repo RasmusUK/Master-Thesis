@@ -1,4 +1,3 @@
-using EventSourcingFramework.Application.Abstractions.Replay;
 using EventSourcingFramework.Core.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Interfaces;
 using EventSourcingFramework.Infrastructure.Shared.Models.Events;
@@ -13,17 +12,17 @@ namespace SpotQuoteApp.Web.Startup;
 
 public class Seeder : ISeeder
 {
-    private readonly ICountryFetcher countryFetcher;
-    private readonly IRepository<Customer> customerRepository;
-    private readonly IRepository<SpotQuote> spotQuoteBookingRepository;
-    private readonly IRepository<Country> countryRepository;
-    private readonly IRepository<Address> addressRepository;
-    private readonly IRepository<Location> locationRepository;
-    private readonly IRepository<BuyingRate> buyingRateRepository;
-    private readonly IMongoDbService mongoDbService;
-    private readonly IEventStore eventstore;
-    private readonly IEntityStore entityStore;
     private const int Nr = 10;
+    private readonly IRepository<Address> addressRepository;
+    private readonly IRepository<BuyingRate> buyingRateRepository;
+    private readonly ICountryFetcher countryFetcher;
+    private readonly IRepository<Country> countryRepository;
+    private readonly IRepository<Customer> customerRepository;
+    private readonly IEntityStore entityStore;
+    private readonly IEventStore eventstore;
+    private readonly IRepository<Location> locationRepository;
+    private readonly IMongoDbService mongoDbService;
+    private readonly IRepository<SpotQuote> spotQuoteBookingRepository;
 
     public Seeder(
         ICountryFetcher countryFetcher,
@@ -61,7 +60,10 @@ public class Seeder : ISeeder
         await SeedSpotQuoteBookings();
     }
 
-    private Task DeleteAll() => mongoDbService.CleanUpAsync();
+    private Task DeleteAll()
+    {
+        return mongoDbService.CleanUpAsync();
+    }
 
     private async Task SeedCustomers()
     {
