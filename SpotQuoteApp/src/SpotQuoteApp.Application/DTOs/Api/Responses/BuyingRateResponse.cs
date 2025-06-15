@@ -5,7 +5,7 @@ public class BuyingRateResponse
     public string Supplier { get; set; }
     public string ForwarderService { get; set; }
     public string SupplierService { get; set; }
-    public string CountryFrom { get; set; } 
+    public string CountryFrom { get; set; }
     public string CountryTo { get; set; }
     public string TransportMode { get; set; }
     public double Price { get; set; }
