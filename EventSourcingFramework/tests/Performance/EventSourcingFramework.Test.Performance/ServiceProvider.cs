@@ -34,7 +34,7 @@ public static class ServiceProvider
 
             ["MongoDb:PersonalDataStore:ConnectionString"] = "mongodb://localhost:27018",
             ["MongoDb:PersonalDataStore:DatabaseName"] = "PersonalDataStore",
-                
+
             ["MongoDb:ApiResponseStore:ConnectionString"] = "mongodb://localhost:27018",
             ["MongoDb:ApiResponseStore:DatabaseName"] = "ApiResponseStore"
         };
