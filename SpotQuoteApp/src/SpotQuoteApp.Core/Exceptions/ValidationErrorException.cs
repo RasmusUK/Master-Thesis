@@ -1,3 +1,6 @@
 namespace SpotQuoteApp.Core.Exceptions;
 
-public class ValidationErrorException { }
+public class ValidationErrorException
+{
+    
+}

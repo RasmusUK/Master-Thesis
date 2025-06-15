@@ -8,7 +8,6 @@ public class ShippingDetailsDto
     public string Description { get; set; }
     public string References { get; set; }
     public DateTime? ReadyToLoadDate { get; set; }
-
     public ICollection<BookingProperty> BookingProperties { get; set; } =
         new List<BookingProperty>();
 }

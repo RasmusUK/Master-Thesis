@@ -1,6 +1,7 @@
 using System.Globalization;
 using EventSourcingFramework.Infrastructure.DI;
 using MudBlazor.Services;
+using SpotQuoteApp.Application;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Options;
 using SpotQuoteApp.Application.Services;
@@ -70,7 +71,7 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", true);
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 

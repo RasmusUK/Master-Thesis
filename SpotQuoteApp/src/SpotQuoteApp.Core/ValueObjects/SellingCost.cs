@@ -4,6 +4,13 @@ namespace SpotQuoteApp.Core.ValueObjects;
 
 public record SellingCost : BaseCost
 {
+    public double? MinimumValue { get; }
+    public double? MaximumValue { get; }
+    public double? Profit { get; }
+    public new double Total { get; }
+
+    public string Comment { get; }
+
     public SellingCost(
         ChargeType chargeType,
         CostType costType,
@@ -23,13 +30,6 @@ public record SellingCost : BaseCost
         Profit = profit;
         Total = CalculateTotal(value, weight, cbm, minimumValue, maximumValue, profit, costType);
     }
-
-    public double? MinimumValue { get; }
-    public double? MaximumValue { get; }
-    public double? Profit { get; }
-    public new double Total { get; }
-
-    public string Comment { get; }
 
     public static double CalculateTotal(
         double value,
@@ -55,7 +55,7 @@ public record SellingCost : BaseCost
 
         var min = minimumValue.GetValueOrDefault() == 0 ? null : minimumValue;
         var max = maximumValue.GetValueOrDefault() == 0 ? null : maximumValue;
-        var total = CalculateTotal(value, weight, cbm, costType) + calculatedProfit;
+        var total = BaseCost.CalculateTotal(value, weight, cbm, costType) + calculatedProfit;
 
         if (min is null && max is null)
             return total;

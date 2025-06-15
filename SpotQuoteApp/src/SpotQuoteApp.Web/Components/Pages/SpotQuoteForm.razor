@@ -1,12 +1,12 @@
 @page "/spot-quotes/create"
 @page "/spot-quotes/edit/{Id:guid}"
+@using Direction = SpotQuoteApp.Core.ValueObjects.Enums.Direction
+@using System.Collections.ObjectModel
+@using SpotQuoteApp.Application.DTOs
+@using SpotQuoteApp.Application.Interfaces
 @using SpotQuoteApp.Application.Mappers
 @using SpotQuoteApp.Core.ValueObjects
 @using SpotQuoteApp.Core.ValueObjects.Enums
-@using SpotQuoteApp.Application.DTOs
-@using SpotQuoteApp.Application.Interfaces
-@using System.Collections.ObjectModel
-@using Direction = SpotQuoteApp.Core.ValueObjects.Enums.Direction
 @inject ICustomerService CustomerService
 @inject ICountryService CountryService
 @inject IAddressService AddressService
@@ -27,7 +27,7 @@
 <MudStepper OnPreviewInteraction="OnPreviewInteraction" @bind-ActiveIndex="index">
 <ChildContent>
 <MudStep Title="General info">
-    <MudForm @ref="form1">
+    <MudForm @ref=form1>
         <MudStack>
             <MudCard>
                 <MudCardHeader>
@@ -64,7 +64,7 @@
                                              Clearable="true"
                                              MaxItems="100"
                                              Required="true"
-                                             SearchFunc="@SearchCustomers"
+                                             SearchFunc="@SearchCustomers" 
                                              ToStringFunc="@(c => c?.Name ?? "")"/>
                         </MudItem>
                         <MudItem xs="3">
@@ -89,13 +89,13 @@
                          Countries="countries"
                          Addresses="addresses"/>
         </MudStack>
-    </MudForm>
+    </MudForm>    
 </MudStep>
-
+    
 <MudStep Title="Shipping details" SecondaryText="@($"{collis.Sum(x => x.NumberOfUnits)} unit(s) / {model.TotalWeight} kg / {model.TotalCbm} m3")">
     <MudStack>
-        <MudDataGrid T="ColliDto" Items="collis" ReadOnly="false" Bordered="true" Dense="true"
-                     EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick"
+        <MudDataGrid T="ColliDto" Items="collis" ReadOnly="false" Bordered="true" Dense="true" 
+                     EditMode="DataGridEditMode.Cell" EditTrigger="DataGridEditTrigger.OnRowClick" 
                      CanceledEditingItem="@ShippingDetailsEdit" CommittedItemChanges="@ShippingDetailsEdit">
             <Columns>
                 <PropertyColumn Property="x => x.NumberOfUnits" Title="No. of units" AggregateDefinition="@nrOfCollisAggregateDefinition"/>
@@ -148,11 +148,11 @@
             </MudCardContent>
         </MudCard>
     </MudStack>
-
+        
 </MudStep>
 <MudStep Title="Buying rates">
     <MudStack>
-
+        
         <MudGrid>
             <MudItem xs="3">
                 <MudSelect Value="SearchBuyingRatesSupplier"
@@ -192,13 +192,13 @@
                 </MudSelect>
             </MudItem>
             <MudItem xs="1">
-                <MudButton OnClick="@(SearchBuyingRates)" Variant="Variant.Filled"
+                <MudButton OnClick="@(SearchBuyingRates)" Variant="Variant.Filled" 
                            Disabled="SearchBuyingRatesSupplierService == null">
                     Search
                 </MudButton>
             </MudItem>
             <MudItem xs="2">
-                <MudButton Variant="Variant.Filled" Color="Color.Success"
+                <MudButton Variant="Variant.Filled" Color="Color.Success" 
                            Disabled="selectedBuyingRates.Count() == 0"
                            OnClick="@(AddBuyingRatesToQuote)">
                     Add to quote
@@ -261,7 +261,7 @@
                                            Label="Supplier"
                                            Clearable="true"
                                            Dense="true"
-                                           ValueChanged="@(Supplier newValue) => OnSupplierChanged(newValue, quote)">
+                                           ValueChanged="@((Supplier newValue) => OnSupplierChanged(newValue, quote))">
                                     @foreach (var supplier in ForwarderService.GetSuppliersByTransportMode(model.TransportMode))
                                     {
                                         <MudSelectItem Value="@supplier">@supplier</MudSelectItem>
@@ -274,7 +274,7 @@
                                            Clearable="true"
                                            Dense="true"
                                            Disabled="quote.Supplier == null"
-                                           ValueChanged="@(ForwarderService newValue) => OnForwarderServiceChanged(newValue, quote)">
+                                           ValueChanged="@((ForwarderService newValue) => OnForwarderServiceChanged(newValue, quote))">
                                     @foreach (var forwarderService in ForwarderService.GetBySupplier(quote.Supplier))
                                     {
                                         <MudSelectItem Value="@forwarderService">@forwarderService</MudSelectItem>
@@ -335,7 +335,7 @@
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SupplierCost.CostType" Title="Cost">
                                     <EditTemplate>
-                                        <MudSelect T="CostType" Value="@context.Item.SupplierCost.CostType" ValueChanged="@newValue => OnSupplierCostTypeChanged(newValue, context)">
+                                        <MudSelect T="CostType" Value="@context.Item.SupplierCost.CostType" ValueChanged="@(newValue => OnSupplierCostTypeChanged(newValue, context))">
                                             @foreach (var item in CostType.GetAll())
                                             {
                                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -357,7 +357,7 @@
                                 </PropertyColumn>
                                 <PropertyColumn Property="x => x.SellingCost.CostType" Title="Cost">
                                     <EditTemplate>
-                                        <MudSelect T="CostType" Value="@context.Item.SellingCost.CostType" ValueChanged="@newValue => OnSellingCostTypeChanged(newValue, context)">
+                                        <MudSelect T="CostType" Value="@context.Item.SellingCost.CostType" ValueChanged="@(newValue => OnSellingCostTypeChanged(newValue, context))">
                                             @foreach (var item in CostType.GetAll())
                                             {
                                                 <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -376,7 +376,7 @@
                                         <MudIconButton OnClick="@(() => AddCost(quote))" Icon="@Icons.Material.Outlined.Add" Color="Color.Success"/>
                                     </HeaderTemplate>
                                     <EditTemplate>
-                                        <MudIconButton OnClick="@() => RemoveCost(context.Item, quote)" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
+                                        <MudIconButton OnClick="@(() => RemoveCost(context.Item, quote))" Icon="@Icons.Material.Outlined.Delete" Color="Color.Error"/>
                                     </EditTemplate>
                                 </TemplateColumn>
                             </Columns>
@@ -471,13 +471,9 @@
 }
 
 @code {
-
-    [Inject]
+    [Inject] 
     IDialogService DialogService { get; set; }
-
-    [Parameter]
-    public Guid? Id { get; set; }
-
+    [Parameter] public Guid? Id { get; set; }
     ObservableCollection<ColliDto> collis = new();
 
     private SpotQuoteDto model = new()
@@ -486,7 +482,6 @@
         AddressTo = new AddressDto(),
         ShippingDetails = new ShippingDetailsDto()
     };
-
     private IEnumerable<CustomerDto> customers = new List<CustomerDto>();
     private IEnumerable<CountryDto> countries = new List<CountryDto>();
     private IEnumerable<AddressDto> addresses = new List<AddressDto>();
@@ -502,7 +497,7 @@
     private SupplierService? SearchBuyingRatesSupplierService;
     private Supplier? SearchBuyingRatesSupplier;
     private ForwarderService? SearchBuyingRatesForwarderService;
-
+    
     protected override async Task OnInitializedAsync()
     {
         customers = await CustomerService.GetAllCustomersAsync();
@@ -521,53 +516,39 @@
         model.Direction ??= Direction.Import;
         selectedBookingProperties = model.ShippingDetails.BookingProperties.ToList();
     }
+    
+    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string value, CancellationToken cancellationToken) => 
+        string.IsNullOrEmpty(value) ? 
+            customers : 
+            customers.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase)); 
 
-    private async Task<IEnumerable<CustomerDto>> SearchCustomers(string value, CancellationToken cancellationToken)
-    {
-        return string.IsNullOrEmpty(value) ?
-            customers :
-            customers.Where(x => x.Name.Contains(value, StringComparison.InvariantCultureIgnoreCase));
-    }
+    private void AddColli() => collis.Add(new ColliDto{ NumberOfUnits = 1 });
+    
+    private void RemoveColli(ColliDto colli) => collis.Remove(colli);
 
-    private void AddColli()
+    private void AddCost(QuoteDto quote) => quote.Costs.Add(new CostDto
     {
-        collis.Add(new ColliDto { NumberOfUnits = 1 });
-    }
-
-    private void RemoveColli(ColliDto colli)
-    {
-        collis.Remove(colli);
-    }
-
-    private void AddCost(QuoteDto quote)
-    {
-        quote.Costs.Add(new CostDto
+        SellingCost = new SellingCostDto
         {
-            SellingCost = new SellingCostDto
-            {
-                Cbm = model.TotalCbm,
-                Weight = model.TotalWeight
-            },
-            SupplierCost = new SupplierCostDto
-            {
-                Cbm = model.TotalCbm,
-                Weight = model.TotalWeight
-            }
-        });
-    }
-
-    private void RemoveCost(CostDto cost, QuoteDto quote)
-    {
-        quote.Costs.Remove(cost);
-    }
-
-    private readonly AggregateDefinition<ColliDto> nrOfCollisAggregateDefinition = new()
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        },
+        SupplierCost = new SupplierCostDto
+        {
+            Cbm = model.TotalCbm,
+            Weight = model.TotalWeight,
+        }
+    });
+    
+    private void RemoveCost(CostDto cost, QuoteDto quote) => quote.Costs.Remove(cost);
+    
+    private AggregateDefinition<ColliDto> nrOfCollisAggregateDefinition = new()
     {
         Type = AggregateType.Sum,
         DisplayFormat = "Totals: {value}"
     };
-
-    private readonly AggregateDefinition<ColliDto> sumCbmAggregrateDefinition = new()
+    
+    private AggregateDefinition<ColliDto> sumCbmAggregrateDefinition = new()
     {
         Type = AggregateType.Custom,
         CustomAggregate = x =>
@@ -576,8 +557,8 @@
             return $"{totalCbm}";
         }
     };
-
-    private readonly AggregateDefinition<ColliDto> sumWeightAggregrateDefinition = new()
+    
+    private AggregateDefinition<ColliDto> sumWeightAggregrateDefinition = new()
     {
         Type = AggregateType.Custom,
         CustomAggregate = x =>
@@ -586,7 +567,7 @@
             return $"{totalWeight}";
         }
     };
-
+    
     private void OnBookingPropertiesChanged(IEnumerable<BookingProperty> newValues)
     {
         selectedBookingProperties = newValues.ToList();
@@ -631,22 +612,22 @@
             quote.TotalPrice = totalPrice;
             quote.TotalProfit = totalProfit;
         }
-        StateHasChanged();
+        StateHasChanged();  
     }
-
+    
     private void OnSearchBuyringRatesSupplierChanged(Supplier newSupplier)
     {
         SearchBuyingRatesSupplier = newSupplier;
         SearchBuyingRatesForwarderService = null;
         SearchBuyingRatesSupplierService = null;
     }
-
+    
     private void OnSearchBuyringRatesForwarderServiceChanged(ForwarderService newService)
     {
         SearchBuyingRatesForwarderService = newService;
         SearchBuyingRatesSupplierService = null;
     }
-
+    
     private void OnSupplierChanged(Supplier newSupplier, QuoteDto quote)
     {
         quote.Supplier = newSupplier;
@@ -672,20 +653,19 @@
             Profit = new ProfitDto()
         });
     }
-
+    
     private async Task OnPreviewInteraction(StepperInteractionEventArgs arg)
     {
-        if (arg.Action == StepAction.Complete)
+        if (arg.Action == StepAction.Complete) 
             await ControlStepCompletion(arg);
     }
-
+    
     private async Task ControlStepCompletion(StepperInteractionEventArgs arg)
     {
-        switch (arg.StepIndex)
-        {
+        switch (arg.StepIndex) {
             case 0:
                 await form1.Validate();
-                if (!form1.IsValid)
+                if (!form1.IsValid) 
                 {
                     await DialogService.ShowMessageBox("Error", "You have not filled in all required fields in step 1");
                     arg.Cancel = true;
@@ -696,7 +676,7 @@
                 break;
         }
     }
-
+    
     private async Task Save(BookingStatus status)
     {
         try
@@ -708,6 +688,7 @@
                     quote.Status = status;
                 }
                 await SpotQuoteService.CreateSpotQuoteAsync(model);
+
             }
             else
             {
@@ -716,11 +697,11 @@
                     if (quote.Status != BookingStatus.Draft)
                         quote.Status = BookingStatus.Requote;
                 }
-
+                
                 await SpotQuoteService.UpdateSpotQuoteAsync(model);
             }
-
-            Navigation.NavigateTo("/spot-quotes", true);
+                
+            Navigation.NavigateTo("/spot-quotes", forceLoad: true);
         }
         catch (Exception e)
         {
@@ -728,7 +709,7 @@
             ShowErrorAlert(true);
         }
     }
-
+    
     private void ShowErrorAlert(bool value)
     {
         showErrorAlert = value;
@@ -737,15 +718,15 @@
 
     private async Task SearchBuyingRates()
     {
-        buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo,
-            model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!,
+        buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo, 
+            model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!, 
             SearchBuyingRatesForwarderService!);
     }
 
     private async Task AddBuyingRatesToQuote()
     {
-        var quotesWithServices = model.Quotes.Where(q =>
-            q.SupplierService == SearchBuyingRatesSupplierService &&
+        var quotesWithServices = model.Quotes.Where(q => 
+            q.SupplierService == SearchBuyingRatesSupplierService && 
             q.Supplier == SearchBuyingRatesSupplier).ToList();
 
         if (!quotesWithServices.Any())
@@ -755,13 +736,13 @@
                 Profit = new ProfitDto(),
                 SupplierService = SearchBuyingRatesSupplierService!,
                 Supplier = SearchBuyingRatesSupplier!,
-                ForwarderService = SearchBuyingRatesForwarderService!
+                ForwarderService = SearchBuyingRatesForwarderService!,
             };
-
+            
             model.Quotes.Add(quote);
-            quotesWithServices.Add(quote);
+            quotesWithServices.Add(quote);            
         }
-
+        
         foreach (var quote in quotesWithServices)
         {
             foreach (var selectedBuyingRate in selectedBuyingRates)
@@ -774,17 +755,17 @@
                         CostType = selectedBuyingRate.SupplierCost.CostType,
                         Cbm = model.TotalCbm,
                         Weight = model.TotalWeight,
-                        Value = selectedBuyingRate.SupplierCost.Value
+                        Value = selectedBuyingRate.SupplierCost.Value,
                     },
                     SellingCost = new SellingCostDto
                     {
                         Cbm = model.TotalCbm,
-                        Weight = model.TotalWeight
+                        Weight = model.TotalWeight,
                     }
                 };
                 quote.Costs.Add(cost);
                 CostEdit(cost);
-            }
+            }    
         }
     }
 
@@ -792,17 +773,16 @@
     {
         selectedBuyingRates = items;
     }
-
+    
     private void OnSupplierCostTypeChanged(CostType newValue, CellContext<CostDto> context)
     {
         context.Item.SupplierCost.CostType = newValue;
         CostEdit(context.Item);
     }
-
+    
     private void OnSellingCostTypeChanged(CostType newValue, CellContext<CostDto> context)
     {
         context.Item.SellingCost.CostType = newValue;
         CostEdit(context.Item);
     }
-
 }

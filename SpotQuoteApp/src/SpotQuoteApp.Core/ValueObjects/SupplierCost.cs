@@ -18,8 +18,5 @@ public record SupplierCost : BaseCost
         double weight,
         double cbm,
         CostType costType
-    )
-    {
-        return BaseCost.CalculateTotal(value, weight, cbm, costType);
-    }
+    ) => BaseCost.CalculateTotal(value, weight, cbm, costType);
 }

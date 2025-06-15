@@ -18,7 +18,7 @@
 <MudDataGrid T="SpotQuoteDto" Items="@spotQuotes" Loading="@loading" Dense="true" Striped="true"
              SortMode="SortMode.Single">
     <Columns>
-        <HierarchyColumn T="SpotQuoteDto" InitiallyExpandedFunc="@(_ => false)" EnableHeaderToggle="true"/>
+        <HierarchyColumn T="SpotQuoteDto" InitiallyExpandedFunc="@(_ => false)" EnableHeaderToggle="true" />
         <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
         <PropertyColumn Property="x => x.CreatedAt" Title="Created Time" Filterable="false">
             <CellTemplate>
@@ -69,7 +69,7 @@
         spotQuotes = (await SpotQuoteService.GetAllSpotQuotesAsync()).OrderByDescending(s => s.CreatedAt);
         loading = false;
     }
-
+    
     private void CreateNew()
     {
         Navigation.NavigateTo("/spot-quotes/create");
@@ -82,7 +82,7 @@
             Snackbar.Add("Cannot accept draft quote", Severity.Error);
             return;
         }
-
+        
         quote.Status = BookingStatus.Accepted;
         StateHasChanged();
     }
@@ -92,10 +92,9 @@
         quote.Status = BookingStatus.NotAccepted;
         StateHasChanged();
     }
-
+    
     private void Requote(SpotQuoteDto spotQuote)
     {
         Navigation.NavigateTo($"/spot-quotes/edit/{spotQuote.Id}");
     }
-
 }

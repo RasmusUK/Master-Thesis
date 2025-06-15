@@ -7,18 +7,16 @@
 
 <PageTitle>Customers</PageTitle>
 <MudStack Row="true" Justify="Justify.SpaceBetween" Class="pt-5 pb-5">
-    <MudText Typo="Typo.h5">Customers</MudText>
-    <MudButton Class="mt-2 mb-4" Variant="Variant.Filled" Color="Color.Primary"
-               StartIcon="@Icons.Material.Filled.Add"
-               OnClick="OpenAddCustomerDialog">
-        Add Customer
-    </MudButton>
+   <MudText Typo="Typo.h5">Customers</MudText>
+    <MudButton Class="mt-2 mb-4" Variant="Variant.Filled" Color="Color.Primary" 
+               StartIcon="@Icons.Material.Filled.Add"  
+               OnClick="OpenAddCustomerDialog">Add Customer</MudButton>
 </MudStack>
 
 <MudPaper Class="p-4">
     @if (customers == null)
     {
-        <MudProgressCircular Indeterminate Color="Color.Primary"/>
+        <MudProgressCircular Indeterminate Color="Color.Primary" />
     }
     else
     {
@@ -45,16 +43,12 @@
                             </MudTd>
                         </RowTemplate>
                     </MudTable>
-
+                
                     <MudStack Row="true" Justify="Justify.SpaceBetween">
-                        <MudButton Class="mt-3" Variant="Variant.Filled" Color="Color.Primary"
-                                   OnClick="() => OpenAddUserDialog(customer.Id)">
-                            Add User
-                        </MudButton>
-                        <MudButton Class="mt-4" Variant="Variant.Outlined" Color="Color.Error"
-                                   OnClick="() => DeleteCustomerAsync(customer.Id)">
-                            Delete Customer
-                        </MudButton>
+                        <MudButton Class="mt-3" Variant="Variant.Filled" Color="Color.Primary" 
+                                   OnClick="() => OpenAddUserDialog(customer.Id)">Add User</MudButton>
+                        <MudButton Class="mt-4" Variant="Variant.Outlined" Color="Color.Error" 
+                                   OnClick="() => DeleteCustomerAsync(customer.Id)">Delete Customer</MudButton>
                     </MudStack>
                 </MudExpansionPanel>
             }
@@ -147,8 +141,7 @@
 
     private async Task OpenAddCustomerDialog()
     {
-        var dialog = await DialogService.ShowAsync<AddCustomerDialog>("Add Customer", new DialogOptions
-        {
+        var dialog = await DialogService.ShowAsync<AddCustomerDialog>("Add Customer", new DialogOptions{
             MaxWidth = MaxWidth.Small,
             FullWidth = true
         });
@@ -162,8 +155,7 @@
 
     private async Task OpenAddUserDialog(Guid customerId)
     {
-        var dialog = await DialogService.ShowAsync<AddUserDialog>("Add User", new DialogOptions
-        {
+        var dialog = await DialogService.ShowAsync<AddUserDialog>("Add User", new DialogOptions{
             MaxWidth = MaxWidth.Small,
             FullWidth = true
         });
@@ -174,11 +166,10 @@
         }
         StateHasChanged();
     }
-
+    
     private void ShowErrorAlert(bool value)
     {
         showErrorAlert = value;
         StateHasChanged();
     }
-
 }

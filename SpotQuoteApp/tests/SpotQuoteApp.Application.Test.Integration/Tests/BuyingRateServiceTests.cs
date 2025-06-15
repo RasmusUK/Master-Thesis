@@ -9,10 +9,10 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class BuyingRateServiceTests : IAsyncLifetime
 {
-    private readonly IRepository<BuyingRate> buyingRateRepository;
     private readonly IBuyingRateService buyingRateService;
-    private readonly EntityFactory entityFactory;
+    private readonly IRepository<BuyingRate> buyingRateRepository;
     private readonly IRepository<Location> locationRepository;
+    private readonly EntityFactory entityFactory;
 
     public BuyingRateServiceTests(
         IBuyingRateService buyingRateService,
@@ -27,10 +27,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
         this.entityFactory = entityFactory;
     }
 
-    public Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
@@ -44,7 +41,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpsertBuyingRates_Should_Insert_New_Rate()
+    public async Task UpsertBuyingRatesAsync_Should_Insert_New_Rate()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();
@@ -59,7 +56,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpsertBuyingRates_Should_Update_If_Newer_ValidUntil()
+    public async Task UpsertBuyingRatesAsync_Should_Update_If_Newer_ValidUntil()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();
@@ -76,7 +73,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SearchBuyingRates_Should_Return_Stored_Rate()
+    public async Task SearchBuyingRatesAsync_Should_Return_Stored_Rate()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();
@@ -109,7 +106,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SearchBuyingRates_Should_Return_No_Stored_Rates_If_No_Match()
+    public async Task SearchBuyingRatesAsync_Should_Return_No_Stored_Rates_If_No_Match()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();
@@ -156,7 +153,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpsertBuyingRates_And_SearchBuyingRates_With_Air_TransportMode()
+    public async Task UpsertBuyingRatesAsync_And_SearchBuyingRatesAsync_With_Air_TransportMode()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();
@@ -186,7 +183,7 @@ public class BuyingRateServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpsertBuyingRates_And_SearchBuyingRates_With_Sea_TransportMode()
+    public async Task UpsertBuyingRatesAsync_And_SearchBuyingRatesAsync_With_Sea_TransportMode()
     {
         // Arrange
         var spotQuote = entityFactory.CreateValidSpotQuote();

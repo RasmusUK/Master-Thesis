@@ -1,17 +1,19 @@
-﻿@using EventSourcingFramework.Application.Abstractions.ReplayContext
+﻿@using global::EventSourcingFramework.Core
+@using EventSourcingFramework.Application.Abstractions
+@using EventSourcingFramework.Application.Abstractions.ReplayContext
 @using EventSourcingFramework.Core.Enums
 @inherits LayoutComponentBase
 @inject IReplayContext ReplayContext
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode"/>
-<MudPopoverProvider/>
-<MudDialogProvider/>
-<MudSnackbarProvider/>
+<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
 <MudLayout>
     <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(e => DrawerToggle())"/>
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudText Typo="Typo.h5" Class="ml-3">Spot Quotes App</MudText>
-        <MudSpacer/>
+        <MudSpacer />
         @if (ReplayContext.IsReplaying)
         {
             <MudText Color="Color.Warning">
@@ -22,10 +24,11 @@
                     ReplayMode.Debug => "Debug",
                     _ => "Unknown"})
             </MudText>
+
         }
     </MudAppBar>
     <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2" Variant="@DrawerVariant.Mini" OpenMiniOnHover="true">
-        <NavMenu/>
+        <NavMenu />
     </MudDrawer>
     <MudMainContent Class="pt-16 pa-4">
         @Body
@@ -40,15 +43,15 @@
 </div>
 
 @code {
-    private bool _drawerOpen;
-    private bool _isDarkMode;
-    private MudTheme? _theme;
+    private bool _drawerOpen = false;
+    private bool _isDarkMode = false;
+    private MudTheme? _theme = null;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        _theme = new MudTheme
+        _theme = new()
         {
             PaletteLight = _lightPalette,
             PaletteDark = _darkPalette,
@@ -73,7 +76,7 @@
         AppbarBackground = "rgba(255,255,255,0.8)",
         DrawerBackground = "#ffffff",
         GrayLight = "#e8e8e8",
-        GrayLighter = "#f9f9f9"
+        GrayLighter = "#f9f9f9",
     };
 
     private readonly PaletteDark _darkPalette = new()
@@ -102,13 +105,14 @@
         LinesDefault = "#33323e",
         TableLines = "#33323e",
         Divider = "#292838",
-        OverlayLight = "#1e1e2d80"
+        OverlayLight = "#1e1e2d80",
     };
 
     public string DarkLightModeButtonIcon => _isDarkMode switch
     {
         true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode
-        };
-
+        false => Icons.Material.Outlined.DarkMode,
+    };
 }
+
+

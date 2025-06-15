@@ -9,11 +9,11 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class CustomerServiceTests : IAsyncLifetime
 {
-    private readonly IRepository<Customer> customerRepository;
     private readonly ICustomerService customerService;
-    private readonly EntityFactory entityFactory;
-    private readonly IRepository<SpotQuote> spotQuoteRepository;
+    private readonly IRepository<Customer> customerRepository;
     private readonly ISpotQuoteService spotQuoteService;
+    private readonly IRepository<SpotQuote> spotQuoteRepository;
+    private readonly EntityFactory entityFactory;
 
     public CustomerServiceTests(
         ICustomerService customerService,
@@ -30,10 +30,7 @@ public class CustomerServiceTests : IAsyncLifetime
         this.entityFactory = entityFactory;
     }
 
-    public Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
@@ -47,7 +44,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddCustomer_Then_GetCustomerById_Returns_Correct_Data()
+    public async Task AddCustomerAsync_Then_GetCustomerByIdAsync_Returns_Correct_Data()
     {
         // Arrange
         var dto = EntityFactory.CreateCustomerDto("Customer");
@@ -62,7 +59,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAllCustomers_Returns_Customers()
+    public async Task GetAllCustomersAsync_Returns_Customers()
     {
         // Arrange
         await customerService.AddCustomerAsync(EntityFactory.CreateCustomerDto("A"));
@@ -76,7 +73,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteCustomer_Succeeds_When_No_SpotQuotes()
+    public async Task DeleteCustomerAsync_Succeeds_When_No_SpotQuotes()
     {
         // Arrange
         var dto = EntityFactory.CreateCustomerDto("ToDelete");
@@ -91,7 +88,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteCustomer_Throws_If_SpotQuotes_Exist()
+    public async Task DeleteCustomerAsync_Throws_If_SpotQuotes_Exist()
     {
         // Arrange
         var dto = EntityFactory.CreateCustomerDto("HasQuotes");
@@ -108,7 +105,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddUser_Adds_User_To_Customer()
+    public async Task AddUserAsync_Adds_User_To_Customer()
     {
         // Arrange
         var customer = EntityFactory.CreateCustomerDto("WithUser");
@@ -130,7 +127,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUser_Removes_User_If_No_Quotes()
+    public async Task DeleteUserAsync_Removes_User_If_No_Quotes()
     {
         // Arrange
         var customer = EntityFactory.CreateCustomerDto("RemoveUser");
@@ -152,7 +149,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUser_Throws_If_User_Is_Used_In_SpotQuote()
+    public async Task DeleteUserAsync_Throws_If_User_Is_Used_In_SpotQuote()
     {
         // Arrange
         var customer = EntityFactory.CreateCustomerDto("BlockedDelete");
@@ -178,7 +175,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUser_Throws_If_User_Not_Found()
+    public async Task DeleteUserAsync_Throws_If_User_Not_Found()
     {
         // Arrange
         var customer = EntityFactory.CreateCustomerDto("NoSuchUser");
@@ -193,7 +190,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task AddUser_Throws_If_Customer_Not_Found()
+    public async Task AddUserAsync_Throws_If_Customer_Not_Found()
     {
         // Arrange
         var nonExistentCustomerId = Guid.NewGuid();
@@ -213,7 +210,7 @@ public class CustomerServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DeleteUser_Throws_If_Customer_Not_Found()
+    public async Task DeleteUserAsync_Throws_If_Customer_Not_Found()
     {
         // Arrange
         var nonExistentCustomerId = Guid.NewGuid();

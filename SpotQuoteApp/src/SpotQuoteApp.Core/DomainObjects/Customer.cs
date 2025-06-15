@@ -1,3 +1,4 @@
+using EventSourcingFramework.Core.Attributes;
 using EventSourcingFramework.Core.Models.Entity;
 using SpotQuoteApp.Core.ValueObjects;
 

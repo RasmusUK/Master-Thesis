@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj"/>
+      <ProjectReference Include="..\SpotQuoteApp.Core\SpotQuoteApp.Core.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="EventSourcing.CRUD.Infrastructure.Repositories" Version="1.0.1"/>
+      <PackageReference Include="EventSourcing.CRUD.Infrastructure.Repositories" Version="1.0.1" />
     </ItemGroup>
 
 </Project>

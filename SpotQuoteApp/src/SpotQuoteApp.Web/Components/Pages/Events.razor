@@ -1,6 +1,6 @@
 @page "/events"
+@using global::EventSourcingFramework.Core.Interfaces
 @using EventSourcingFramework.Core.Models.Events
-@using EventSourcingFramework.Core.Interfaces
 @inject IEventStore EventStore
 @inject NavigationManager Navigation
 
@@ -9,11 +9,11 @@
 <MudStack>
     <MudGrid Class="d-flex align-center">
         <MudItem xs="4">
-            <MudDateRangePicker @bind-DateRange="dateRange" DateFormat="dd/MM/yyyy HH:mm"
+            <MudDateRangePicker @bind-DateRange="dateRange" DateFormat="dd/MM/yyyy HH:mm" 
                                 Placeholder="dd/mm/yy hh:mm" Variant="Variant.Filled"/>
         </MudItem>
         <MudItem xs="4">
-            <MudTextField T="Guid?" Label="Entity id" Variant="Variant.Filled" Clearable="true"
+            <MudTextField T="Guid?" Label="Entity id" Variant="Variant.Filled" Clearable="true" 
                           @bind-Value="entityId"/>
         </MudItem>
         <MudItem xs="2">
@@ -27,8 +27,8 @@
             </MudButton>
         </MudItem>
     </MudGrid>
-
-    <MudDataGrid T="IEvent" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true"
+    
+    <MudDataGrid T="IEvent" Items="@events" RowClick="OnRowClick" Loading="@loading" SortMode="SortMode.Single" Filterable="true" 
                  FilterMode="@DataGridFilterMode.ColumnFilterRow" FilterCaseSensitivity="DataGridFilterCaseSensitivity.CaseInsensitive">
         <Columns>
             <PropertyColumn Property="x => x.Id" Title="Id" Filterable="false"/>
@@ -51,12 +51,11 @@
     private bool loading = true;
     private Guid? entityId;
     private DateRange dateRange = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
-
     protected override async Task OnInitializedAsync()
     {
         await Search();
     }
-
+    
     private void OnRowClick(DataGridRowClickEventArgs<IEvent> e)
     {
         Navigation.NavigateTo($"/events/{e.Item.Id}");
@@ -75,8 +74,7 @@
 
     private void Clear()
     {
-        dateRange = new DateRange(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
+        dateRange = new(DateTime.UtcNow.AddDays(-1), DateTime.UtcNow);
         entityId = null;
     }
-
 }

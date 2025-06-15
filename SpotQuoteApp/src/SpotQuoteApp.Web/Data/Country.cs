@@ -10,8 +10,5 @@ public class Country
     [JsonProperty("alpha-2")]
     public string Code { get; set; }
 
-    public override string ToString()
-    {
-        return $"{Code} - {Name}";
-    }
+    public override string ToString() => $"{Code} - {Name}";
 }

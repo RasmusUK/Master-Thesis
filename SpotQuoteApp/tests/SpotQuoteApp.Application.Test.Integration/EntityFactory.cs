@@ -9,8 +9,8 @@ namespace SpotQuoteApp.Application.Test.Integration;
 
 public class EntityFactory
 {
-    private readonly IRepository<Country> countryRepository;
     private readonly IRepository<Customer> customerRepository;
+    private readonly IRepository<Country> countryRepository;
 
     public EntityFactory(
         IRepository<Customer> customerRepository,

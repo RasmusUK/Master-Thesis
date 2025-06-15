@@ -9,9 +9,9 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class LocationServiceTests : IAsyncLifetime
 {
-    private readonly IRepository<Country> countryRepository;
-    private readonly IRepository<Location> locationRepository;
     private readonly ILocationService locationService;
+    private readonly IRepository<Location> locationRepository;
+    private readonly IRepository<Country> countryRepository;
 
     public LocationServiceTests(
         ILocationService locationService,
@@ -41,7 +41,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateLocationIfNotExists_Should_Create_New_Location()
+    public async Task CreateLocationIfNotExistsAsync_Should_Create_New_Location()
     {
         // Arrange
         var code = "1000";
@@ -60,7 +60,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateLocationIfNotExists_Should_Return_Existing_If_Found()
+    public async Task CreateLocationIfNotExistsAsync_Should_Return_Existing_If_Found()
     {
         // Arrange
         var code = "2000";
@@ -83,7 +83,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateLocationIfNotExists_Throws_If_Country_Not_Found()
+    public async Task CreateLocationIfNotExistsAsync_Throws_If_Country_Not_Found()
     {
         // Act & Assert
         var ex = await Assert.ThrowsAsync<NotFoundException>(
@@ -100,7 +100,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SearchLocationId_Returns_LocationDto_If_Found()
+    public async Task SearchLocationIdAsync_Returns_LocationDto_If_Found()
     {
         // Arrange
         var country = await countryRepository.ReadByFilterAsync(c => c.Code == "DK");
@@ -118,7 +118,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SearchLocationId_Returns_Null_If_Location_Not_Found()
+    public async Task SearchLocationIdAsync_Returns_Null_If_Location_Not_Found()
     {
         // Act
         var dto = await locationService.SearchLocationIdAsync("9999", "DK", LocationType.ZipCode);
@@ -128,7 +128,7 @@ public class LocationServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task SearchLocationId_Returns_Null_If_Country_Not_Found()
+    public async Task SearchLocationIdAsync_Returns_Null_If_Country_Not_Found()
     {
         // Act
         var dto = await locationService.SearchLocationIdAsync("1000", "XX", LocationType.ZipCode);

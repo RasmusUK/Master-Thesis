@@ -18,17 +18,14 @@ public record ColliType(string Value) : IComparable
     public static readonly ColliType Tank = new("Tank");
     public static readonly ColliType Tray = new("Tray");
 
+    public override string ToString() => Value;
+
     public int CompareTo(object? obj)
     {
         if (obj is ColliType other)
             return string.Compare(Value, other.Value, StringComparison.Ordinal);
 
         throw new ArgumentException($"Object is not a {nameof(ColliType)}");
-    }
-
-    public override string ToString()
-    {
-        return Value;
     }
 
     public static IReadOnlyCollection<ColliType> GetByTransportMode(TransportMode mode)

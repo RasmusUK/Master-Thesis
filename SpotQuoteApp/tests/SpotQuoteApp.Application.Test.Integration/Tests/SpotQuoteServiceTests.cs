@@ -1,5 +1,4 @@
 using EventSourcingFramework.Core.Interfaces;
-using FluentValidation;
 using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Core.DomainObjects;
@@ -11,11 +10,11 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class SpotQuoteServiceTests : IAsyncLifetime
 {
+    private readonly ISpotQuoteService spotQuoteService;
+    private readonly IRepository<SpotQuote> spotQuoteRepository;
     private readonly IRepository<Address> addressRepository;
     private readonly IRepository<Customer> customerRepository;
     private readonly EntityFactory entityFactory;
-    private readonly IRepository<SpotQuote> spotQuoteRepository;
-    private readonly ISpotQuoteService spotQuoteService;
 
     public SpotQuoteServiceTests(
         ISpotQuoteService spotQuoteService,
@@ -32,10 +31,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         this.customerRepository = customerRepository;
     }
 
-    public Task InitializeAsync()
-    {
-        return Task.CompletedTask;
-    }
+    public Task InitializeAsync() => Task.CompletedTask;
 
     public async Task DisposeAsync()
     {
@@ -45,7 +41,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuote_Should_Create_Successfully()
+    public async Task CreateSpotQuoteAsync_Should_Create_Successfully()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -61,7 +57,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpdateSpotQuote_Should_Update_Successfully()
+    public async Task UpdateSpotQuoteAsync_Should_Update_Successfully()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -78,7 +74,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteById_Returns_Null_If_Not_Exists()
+    public async Task GetSpotQuoteByIdAsync_Returns_Null_If_Not_Exists()
     {
         // Act
         var result = await spotQuoteService.GetSpotQuoteByIdAsync(Guid.NewGuid());
@@ -88,7 +84,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAllSpotQuotes_Returns_List()
+    public async Task GetAllSpotQuotesAsync_Returns_List()
     {
         // Arrange
         await spotQuoteService.CreateSpotQuoteAsync(entityFactory.CreateValidSpotQuote());
@@ -103,7 +99,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuote_Throws_If_Customer_Not_Exists()
+    public async Task CreateSpotQuoteAsync_Throws_If_Customer_Not_Exists()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -111,7 +107,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         dto.Quotes.First().Status = BookingStatus.SpotQuote;
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(
+        var ex = await Assert.ThrowsAsync<FluentValidation.ValidationException>(
             () => spotQuoteService.CreateSpotQuoteAsync(dto)
         );
 
@@ -119,7 +115,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuote_Throws_If_Address_Not_Exists()
+    public async Task CreateSpotQuoteAsync_Throws_If_Address_Not_Exists()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -134,7 +130,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuote_Throws_If_Invalid_Data()
+    public async Task CreateSpotQuoteAsync_Throws_If_Invalid_Data()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -142,7 +138,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         dto.Quotes.First().Status = BookingStatus.SpotQuote;
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<ValidationException>(
+        var ex = await Assert.ThrowsAsync<FluentValidation.ValidationException>(
             () => spotQuoteService.CreateSpotQuoteAsync(dto)
         );
 
@@ -150,12 +146,13 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteById_Throws_If_Customer_Not_Found()
+    public async Task GetSpotQuoteByIdAsync_Throws_If_Customer_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
         await spotQuoteService.CreateSpotQuoteAsync(dto);
 
+        // Manually delete the customer (simulate foreign key break)
         var customer = dto.Customer;
         await customerRepository.DeleteAsync(customer.ToDomain());
 
@@ -168,7 +165,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteById_Throws_If_AddressFrom_Not_Found()
+    public async Task GetSpotQuoteByIdAsync_Throws_If_AddressFrom_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -186,12 +183,13 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteById_Throws_If_AddressTo_Not_Found()
+    public async Task GetSpotQuoteByIdAsync_Throws_If_AddressTo_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
         await spotQuoteService.CreateSpotQuoteAsync(dto);
 
+        // Delete the to address
         await addressRepository.DeleteAsync(dto.AddressTo.ToDomain());
 
         // Act & Assert

@@ -1,11 +1,12 @@
 @using SpotQuoteApp.Application.DTOs
+
 <MudDialog>
     <DialogContent>
         <MudForm @ref="form" Model="user" Valid="isValid">
-            <MudTextField @bind-Value="user.Name" Label="Name" Required="true"/>
-            <MudTextField @bind-Value="user.Email" Label="Email" Required="true"/>
-            <MudTextField @bind-Value="user.Phone" Label="Phone" Required="true"/>
-            <MudTextField @bind-Value="user.Office" Label="Office" Required="true"/>
+            <MudTextField @bind-Value="user.Name" Label="Name" Required="true" />
+            <MudTextField @bind-Value="user.Email" Label="Email" Required="true" />
+            <MudTextField @bind-Value="user.Phone" Label="Phone" Required="true" />
+            <MudTextField @bind-Value="user.Office" Label="Office" Required="true" />
         </MudForm>
     </DialogContent>
     <DialogActions>
@@ -15,13 +16,11 @@
 </MudDialog>
 
 @code {
-
     [CascadingParameter]
     private IMudDialogInstance MudDialog { get; set; }
-
     private MudForm form;
     private bool isValid = false;
-    private readonly UserDto user = new();
+    private UserDto user = new();
 
     private async Task Save()
     {
@@ -32,9 +31,5 @@
         }
     }
 
-    private void Cancel()
-    {
-        MudDialog.Cancel();
-    }
-
+    private void Cancel() => MudDialog.Cancel();
 }

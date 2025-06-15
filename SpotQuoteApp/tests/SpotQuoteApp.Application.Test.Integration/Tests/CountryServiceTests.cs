@@ -7,8 +7,8 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class CountryServiceTests : IAsyncLifetime
 {
-    private readonly IRepository<Country> countryRepository;
     private readonly ICountryService countryService;
+    private readonly IRepository<Country> countryRepository;
 
     public CountryServiceTests(
         ICountryService countryService,
@@ -33,7 +33,7 @@ public class CountryServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAllCountries_Should_Return_All()
+    public async Task GetAllCountriesAsync_Should_Return_All()
     {
         // Act
         var countries = await countryService.GetAllCountriesAsync();
@@ -46,7 +46,7 @@ public class CountryServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetCountryById_Should_Return_Correct_Country()
+    public async Task GetCountryByIdAsync_Should_Return_Correct_Country()
     {
         // Arrange
         var dk = await countryRepository.ReadByFilterAsync(c => c.Code == "DK");
@@ -60,7 +60,7 @@ public class CountryServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetCountryByCode_Should_Return_Correct_Country()
+    public async Task GetCountryByCodeAsync_Should_Return_Correct_Country()
     {
         // Act
         var result = await countryService.GetCountryByCodeAsync("SE");
@@ -71,7 +71,7 @@ public class CountryServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetCountryByCode_Should_Return_Null_If_Not_Found()
+    public async Task GetCountryByCodeAsync_Should_Return_Null_If_Not_Found()
     {
         // Act
         var result = await countryService.GetCountryByCodeAsync("XX");

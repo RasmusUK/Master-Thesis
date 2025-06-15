@@ -8,16 +8,17 @@ using SpotQuoteApp.Application.Interfaces;
 using SpotQuoteApp.Application.Mappers;
 using SpotQuoteApp.Application.Options;
 using SpotQuoteApp.Core.DomainObjects;
+using SpotQuoteApp.Core.ValueObjects;
 using SpotQuoteApp.Core.ValueObjects.Enums;
 
 namespace SpotQuoteApp.Application.Services;
 
 public class BuyingRateService : IBuyingRateService
 {
-    private readonly IApiGateway apiGateway;
-    private readonly string buyingRateApiUrl;
     private readonly IRepository<BuyingRate> buyingRateRepository;
     private readonly ILocationService locationService;
+    private readonly IApiGateway apiGateway;
+    private readonly string buyingRateApiUrl;
 
     public BuyingRateService(
         IRepository<BuyingRate> buyingRateRepository,
@@ -35,51 +36,53 @@ public class BuyingRateService : IBuyingRateService
     public async Task UpsertBuyingRatesAsync(SpotQuoteDto spotQuoteDto)
     {
         foreach (var quoteDto in spotQuoteDto.Quotes)
-        foreach (var supplierCostDto in quoteDto.Costs.Select(c => c.SupplierCost))
         {
-            var addressFromId = await CreateLocationIfNotExistsAsync(
-                spotQuoteDto.AddressFrom,
-                spotQuoteDto.TransportMode
-            );
-            var addressToId = await CreateLocationIfNotExistsAsync(
-                spotQuoteDto.AddressTo,
-                spotQuoteDto.TransportMode
-            );
-
-            var supplierCost = supplierCostDto.ToDomain();
-
-            var buyingRate = new BuyingRate(
-                spotQuoteDto.TransportMode,
-                quoteDto.Supplier,
-                quoteDto.SupplierService,
-                quoteDto.ForwarderService,
-                addressFromId,
-                addressToId,
-                DateTime.UtcNow,
-                spotQuoteDto.ValidUntil!.Value,
-                supplierCost
-            );
-
-            var existingBuyingRate = await buyingRateRepository.ReadByFilterAsync(b =>
-                b.ForwarderService == quoteDto.ForwarderService
-                && b.SupplierService == quoteDto.SupplierService
-                && b.Supplier == quoteDto.Supplier
-                && b.OriginLocationId == addressFromId
-                && b.DestinationLocationId == addressToId
-                && b.SupplierCost == supplierCost
-            );
-
-            if (existingBuyingRate is null)
+            foreach (var supplierCostDto in quoteDto.Costs.Select(c => c.SupplierCost))
             {
-                await buyingRateRepository.CreateAsync(buyingRate);
-                continue;
+                var addressFromId = await CreateLocationIfNotExistsAsync(
+                    spotQuoteDto.AddressFrom,
+                    spotQuoteDto.TransportMode
+                );
+                var addressToId = await CreateLocationIfNotExistsAsync(
+                    spotQuoteDto.AddressTo,
+                    spotQuoteDto.TransportMode
+                );
+
+                var supplierCost = supplierCostDto.ToDomain();
+
+                var buyingRate = new BuyingRate(
+                    spotQuoteDto.TransportMode,
+                    quoteDto.Supplier,
+                    quoteDto.SupplierService,
+                    quoteDto.ForwarderService,
+                    addressFromId,
+                    addressToId,
+                    DateTime.UtcNow,
+                    spotQuoteDto.ValidUntil!.Value,
+                    supplierCost
+                );
+
+                var existingBuyingRate = await buyingRateRepository.ReadByFilterAsync(b =>
+                    b.ForwarderService == quoteDto.ForwarderService
+                    && b.SupplierService == quoteDto.SupplierService
+                    && b.Supplier == quoteDto.Supplier
+                    && b.OriginLocationId == addressFromId
+                    && b.DestinationLocationId == addressToId
+                    && b.SupplierCost == supplierCost
+                );
+
+                if (existingBuyingRate is null)
+                {
+                    await buyingRateRepository.CreateAsync(buyingRate);
+                    continue;
+                }
+
+                if (existingBuyingRate.ValidUntil >= buyingRate.ValidUntil)
+                    continue;
+
+                existingBuyingRate.ValidUntil = buyingRate.ValidUntil;
+                await buyingRateRepository.UpdateAsync(existingBuyingRate);
             }
-
-            if (existingBuyingRate.ValidUntil >= buyingRate.ValidUntil)
-                continue;
-
-            existingBuyingRate.ValidUntil = buyingRate.ValidUntil;
-            await buyingRateRepository.UpdateAsync(existingBuyingRate);
         }
     }
 
@@ -103,8 +106,8 @@ public class BuyingRateService : IBuyingRateService
 
         var fetchedRates = (
             await apiGateway.PostAsync<BuyingRateRequest, BuyingRateResponseBatch>(
-                buyingRateApiUrl,
-                request
+                url: buyingRateApiUrl,
+                body: request
             )
         ).Rates.Select(r => new BuyingRateDto
         {

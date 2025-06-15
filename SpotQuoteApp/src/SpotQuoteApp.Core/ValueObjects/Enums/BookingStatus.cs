@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace SpotQuoteApp.Core.ValueObjects.Enums;
 
 public record BookingStatus(string Value) : IComparable
@@ -11,6 +9,8 @@ public record BookingStatus(string Value) : IComparable
     public static readonly BookingStatus PendingSubmit = new("Pending Submit");
     public static readonly BookingStatus NotAccepted = new("Not Accepted");
 
+    public override string ToString() => Value;
+
     public int CompareTo(object? obj)
     {
         if (obj is BookingStatus other)
@@ -19,17 +19,12 @@ public record BookingStatus(string Value) : IComparable
         throw new ArgumentException($"Object is not a {nameof(BookingStatus)}");
     }
 
-    public override string ToString()
-    {
-        return Value;
-    }
-
-    public static IReadOnlyCollection<BookingStatus> GetAll()
-    {
-        return typeof(BookingStatus)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
+    public static IReadOnlyCollection<BookingStatus> GetAll() =>
+        typeof(BookingStatus)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
             .Select(f => f.GetValue(null))
             .OfType<BookingStatus>()
             .ToList();
-    }
 }

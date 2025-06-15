@@ -10,8 +10,8 @@ namespace SpotQuoteApp.Application.Services;
 
 public class LocationService : ILocationService
 {
-    private readonly ICountryService countryService;
     private readonly IRepository<Location> locationRepository;
+    private readonly ICountryService countryService;
 
     public LocationService(IRepository<Location> locationRepository, ICountryService countryService)
     {

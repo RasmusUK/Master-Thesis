@@ -1,5 +1,3 @@
-using System.Reflection;
-
 namespace SpotQuoteApp.Core.ValueObjects.Enums;
 
 public record Incoterm(string Value) : IComparable
@@ -18,6 +16,8 @@ public record Incoterm(string Value) : IComparable
     public static readonly Incoterm DDU = new("DDU");
     public static readonly Incoterm DAT = new("DAT");
 
+    public override string ToString() => Value;
+
     public int CompareTo(object? obj)
     {
         if (obj is Incoterm other)
@@ -26,17 +26,12 @@ public record Incoterm(string Value) : IComparable
         throw new ArgumentException($"Object is not a {nameof(Incoterm)}");
     }
 
-    public override string ToString()
-    {
-        return Value;
-    }
-
-    public static IReadOnlyCollection<Incoterm> GetAll()
-    {
-        return typeof(Incoterm)
-            .GetFields(BindingFlags.Public | BindingFlags.Static)
+    public static IReadOnlyCollection<Incoterm> GetAll() =>
+        typeof(Incoterm)
+            .GetFields(
+                System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static
+            )
             .Select(f => f.GetValue(null))
             .OfType<Incoterm>()
             .ToList();
-    }
 }

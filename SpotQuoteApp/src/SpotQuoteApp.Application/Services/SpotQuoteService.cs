@@ -12,11 +12,11 @@ namespace SpotQuoteApp.Application.Services;
 
 public class SpotQuoteService : ISpotQuoteService
 {
-    private readonly IAddressService addressService;
-    private readonly IBuyingRateService buyingRateService;
-    private readonly ICustomerService customerService;
     private readonly IRepository<SpotQuote> spotQuoteRepository;
+    private readonly IAddressService addressService;
+    private readonly ICustomerService customerService;
     private readonly SpotQuoteValidator spotQuoteValidator;
+    private readonly IBuyingRateService buyingRateService;
     private readonly ITransactionManager transactionManager;
 
     public SpotQuoteService(
@@ -36,15 +36,11 @@ public class SpotQuoteService : ISpotQuoteService
         this.transactionManager = transactionManager;
     }
 
-    public Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote)
-    {
-        return HandleSpotQuoteUpsertAsync(spotQuote, false);
-    }
+    public Task CreateSpotQuoteAsync(SpotQuoteDto spotQuote) =>
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: false);
 
-    public Task UpdateSpotQuoteAsync(SpotQuoteDto spotQuote)
-    {
-        return HandleSpotQuoteUpsertAsync(spotQuote, true);
-    }
+    public Task UpdateSpotQuoteAsync(SpotQuoteDto spotQuote) =>
+        HandleSpotQuoteUpsertAsync(spotQuote, isUpdate: true);
 
     public async Task<SpotQuoteDto?> GetSpotQuoteByIdAsync(Guid id)
     {

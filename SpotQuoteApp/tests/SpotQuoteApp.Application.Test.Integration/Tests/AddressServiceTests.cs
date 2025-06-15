@@ -9,9 +9,9 @@ namespace SpotQuoteApp.Application.Test.Integration.Tests;
 [Collection("Integration")]
 public class AddressServiceTests : IAsyncLifetime
 {
-    private readonly IRepository<Address> addressRepository;
     private readonly IAddressService addressService;
     private readonly IRepository<Country> countryRepository;
+    private readonly IRepository<Address> addressRepository;
 
     public AddressServiceTests(
         IAddressService addressService,
@@ -42,7 +42,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateIfNotExists_Should_Create_New_Address()
+    public async Task CreateIfNotExistsAsync_Should_Create_New_Address()
     {
         // Arrange
         var dto = CreateAddressDto();
@@ -55,7 +55,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateIfNotExists_Should_Return_Same_Id_For_Existing_Address()
+    public async Task CreateIfNotExistsAsync_Should_Return_Same_Id_For_Existing_Address()
     {
         // Arrange
         var dto = CreateAddressDto();
@@ -68,7 +68,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAddressById_Should_Return_Correct_Address()
+    public async Task GetAddressByIdAsync_Should_Return_Correct_Address()
     {
         // Arrange
         var dto = CreateAddressDto();
@@ -84,7 +84,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAllAddresses_Should_Return_At_Least_One()
+    public async Task GetAllAddressesAsync_Should_Return_At_Least_One()
     {
         // Arrange
         await addressService.CreateIfNotExistsAsync(CreateAddressDto());
@@ -98,7 +98,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateIfNotExists_Throws_If_Country_Not_Found_By_Id_Or_Code()
+    public async Task CreateIfNotExistsAsync_Throws_If_Country_Not_Found_By_Id_Or_Code()
     {
         // Arrange
         var dto = CreateAddressDto();
@@ -114,7 +114,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAddressById_Returns_Null_If_Not_Exists()
+    public async Task GetAddressByIdAsync_Returns_Null_If_Not_Exists()
     {
         // Arrange
         var nonExistentId = Guid.NewGuid();
@@ -127,7 +127,7 @@ public class AddressServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAddressById_Throws_If_Country_Not_Found()
+    public async Task GetAddressByIdAsync_Throws_If_Country_Not_Found()
     {
         // Arrange
         var fakeCountryId = Guid.NewGuid();
