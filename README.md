@@ -1,4 +1,5 @@
 # Master Thesis
+This master's thesis explores how to simplify the adoption of event sourcing for small companies by abstracting away low-level event handling. The goal is to allow developers to focus on the conceptual model through a familiar CRUD interface, lowering the barrier to entry.
 
 This repository contains the following projects:
 
@@ -531,7 +532,7 @@ public class SnapshotTool
 ```
 
 ## Step 7: Evolving Your Domain Model
-When you need to make breaking changes to your domain objects:
+When you need to make breaking changes to your domain objects, such as renaming fields, changing data types, or restructuring objects, explicit versioning is required to maintain backward compatibility and enable safe migrations. For non-breaking changes like adding or removing fields, MongoDB’s flexible schema typically makes versioning unnecessary.
 
 1. Version the current entity:
     - Rename the existing class to e.g. `CustomerV1` and set `SchemaVersion = 1`.
