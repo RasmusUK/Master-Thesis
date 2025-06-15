@@ -28,13 +28,13 @@ public class PersonalDataService : IPersonalDataService
             return;
 
         var entity = GetEntityFromEvent(e);
-        if (entity is null)
+        if (entity == null)
             return;
 
         var serializedEntity = JsonConvert.SerializeObject(entity);
         var copiedEntity = JsonConvert.DeserializeObject(serializedEntity, entity.GetType());
 
-        if (copiedEntity is null)
+        if (copiedEntity == null)
             throw new PersonalDataException("Failed to copy entity for personal data stripping.");
 
         SetEntityOnEvent(e, copiedEntity);
@@ -52,7 +52,7 @@ public class PersonalDataService : IPersonalDataService
             return;
 
         var entity = GetEntityFromEvent(e);
-        if (entity is null)
+        if (entity == null)
             return;
 
         var data = await personalDataStore.RetrieveAsync(e.Id);

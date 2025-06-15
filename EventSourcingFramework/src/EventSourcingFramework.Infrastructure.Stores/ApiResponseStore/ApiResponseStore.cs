@@ -28,7 +28,7 @@ public class ApiResponseStore : IApiResponseStore
             .SortByDescending(x => x.EventNumber)
             .FirstOrDefaultAsync();
 
-        return doc is not null
+        return doc != null
             ? BsonSerializer.Deserialize<T>(doc.Response)
             : default;
     }

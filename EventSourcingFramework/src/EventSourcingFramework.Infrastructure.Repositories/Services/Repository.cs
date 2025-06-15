@@ -60,7 +60,7 @@ public class Repository<T> : IRepository<T>
         var eventEmitted = false;
         var snapshot = await entityStore.GetEntityByIdAsync<T>(entity.Id);
 
-        if (snapshot is null)
+        if (snapshot == null)
             throw new NotFoundException(
                 $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
             );

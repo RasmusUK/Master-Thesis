@@ -39,7 +39,7 @@ public class ApiGateway : IApiGateway
 
     public async Task<TResponse> SendAsync<TResponse>(HttpRequestMessage request)
     {
-        var content = request.Content is not null
+        var content = request.Content != null
             ? await request.Content.ReadAsStringAsync()
             : "";
         var key = $"{request.Method}:{request.RequestUri}:{content}";
@@ -54,7 +54,7 @@ public class ApiGateway : IApiGateway
                 case ApiReplayMode.CacheOnly:
                 {
                     var cached = await responseStore.GetAsync<T>(key, replayContext.EventNumber);
-                    if (cached is not null)
+                    if (cached != null)
                         return cached;
 
                     throw new InvalidOperationException(
@@ -76,7 +76,7 @@ public class ApiGateway : IApiGateway
                 case ApiReplayMode.CacheThenExternal:
                 {
                     var cached = await responseStore.GetAsync<T>(key, replayContext.EventNumber);
-                    if (cached is not null)
+                    if (cached != null)
                         return cached;
 
                     var request = await buildRequest();
@@ -109,7 +109,7 @@ public class ApiGateway : IApiGateway
     {
         var request = new HttpRequestMessage(method, url);
 
-        if (headers is not null)
+        if (headers != null)
             foreach (var kv in headers)
                 request.Headers.Add(kv.Key, kv.Value);
 

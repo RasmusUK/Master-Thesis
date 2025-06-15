@@ -10,7 +10,7 @@ public class TransactionManager : ITransactionManager
     private Queue<Func<Task>>? rollbackActions;
     private Dictionary<Type, List<object>>? trackedDeletedEntities;
     private Dictionary<Type, List<object>>? trackedUpsertedEntities;
-    public bool IsActive => actions is not null;
+    public bool IsActive => actions != null;
     public Guid TransactionId { get; private set; } = Guid.NewGuid();
 
     public void Begin()

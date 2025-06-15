@@ -46,7 +46,7 @@ public class ReplayService : IReplayService
     {
         IReadOnlyCollection<IEvent> events;
         var latestSnapshot = await TryGetLastSnapshotAsync();
-        if (latestSnapshot is not null)
+        if (latestSnapshot != null)
         {
             await TryRestoreSnapshotAsync(latestSnapshot.SnapshotId);
             events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
@@ -70,7 +70,7 @@ public class ReplayService : IReplayService
         if (useSnapshot)
         {
             var latestSnapshot = await TryGetLastSnapshotAsync();
-            if (latestSnapshot is null)
+            if (latestSnapshot == null)
                 events = await eventStore.GetEventsAsync();
             else
                 events = await eventStore.GetEventsFromAsync(latestSnapshot.EventNumber);
@@ -99,7 +99,7 @@ public class ReplayService : IReplayService
         if (useSnapshot)
         {
             var latestSnapshot = await TryGetLastSnapshotAsync();
-            if (latestSnapshot is not null && latestSnapshot.Timestamp <= until)
+            if (latestSnapshot != null && latestSnapshot.Timestamp <= until)
                 events = await eventStore.GetEventsFromUntilAsync(latestSnapshot.Timestamp, until);
             replayContext.EventNumber = events.LastOrDefault()?.EventNumber ?? latestSnapshot?.EventNumber ?? 0;
         }
@@ -315,10 +315,10 @@ public class ReplayService : IReplayService
         else
             snapshotId = await snapshotService.GetLastSnapshotIdAsync();
 
-        if (snapshotId is null) return (false, null, 0);
+        if (snapshotId == null) return (false, null, 0);
 
         var snapshot = await snapshotService.GetSnapshotMetadataAsync(snapshotId);
-        if (snapshot is null)
+        if (snapshot == null)
             return (false, null, 0);
         var restored = await snapshotService.RestoreSnapshotAsync(snapshotId);
         return (restored, snapshot.Timestamp, snapshot.EventNumber);

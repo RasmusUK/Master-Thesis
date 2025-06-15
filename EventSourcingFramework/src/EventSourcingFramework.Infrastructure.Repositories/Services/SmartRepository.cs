@@ -42,7 +42,7 @@ public class SmartRepository<T> : IRepository<T>
         }
 
         var snapshot = await ReadByIdAsync(entity.Id);
-        if (snapshot is null)
+        if (snapshot == null)
             throw new NotFoundException(
                 $"Entity of type '{typeof(T).Name}' with id '{entity.Id}' not found."
             );

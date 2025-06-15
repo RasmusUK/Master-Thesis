@@ -51,7 +51,7 @@ public class EventStore : IEventStore
     public async Task<IEvent?> GetEventByIdAsync(Guid id)
     {
         var evt = await collection.Find(e => e.Id == id).FirstOrDefaultAsync();
-        if (evt is not null)
+        if (evt != null)
             await personalDataService.RestoreAsync(evt);
         return evt;
     }
