@@ -114,7 +114,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
         };
 
         // Act & Assert
-        await store.UpdateEntityAsync(entity); // bumps version to 1
+        await store.UpdateEntityAsync(entity);
         await Assert.ThrowsAsync<EntityStoreException>(() => store.UpdateEntityAsync(stale));
     }
 

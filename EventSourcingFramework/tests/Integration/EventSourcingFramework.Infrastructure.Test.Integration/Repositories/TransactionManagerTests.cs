@@ -114,7 +114,7 @@ public class TransactionManagerTests
         }
 
         // Assert
-        Assert.Equal(new[] { "commit1", "rollback1" }, log); // only rollback for commit1 should run
+        Assert.Equal(new[] { "commit1", "rollback1" }, log);
     }
 
     [Fact]

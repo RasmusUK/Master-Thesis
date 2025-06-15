@@ -56,7 +56,7 @@ public class RepositoryPerformanceTests : MongoIntegrationTestBase
             sw.Stop();
             durations.Add(sw.ElapsedMilliseconds);
         }
-        
+
         testOutputHelper.WriteLine($"Average duration: {durations.Average()} ms");
     }
 }

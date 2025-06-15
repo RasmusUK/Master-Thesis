@@ -346,7 +346,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(legacyEntity.Id);
         Assert.NotNull(result);
         Assert.Equal("Migrated - Entity", result!.Name);
-        Assert.Equal(3, result.SchemaVersion); // migrated to current version
+        Assert.Equal(3, result.SchemaVersion);
     }
 
     [Fact]
@@ -368,7 +368,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
         // Assert
         var result = await entityStore.GetEntityByIdAsync<TestEntity>(v1.Id);
         Assert.NotNull(result);
-        Assert.Equal("Chain - Test", result.Name); // migrated fully
+        Assert.Equal("Chain - Test", result.Name);
     }
 
     [Fact]

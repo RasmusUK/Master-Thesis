@@ -54,7 +54,7 @@ public class EventStoreTests : MongoIntegrationTestBase
 
         // Act
         await eventStore.InsertEventAsync(testEvent);
-        await eventStore.InsertEventAsync(testEvent); // duplicate
+        await eventStore.InsertEventAsync(testEvent);
         var events = await eventStore.GetEventsByEntityIdAsync(entityId);
 
         // Assert
