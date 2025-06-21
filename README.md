@@ -25,6 +25,8 @@ This repository contains the following projects:
 ## Spot Quote App
 
 ### Running the App
+_The Spot Quote App will remove all data and seed some data on load. It takes a little bit to load so make sure to refresh the window._
+
 Start the Spot Quote App locally:
 
 - **Windows**:
