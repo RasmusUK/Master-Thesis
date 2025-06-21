@@ -53,6 +53,9 @@ public static class ServiceProvider
             mongoDbRegistrationService.Register(
                 (typeof(TestEntity), "TestEntity")
             );
+            mongoDbRegistrationService.Register(
+                (typeof(TestEntity2), "TestEntity2")
+            );
         });
 
         return services.BuildServiceProvider();
