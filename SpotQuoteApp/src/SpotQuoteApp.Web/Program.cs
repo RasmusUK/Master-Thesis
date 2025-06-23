@@ -50,6 +50,9 @@ builder.Services.AddEventSourcing(
                 v1.InternalComments,
                 v1.Quotes
             )
+            {
+                Id = v1.Id,
+            }
         );
     }
 );
