@@ -21,7 +21,7 @@ public class PersonalDataStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StoreAsync_SavesPersonalData()
+    public async Task Store_SavesPersonalData()
     {
         // Arrange
         var eventId = Guid.NewGuid();
@@ -41,7 +41,7 @@ public class PersonalDataStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StoreAsync_OverwritesExistingData()
+    public async Task Store_OverwritesExistingData()
     {
         // Arrange
         var eventId = Guid.NewGuid();
@@ -65,7 +65,7 @@ public class PersonalDataStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RetrieveAsync_ReturnsEmptyDictionary_WhenNotFound()
+    public async Task Retrieve_ReturnsEmptyDictionary_WhenNotFound()
     {
         // Arrange
         var unknownEventId = Guid.NewGuid();

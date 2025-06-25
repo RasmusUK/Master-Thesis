@@ -27,7 +27,7 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEntityHistoryAsync_ReturnsInsertedEvents()
+    public async Task GetEntityHistory_ReturnsInsertedEvents()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -47,7 +47,7 @@ public class EntityHistoryServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEntityHistoryWithEventsAsync_ReturnsCorrectEntityEventPairs()
+    public async Task GetEntityHistoryWithEvents_ReturnsCorrectEntityEventPairs()
     {
         // Arrange
         var entityId = Guid.NewGuid();

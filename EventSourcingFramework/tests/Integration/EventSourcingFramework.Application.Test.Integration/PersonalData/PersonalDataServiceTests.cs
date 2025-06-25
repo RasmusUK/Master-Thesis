@@ -29,7 +29,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StripAndStoreAsync_StripsTopLevelAndNestedProperties()
+    public async Task StripAndStore_StripsTopLevelAndNestedProperties()
     {
         // Arrange
         var entity = new PersonEntity
@@ -69,7 +69,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RestoreAsync_RestoresAllStrippedValues()
+    public async Task Restore_RestoresAllStrippedValues()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -110,7 +110,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StripAndStoreAsync_DoesNotStoreIfNoPersonalData()
+    public async Task StripAndStore_DoesNotStoreIfNoPersonalData()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Generic" };
@@ -125,7 +125,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RestoreAsync_HandlesMissingPersonalData()
+    public async Task Restore_HandlesMissingPersonalData()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -169,7 +169,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StripAndStoreAsync_SkipsWhenEntityPropertyMissing()
+    public async Task StripAndStore_SkipsWhenEntityPropertyMissing()
     {
         // Arrange
         var evt = new EventWithoutEntity();
@@ -181,7 +181,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RestoreAsync_SkipsWhenEntityPropertyMissing()
+    public async Task Restore_SkipsWhenEntityPropertyMissing()
     {
         // Arrange
         var evt = new EventWithoutEntity();
@@ -191,7 +191,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task StripAndStoreAsync_Skips_WhenPersonalDataDisabled()
+    public async Task StripAndStore_Skips_WhenPersonalDataDisabled()
     {
         // Arrange
         var service = CreateServiceWithOptionsEnabled(false);
@@ -215,7 +215,7 @@ public class PersonalDataServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RestoreAsync_Skips_WhenPersonalDataDisabled()
+    public async Task Restore_Skips_WhenPersonalDataDisabled()
     {
         // Arrange
         var id = Guid.NewGuid();

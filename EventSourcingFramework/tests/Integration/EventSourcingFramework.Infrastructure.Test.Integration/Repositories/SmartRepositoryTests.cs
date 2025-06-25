@@ -33,7 +33,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateAsync_WithinTransaction_CommitsEventAndEntity()
+    public async Task Create_WithinTransaction_CommitsEventAndEntity()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -127,7 +127,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateAsync_WithinTransaction_CommitsMongoUpdateEvent()
+    public async Task Update_WithinTransaction_CommitsMongoUpdateEvent()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -151,7 +151,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteAsync_WithinTransaction_CommitsMongoDeleteEvent()
+    public async Task Delete_WithinTransaction_CommitsMongoDeleteEvent()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -209,7 +209,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateAsync_ThenRollback_EmitsNoEvents()
+    public async Task Create_ThenRollback_EmitsNoEvents()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -263,7 +263,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadByIdAsync_ReturnsTrackedUpsertedEntityDuringTransaction()
+    public async Task ReadById_ReturnsTrackedUpsertedEntityDuringTransaction()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -281,7 +281,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadByIdAsync_ReturnsNullForTrackedDeletedEntityDuringTransaction()
+    public async Task ReadById_ReturnsNullForTrackedDeletedEntityDuringTransaction()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -300,7 +300,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadByFilterAsync_ReturnsTrackedUpsertedEntity()
+    public async Task ReadByFilter_ReturnsTrackedUpsertedEntity()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -318,7 +318,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllAsync_ReflectsUpsertedAndDeletedEntitiesDuringTransaction()
+    public async Task ReadAll_ReflectsUpsertedAndDeletedEntitiesDuringTransaction()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -340,7 +340,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByFilterAsync_ReflectsTrackedUpserts()
+    public async Task ReadProjectionByFilter_ReflectsTrackedUpserts()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -360,7 +360,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByIdAsync_ReturnsNullForTrackedDeletedEntity()
+    public async Task ReadProjectionById_ReturnsNullForTrackedDeletedEntity()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -379,7 +379,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllByFilterAsync_RespectsTransactionState()
+    public async Task ReadAllByFilter_RespectsTransactionState()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -402,7 +402,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsAsync_ReturnsExpectedProjections()
+    public async Task ReadAllProjections_ReturnsExpectedProjections()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -420,7 +420,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsByFilterAsync_ReturnsExpectedFilteredProjections()
+    public async Task ReadAllProjectionsByFilter_ReturnsExpectedFilteredProjections()
     {
         // Arrange
         var transactionManager = new TransactionManager();
@@ -442,7 +442,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByIdAsync_ReturnsProjectionForUpsertedEntity()
+    public async Task ReadProjectionById_ReturnsProjectionForUpsertedEntity()
     {
         var transactionManager = new TransactionManager();
         var smartRepo = new SmartRepository<TestEntity>(repository, transactionManager);
@@ -457,7 +457,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByFilterAsync_ReturnsNullForDeletedEntity()
+    public async Task ReadProjectionByFilter_ReturnsNullForDeletedEntity()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ToDelete" };
         await repository.CreateAsync(entity);
@@ -477,7 +477,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllByFilterAsync_ExcludesDeletedEntities()
+    public async Task ReadAllByFilter_ExcludesDeletedEntities()
     {
         var transactionManager = new TransactionManager();
         var smartRepo = new SmartRepository<TestEntity>(repository, transactionManager);
@@ -498,7 +498,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsAsync_ExcludesProjectionsOfDeletedEntities()
+    public async Task ReadAllProjections_ExcludesProjectionsOfDeletedEntities()
     {
         var transactionManager = new TransactionManager();
         var smartRepo = new SmartRepository<TestEntity>(repository, transactionManager);
@@ -515,7 +515,7 @@ public class SmartRepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsByFilterAsync_ExcludesDeletedAndAppliesFilter()
+    public async Task ReadAllProjectionsByFilter_ExcludesDeletedAndAppliesFilter()
     {
         var transactionManager = new TransactionManager();
         var smartRepo = new SmartRepository<TestEntity>(repository, transactionManager);

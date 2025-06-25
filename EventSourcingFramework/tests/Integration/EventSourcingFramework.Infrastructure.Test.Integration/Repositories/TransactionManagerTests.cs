@@ -25,13 +25,13 @@ public class TransactionManagerTests
     }
 
     [Fact]
-    public async Task CommitAsync_WithoutBegin_Throws()
+    public async Task Commit_WithoutBegin_Throws()
     {
         await Assert.ThrowsAsync<TransactionException>(() => transactionManager.CommitAsync());
     }
 
     [Fact]
-    public async Task RollbackAsync_WithoutBegin_Throws()
+    public async Task Rollback_WithoutBegin_Throws()
     {
         await Assert.ThrowsAsync<TransactionException>(() => transactionManager.RollbackAsync());
     }

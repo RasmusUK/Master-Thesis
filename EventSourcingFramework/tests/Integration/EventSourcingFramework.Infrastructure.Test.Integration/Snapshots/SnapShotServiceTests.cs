@@ -38,7 +38,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotAsync_CreatesSnapshot_WhenCollectionHasData()
+    public async Task TakeSnapshot_CreatesSnapshot_WhenCollectionHasData()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "SnapshotEntity" };
@@ -56,7 +56,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotAsync_DoesNotCreateSnapshot_WhenCollectionEmpty()
+    public async Task TakeSnapshot_DoesNotCreateSnapshot_WhenCollectionEmpty()
     {
         // Arrange
         var collection = MongoDbService.GetEntityCollection<TestEntity>(
@@ -76,7 +76,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task RestoreSnapshotAsync_RestoresState()
+    public async Task RestoreSnapshot_RestoresState()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Original" };
@@ -95,7 +95,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetLastSnapshotIdAsync_ReturnsLatest()
+    public async Task GetLastSnapshotId_ReturnsLatest()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Latest" };
@@ -110,7 +110,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteSnapshotAsync_RemovesSnapshotCollections()
+    public async Task DeleteSnapshot_RemovesSnapshotCollections()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ToDelete" };
@@ -135,7 +135,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotIfNeededAsync_TakesSnapshot_WhenEventThresholdReached()
+    public async Task TakeSnapshotIfNeeded_TakesSnapshot_WhenEventThresholdReached()
     {
         // Arrange
         var configuredSnapshotService = CreateSnapshotService(
@@ -165,7 +165,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotIfNeededAsync_TakesSnapshot_WhenTimeThresholdReached()
+    public async Task TakeSnapshotIfNeeded_TakesSnapshot_WhenTimeThresholdReached()
     {
         // Arrange
         var configuredSnapshotService = CreateSnapshotService(
@@ -207,7 +207,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotIfNeededAsync_TakesSnapshot_WhenEitherEventOrTimePasses()
+    public async Task TakeSnapshotIfNeeded_TakesSnapshot_WhenEitherEventOrTimePasses()
     {
         // Arrange
         var configuredSnapshotService = CreateSnapshotService(
@@ -237,7 +237,7 @@ public class SnapshotServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task TakeSnapshotIfNeededAsync_PrunesSnapshots_OlderThanMaxAge()
+    public async Task TakeSnapshotIfNeeded_PrunesSnapshots_OlderThanMaxAge()
     {
         // Arrange
         var maxAgeDays = 2;

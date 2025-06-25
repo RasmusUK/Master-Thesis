@@ -42,7 +42,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateAsync_PersistsEntityAndEmitsMongoCreateEvent()
+    public async Task Create_PersistsEntityAndEmitsMongoCreateEvent()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Created" };
@@ -60,7 +60,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateAsync_UpdatesEntityAndEmitsMongoUpdateEvent()
+    public async Task Update_UpdatesEntityAndEmitsMongoUpdateEvent()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BeforeUpdate" };
@@ -80,7 +80,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteAsync_RemovesEntityAndEmitsMongoDeleteEvent()
+    public async Task Delete_RemovesEntityAndEmitsMongoDeleteEvent()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ToBeDeleted" };
@@ -98,7 +98,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateAsync_ThrowsIfEntityNotExists()
+    public async Task Update_ThrowsIfEntityNotExists()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Ghost" };
@@ -108,7 +108,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task CreateAsync_UsesCompensationEventOnFailure()
+    public async Task Create_UsesCompensationEventOnFailure()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Test" };
@@ -132,7 +132,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateAsync_UsesCompensationEventOnFailure()
+    public async Task Update_UsesCompensationEventOnFailure()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -170,7 +170,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteAsync_UsesCompensationEventOnFailure()
+    public async Task Delete_UsesCompensationEventOnFailure()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ToDelete" };
@@ -198,7 +198,7 @@ public class RepositoryTests : MongoIntegrationTestBase
 
 
     [Fact]
-    public async Task ReadByIdAsync_ReturnsEntity_WhenExists()
+    public async Task ReadById_ReturnsEntity_WhenExists()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ReadById" };
         await repository.CreateAsync(entity);
@@ -210,7 +210,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadByFilterAsync_ReturnsEntity_WhenFilterMatches()
+    public async Task ReadByFilter_ReturnsEntity_WhenFilterMatches()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Filtered" };
         await repository.CreateAsync(entity);
@@ -222,7 +222,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByIdAsync_ReturnsProjectedField()
+    public async Task ReadProjectionById_ReturnsProjectedField()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectedId" };
         await repository.CreateAsync(entity);
@@ -233,7 +233,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadProjectionByFilterAsync_ReturnsProjection_WhenMatches()
+    public async Task ReadProjectionByFilter_ReturnsProjection_WhenMatches()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectionFilter" };
         await repository.CreateAsync(entity);
@@ -247,7 +247,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllAsync_ReturnsAllEntities()
+    public async Task ReadAll_ReturnsAllEntities()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "AllRead" };
         await repository.CreateAsync(entity);
@@ -258,7 +258,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllByFilterAsync_ReturnsMatchingEntities()
+    public async Task ReadAllByFilter_ReturnsMatchingEntities()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "FilteredAll" };
         await repository.CreateAsync(entity);
@@ -270,7 +270,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsAsync_ReturnsAllProjectedValues()
+    public async Task ReadAllProjections_ReturnsAllProjectedValues()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectAll" };
         await repository.CreateAsync(entity);
@@ -281,7 +281,7 @@ public class RepositoryTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReadAllProjectionsByFilterAsync_ReturnsFilteredProjections()
+    public async Task ReadAllProjectionsByFilter_ReturnsFilteredProjections()
     {
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectedFilter" };
         await repository.CreateAsync(entity);

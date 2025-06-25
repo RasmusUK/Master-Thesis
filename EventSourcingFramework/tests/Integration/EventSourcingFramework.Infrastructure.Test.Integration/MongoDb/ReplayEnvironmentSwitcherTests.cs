@@ -19,7 +19,7 @@ public class ReplayEnvironmentSwitcherTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UseDebugDatabaseAsync_WritesToDebugDb()
+    public async Task UseDebugDatabase_WritesToDebugDb()
     {
         // Arrange
         await switcher.UseDebugDatabaseAsync();
@@ -38,7 +38,7 @@ public class ReplayEnvironmentSwitcherTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UseProductionDatabaseAsync_WritesToProductionDb()
+    public async Task UseProductionDatabase_WritesToProductionDb()
     {
         // Arrange
         await switcher.UseProductionDatabaseAsync();

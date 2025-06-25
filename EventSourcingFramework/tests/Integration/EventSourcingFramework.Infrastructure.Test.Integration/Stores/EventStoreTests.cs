@@ -29,7 +29,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task InsertEventAsync_StoresEventWithSequenceNumber()
+    public async Task InsertEvent_StoresEventWithSequenceNumber()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -46,7 +46,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task InsertEventAsync_DoesNotInsertDuplicates()
+    public async Task InsertEvent_DoesNotInsertDuplicates()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -62,7 +62,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEventByIdAsync_ReturnsExpectedEvent()
+    public async Task GetEventById_ReturnsExpectedEvent()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -78,7 +78,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEventsFromUntilAsync_ByTimestamp_ReturnsCorrectEvents()
+    public async Task GetEventsFromUntil_ByTimestamp_ReturnsCorrectEvents()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -97,7 +97,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEventsByEntityIdAsync_ReturnsEntityEvents()
+    public async Task GetEventsByEntityId_ReturnsEntityEvents()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -115,7 +115,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEventsFromUntilAsync_BySequenceRange_ReturnsCorrectEvents()
+    public async Task GetEventsFromUntil_BySequenceRange_ReturnsCorrectEvents()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -137,7 +137,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEventsAsync_ReturnsAllInsertedEvents()
+    public async Task GetEvents_ReturnsAllInsertedEvents()
     {
         // Arrange
         var entityId = Guid.NewGuid();
@@ -154,7 +154,7 @@ public class EventStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task InsertEventAsync_DoesNothing_WhenEventStoreIsDisabled()
+    public async Task InsertEvent_DoesNothing_WhenEventStoreIsDisabled()
     {
         // Arrange
         var store = new EventStore(

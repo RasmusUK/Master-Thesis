@@ -21,7 +21,7 @@ public class EventSequenceGeneratorTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetNextSequenceNumberAsync_IncrementsValue()
+    public async Task GetNextSequenceNumber_IncrementsValue()
     {
         // Act
         var first = await generator.GetNextSequenceNumberAsync();
@@ -32,7 +32,7 @@ public class EventSequenceGeneratorTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetCurrentSequenceNumberAsync_ReturnsCurrentValue()
+    public async Task GetCurrentSequenceNumber_ReturnsCurrentValue()
     {
         // Arrange
         var next = await generator.GetNextSequenceNumberAsync();
@@ -45,7 +45,7 @@ public class EventSequenceGeneratorTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetCurrentSequenceNumberAsync_ReturnsZero_IfNoSequenceExists()
+    public async Task GetCurrentSequenceNumber_ReturnsZero_IfNoSequenceExists()
     {
         // Act
         var current = await generator.GetCurrentSequenceNumberAsync();

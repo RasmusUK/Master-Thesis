@@ -39,7 +39,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task InsertEntityAsync_PersistsEntity()
+    public async Task InsertEntity_PersistsEntity()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "InsertMe" };
@@ -54,7 +54,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpsertEntityAsync_InsertsOrUpdatesEntity()
+    public async Task UpsertEntity_InsertsOrUpdatesEntity()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "UpsertMe" };
@@ -73,7 +73,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateEntityAsync_UsesOptimisticConcurrency()
+    public async Task UpdateEntity_UsesOptimisticConcurrency()
     {
         // Arrange
         var entity = new TestEntity
@@ -95,7 +95,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task UpdateEntityAsync_ThrowsOnConcurrencyViolation()
+    public async Task UpdateEntity_ThrowsOnConcurrencyViolation()
     {
         // Arrange
         var entity = new TestEntity
@@ -119,7 +119,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteEntityAsync_DeletesCorrectly()
+    public async Task DeleteEntity_DeletesCorrectly()
     {
         // Arrange
         var entity = new TestEntity
@@ -139,7 +139,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task DeleteEntityAsync_ThrowsOnConcurrencyViolation()
+    public async Task DeleteEntity_ThrowsOnConcurrencyViolation()
     {
         // Arrange
         var entity = new TestEntity
@@ -156,7 +156,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEntityByFilterAsync_ReturnsMatching()
+    public async Task GetEntityByFilter_ReturnsMatching()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Filtered" };
@@ -171,7 +171,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetProjectionByFilterAsync_ReturnsProjectedValue()
+    public async Task GetProjectionByFilter_ReturnsProjectedValue()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "ProjectMe" };
@@ -188,7 +188,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllAsync_ReturnsAllEntities()
+    public async Task GetAll_ReturnsAllEntities()
     {
         // Arrange
         var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "A" };
@@ -205,7 +205,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllByFilterAsync_ReturnsFiltered()
+    public async Task GetAllByFilter_ReturnsFiltered()
     {
         // Arrange
         var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "Match" };
@@ -222,7 +222,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllProjectionsByFilterAsync_ReturnsProjectedFilteredValues()
+    public async Task GetAllProjectionsByFilter_ReturnsProjectedFilteredValues()
     {
         // Arrange
         var e1 = new TestEntity { Id = Guid.NewGuid(), Name = "Good" };
@@ -243,7 +243,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEntityByIdAsync_DeserializesOldVersion_AndMigrates()
+    public async Task GetEntityById_DeserializesOldVersion_AndMigrates()
     {
         // Arrange
         var old = new TestEntity1
@@ -268,7 +268,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetEntityByFilterAsync_MigratesEntityBeforeFilter()
+    public async Task GetEntityByFilter_MigratesEntityBeforeFilter()
     {
         // Arrange
         var old = new TestEntity1
@@ -292,7 +292,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllAsync_MigratesAllEntities()
+    public async Task GetAll_MigratesAllEntities()
     {
         // Arrange
         var e1 = new TestEntity1
@@ -319,7 +319,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllByFilterAsync_FiltersMigratedEntities()
+    public async Task GetAllByFilter_FiltersMigratedEntities()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -349,7 +349,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllProjectionsAsync_MigratesAndProjectsEntities()
+    public async Task GetAllProjections_MigratesAndProjectsEntities()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -380,7 +380,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAllProjectionsByFilterAsync_MigratesAndFiltersAndProjects()
+    public async Task GetAllProjectionsByFilter_MigratesAndFiltersAndProjects()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -414,7 +414,7 @@ public class EntityStoreTests : MongoIntegrationTestBase
 
 
     [Fact]
-    public async Task InsertEntityAsync_DoesNothing_WhenEntityStoreIsDisabled()
+    public async Task InsertEntity_DoesNothing_WhenEntityStoreIsDisabled()
     {
         // Arrange
         var entityStore = new EntityStore(

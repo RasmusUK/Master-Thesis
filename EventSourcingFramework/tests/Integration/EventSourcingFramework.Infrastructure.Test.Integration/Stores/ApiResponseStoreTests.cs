@@ -18,7 +18,7 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task SaveAsync_Then_GetAsync_Returns_Same_Data()
+    public async Task Save_Then_Get_Returns_Same_Data()
     {
         // Arrange
         var key = $"test:{Guid.NewGuid()}";
@@ -35,7 +35,7 @@ public class ApiResponseStoreTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_NonExistentKey_ReturnsNull()
+    public async Task Get_NonExistentKey_ReturnsNull()
     {
         // Arrange
         var nonExistentKey = $"missing:{Guid.NewGuid()}";

@@ -83,7 +83,7 @@ public class MongoDbServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task CleanUpAsync_RemovesAllDatabases()
+    public async Task CleanUp_RemovesAllDatabases()
     {
         // Arrange
         const string collectionName = "test_entities";

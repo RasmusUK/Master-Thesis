@@ -30,7 +30,7 @@ public class EntityUpgradeServiceTests
     }
 
     [Fact]
-    public async Task MigrateAllEntitiesToLatestVersionAsync_UpgradesV1ToV3()
+    public async Task MigrateAllEntitiesToLatestVersion_UpgradesV1ToV3()
     {
         // Arrange
         var oldEntity = new TestEntity1
@@ -61,7 +61,7 @@ public class EntityUpgradeServiceTests
     }
 
     [Fact]
-    public async Task MigrateAllEntitiesAsync_UpgradesAllRegisteredEntities()
+    public async Task MigrateAllEntities_UpgradesAllRegisteredEntities()
     {
         // Arrange
         var oldEntity = new TestEntity1
@@ -92,7 +92,7 @@ public class EntityUpgradeServiceTests
     }
 
     [Fact]
-    public async Task MigrateAllEntitiesToLatestVersionAsync_IgnoresUpToDateEntities()
+    public async Task MigrateAllEntitiesToLatestVersion_IgnoresUpToDateEntities()
     {
         // Arrange
         var latest = new TestEntity

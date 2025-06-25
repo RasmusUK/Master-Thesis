@@ -47,7 +47,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     [InlineData(false, true)]
     [InlineData(true, false)]
     [InlineData(false, false)]
-    public async Task ReplayAllAsync_RehydratesCorrectly(bool autoStop, bool useSnapshot)
+    public async Task ReplayAll_RehydratesCorrectly(bool autoStop, bool useSnapshot)
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BaseSnap" };
@@ -68,7 +68,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayFromUntilAsync_WithSnapshot_ReplaysInWindow()
+    public async Task ReplayFromUntil_WithSnapshot_ReplaysInWindow()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "WindowStart" };
@@ -96,7 +96,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayFromUntilEventNumberAsync_WithSnapshot_RespectsRange()
+    public async Task ReplayFromUntilEventNumber_WithSnapshot_RespectsRange()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "RangeBase" };
@@ -120,7 +120,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayEntityAsync_AppliesEventsAfterSnapshot()
+    public async Task ReplayEntity_AppliesEventsAfterSnapshot()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "EntitySnap" };
@@ -141,7 +141,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayEventAsync_Standalone_WithSnapshot()
+    public async Task ReplayEvent_Standalone_WithSnapshot()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "SoloSnap" };
@@ -180,7 +180,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayUntilAsync_IgnoresEventsAfterCutoff()
+    public async Task ReplayUntil_IgnoresEventsAfterCutoff()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Early" };
@@ -202,7 +202,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayWithAutoStopAsync_ReturnsToCurrentState()
+    public async Task ReplayWithAutoStop_ReturnsToCurrentState()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Early" };
@@ -224,7 +224,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayFromEventNumberAsync_OnlyReplaysLaterEvents()
+    public async Task ReplayFromEventNumber_OnlyReplaysLaterEvents()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Initial" };
@@ -248,7 +248,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayEntityUntilAsync_ReplaysUpToGivenTime()
+    public async Task ReplayEntityUntil_ReplaysUpToGivenTime()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "Start" };
@@ -273,7 +273,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayEntityFromUntilAsync_RehydratesWithinTimeRange()
+    public async Task ReplayEntityFromUntil_RehydratesWithinTimeRange()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "StartRange" };
@@ -301,7 +301,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayUntilEventNumberAsync_StopsAtCorrectEvent()
+    public async Task ReplayUntilEventNumber_StopsAtCorrectEvent()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BeforeStop" };
@@ -326,7 +326,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayAllAsync_RehydratesMigratedEntity()
+    public async Task ReplayAll_RehydratesMigratedEntity()
     {
         // Arrange
         var legacyEntity = new TestEntity1
@@ -350,7 +350,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayAllAsync_MigratesChainedVersions()
+    public async Task ReplayAll_MigratesChainedVersions()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -372,7 +372,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayAllAsync_ProjectionWorksAfterMigration()
+    public async Task ReplayAll_ProjectionWorksAfterMigration()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -397,7 +397,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayEntityAsync_MigratesLegacyEntity()
+    public async Task ReplayEntity_MigratesLegacyEntity()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -419,7 +419,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayAllAsync_CleansPreviousReplayAndRestoresFinalState()
+    public async Task ReplayAll_CleansPreviousReplayAndRestoresFinalState()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "CleanMe" };
@@ -441,7 +441,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayUntilEventNumberAsync_LeavesEntityAtV2_WhenOnlyV1AndV2EventsExist()
+    public async Task ReplayUntilEventNumber_LeavesEntityAtV2_WhenOnlyV1AndV2EventsExist()
     {
         // Arrange
         var v1 = new TestEntity1
@@ -479,7 +479,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayFromUntilEventNumberAsync_PartialMigrationApplied()
+    public async Task ReplayFromUntilEventNumber_PartialMigrationApplied()
     {
         // Arrange
         var id = Guid.NewGuid();
@@ -559,7 +559,7 @@ public class ReplayServiceTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task ReplayFromAsync_RehydratesEntityStateFromGivenTimestamp()
+    public async Task ReplayFrom_RehydratesEntityStateFromGivenTimestamp()
     {
         // Arrange
         var entity = new TestEntity { Id = Guid.NewGuid(), Name = "BeforeReplay" };

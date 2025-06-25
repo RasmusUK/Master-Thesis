@@ -65,7 +65,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_NoReplay_CallsHttpAndStoresResponse()
+    public async Task Get_NoReplay_CallsHttpAndStoresResponse()
     {
         // Arrange
         var url = "https://fake.api/test";
@@ -85,7 +85,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_ExternalOnlyMode_CallsHttpAndStoresResponse()
+    public async Task Get_ExternalOnlyMode_CallsHttpAndStoresResponse()
     {
         // Arrange
         var url = "https://fake.api/test";
@@ -104,7 +104,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_CacheOnlyMode_ReturnsCachedResponse()
+    public async Task Get_CacheOnlyMode_ReturnsCachedResponse()
     {
         // Arrange
         var url = "https://fake.api/cached";
@@ -129,7 +129,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_CacheOnlyMode_ThrowsIfNotCached()
+    public async Task Get_CacheOnlyMode_ThrowsIfNotCached()
     {
         // Arrange
         var url = "https://fake.api/missing";
@@ -145,7 +145,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_CacheThenExternal_UsesCacheIfAvailable()
+    public async Task Get_CacheThenExternal_UsesCacheIfAvailable()
     {
         // Arrange
         var url = "https://fake.api/fallback";
@@ -170,7 +170,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task GetAsync_CacheThenExternal_CallsHttpIfNotCached()
+    public async Task Get_CacheThenExternal_CallsHttpIfNotCached()
     {
         // Arrange
         var url = "https://fake.api/live";
@@ -188,7 +188,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task PostAsync_CallsHttpClient_AndStoresResponse()
+    public async Task Post_CallsHttpClient_AndStoresResponse()
     {
         // Arrange
         var url = "https://fake.api/post-endpoint";
@@ -210,7 +210,7 @@ public class ApiGatewayTests : MongoIntegrationTestBase
     }
 
     [Fact]
-    public async Task SendAsync_CallsHttpClient_AndStoresResponse()
+    public async Task Send_CallsHttpClient_AndStoresResponse()
     {
         // Arrange
         var url = "https://fake.api/custom";
