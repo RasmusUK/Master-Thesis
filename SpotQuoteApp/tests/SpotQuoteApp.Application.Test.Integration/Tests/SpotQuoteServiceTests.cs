@@ -41,7 +41,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuoteAsync_Should_Create_Successfully()
+    public async Task CreateSpotQuote_Should_Create_Successfully()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -57,7 +57,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task UpdateSpotQuoteAsync_Should_Update_Successfully()
+    public async Task UpdateSpotQuote_Should_Update_Successfully()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -74,7 +74,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteByIdAsync_Returns_Null_If_Not_Exists()
+    public async Task GetSpotQuoteById_Returns_Null_If_Not_Exists()
     {
         // Act
         var result = await spotQuoteService.GetSpotQuoteByIdAsync(Guid.NewGuid());
@@ -84,7 +84,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetAllSpotQuotesAsync_Returns_List()
+    public async Task GetAllSpotQuotes_Returns_List()
     {
         // Arrange
         await spotQuoteService.CreateSpotQuoteAsync(entityFactory.CreateValidSpotQuote());
@@ -99,7 +99,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuoteAsync_Throws_If_Customer_Not_Exists()
+    public async Task CreateSpotQuote_Throws_If_Customer_Not_Exists()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -115,7 +115,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuoteAsync_Throws_If_Address_Not_Exists()
+    public async Task CreateSpotQuote_Throws_If_Address_Not_Exists()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -130,7 +130,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task CreateSpotQuoteAsync_Throws_If_Invalid_Data()
+    public async Task CreateSpotQuote_Throws_If_Invalid_Data()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -146,7 +146,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteByIdAsync_Throws_If_Customer_Not_Found()
+    public async Task GetSpotQuoteById_Throws_If_Customer_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -165,7 +165,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteByIdAsync_Throws_If_AddressFrom_Not_Found()
+    public async Task GetSpotQuoteById_Throws_If_AddressFrom_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
@@ -183,7 +183,7 @@ public class SpotQuoteServiceTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task GetSpotQuoteByIdAsync_Throws_If_AddressTo_Not_Found()
+    public async Task GetSpotQuoteById_Throws_If_AddressTo_Not_Found()
     {
         // Arrange
         var dto = entityFactory.CreateValidSpotQuote();
