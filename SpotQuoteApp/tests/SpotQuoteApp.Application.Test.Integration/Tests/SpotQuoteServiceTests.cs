@@ -152,7 +152,6 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         var dto = entityFactory.CreateValidSpotQuote();
         await spotQuoteService.CreateSpotQuoteAsync(dto);
 
-        // Manually delete the customer (simulate foreign key break)
         var customer = dto.Customer;
         await customerRepository.DeleteAsync(customer.ToDomain());
 
@@ -171,7 +170,6 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         var dto = entityFactory.CreateValidSpotQuote();
         await spotQuoteService.CreateSpotQuoteAsync(dto);
 
-        // Delete the from address
         await addressRepository.DeleteAsync(dto.AddressFrom.ToDomain());
 
         // Act & Assert
@@ -189,7 +187,6 @@ public class SpotQuoteServiceTests : IAsyncLifetime
         var dto = entityFactory.CreateValidSpotQuote();
         await spotQuoteService.CreateSpotQuoteAsync(dto);
 
-        // Delete the to address
         await addressRepository.DeleteAsync(dto.AddressTo.ToDomain());
 
         // Act & Assert
