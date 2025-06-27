@@ -244,29 +244,7 @@ public class Seeder : ISeeder
                     ),
                 }
             );
-            if (i == 1)
-            {
-                var spotQuoteV1 = new SpotQuoteV1(
-                    spotQuoteBooking.AddressFromId,
-                    spotQuoteBooking.AddressToId,
-                    spotQuoteBooking.Direction,
-                    spotQuoteBooking.TransportMode,
-                    spotQuoteBooking.Incoterm,
-                    spotQuoteBooking.ShippingDetails,
-                    spotQuoteBooking.ValidUntil,
-                    customers[i - 1],
-                    spotQuoteBooking.MailOptions,
-                    spotQuoteBooking.InternalComments,
-                    spotQuoteBooking.Quotes
-                );
-                var evt = new CreateEvent<SpotQuoteV1>(spotQuoteV1);
-                await eventstore.InsertEventAsync(evt);
-                await entityStore.InsertEntityAsync(spotQuoteV1);
-            }
-            else
-            {
-                await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
-            }
+            await spotQuoteBookingRepository.CreateAsync(spotQuoteBooking);
         }
     }
 }
