@@ -20,7 +20,7 @@ public static class CustomerMapper
     {
         return new Customer(customerDto.Name)
         {
-            Id = customerDto.Id,
+            Id = customerDto.Id == default ? Guid.NewGuid() : customerDto.Id,
             Users = customerDto.Users.Select(UserMapper.ToDomain).ToList(),
             ConcurrencyVersion = customerDto.ConcurrencyVersion,
         };

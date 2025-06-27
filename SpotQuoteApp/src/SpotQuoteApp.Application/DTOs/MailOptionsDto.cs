@@ -5,5 +5,5 @@ public class MailOptionsDto
     public bool SendCopyToMe { get; set; }
     public bool ShowCostSpec { get; set; }
     public string Comments { get; set; }
-    public ICollection<UserDto> UserRecipients { get; set; } = new List<UserDto>();
+    public IEnumerable<UserDto> UserRecipients { get; set; } = new List<UserDto>();
 }

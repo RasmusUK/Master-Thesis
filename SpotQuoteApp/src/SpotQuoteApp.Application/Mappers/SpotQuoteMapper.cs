@@ -43,14 +43,14 @@ public static class SpotQuoteMapper
             spotQuoteDto.TransportMode,
             spotQuoteDto.Incoterm,
             spotQuoteDto.ShippingDetails.ToDomain(),
-            spotQuoteDto.ValidUntil.Value,
+            spotQuoteDto.ValidUntil!.Value,
             spotQuoteDto.Customer.Id,
             spotQuoteDto.MailOptions.ToDomain(),
             spotQuoteDto.InternalComments,
             spotQuoteDto.Quotes.Select(QuoteMapper.ToDomain).ToList()
         )
         {
-            Id = spotQuoteDto.Id,
+            Id = spotQuoteDto.Id == default ? Guid.NewGuid() : spotQuoteDto.Id,
             ConcurrencyVersion = spotQuoteDto.ConcurrencyVersion,
         };
     }
