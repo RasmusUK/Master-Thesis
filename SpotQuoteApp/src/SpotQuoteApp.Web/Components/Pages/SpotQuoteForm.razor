@@ -2,6 +2,8 @@
 @page "/spot-quotes/edit/{Id:guid}"
 @using Direction = SpotQuoteApp.Core.ValueObjects.Enums.Direction
 @using System.Collections.ObjectModel
+@using EventSourcingFramework.Application.Abstractions.ReplayContext
+@using EventSourcingFramework.Core.Enums
 @using SpotQuoteApp.Application.DTOs
 @using SpotQuoteApp.Application.Interfaces
 @using SpotQuoteApp.Application.Mappers
@@ -13,6 +15,7 @@
 @inject ISpotQuoteService SpotQuoteService
 @inject NavigationManager Navigation
 @inject IBuyingRateService BuyingRateService
+@inject IReplayContext ReplayContext
 
 <MudStack Row="true">
     <MudText Typo="Typo.h5" Class="pt-5 pb-5 ps-5">@(IsNew ? "Create Spot Quote" : "Edit Spot Quote")</MudText>
@@ -722,9 +725,20 @@
 
     private async Task SearchBuyingRates()
     {
-        buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo, 
-            model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!, 
-            SearchBuyingRatesForwarderService!);
+        try
+        {
+            buyingRates = await BuyingRateService.SearchBuyingRatesAsync(model.AddressFrom, model.AddressTo, 
+                model.TransportMode, SearchBuyingRatesSupplier!, SearchBuyingRatesSupplierService!, 
+                SearchBuyingRatesForwarderService!);
+        }
+        catch (Exception e)
+        {
+            if (ReplayContext.ApiReplayMode == ApiReplayMode.CacheOnly)
+                errorMessage = $"No buying rates found in cache for API replay mode. {e.Message}";
+            else
+                errorMessage = e.Message;
+            ShowErrorAlert(true);
+        }
     }
 
     private async Task AddBuyingRatesToQuote()
