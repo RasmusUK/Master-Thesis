@@ -11,5 +11,5 @@ public record Colli(
     double Weight
 )
 {
-    public double Cbm { get; } = Length * Width * Height / 1000000;
+    public double Cbm => Length * Width * Height / 1000000;
 }

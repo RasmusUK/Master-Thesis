@@ -404,7 +404,7 @@
 <MudStep Title="Validity & recipients">
     <MudGrid>
         <MudItem xs="6">
-            <MudSelect Label="Mail recipients" MultiSelection="true" SelectedValues="@model.MailOptions.UserRecipients">
+            <MudSelect Label="Mail recipients" MultiSelection="true" @bind-SelectedValues="model.MailOptions.UserRecipients">
                 @foreach (var item in model.Customer.Users)
                 {
                     <MudSelectItem Value="@item">@item</MudSelectItem>
@@ -480,7 +480,9 @@
     {
         AddressFrom = new AddressDto(),
         AddressTo = new AddressDto(),
-        ShippingDetails = new ShippingDetailsDto()
+        ShippingDetails = new ShippingDetailsDto(),
+        MailOptions = new MailOptionsDto(),
+        ValidUntil = DateTime.UtcNow.AddDays(7)
     };
     private IEnumerable<CustomerDto> customers = new List<CustomerDto>();
     private IEnumerable<CountryDto> countries = new List<CountryDto>();
@@ -694,7 +696,9 @@
             {
                 foreach (var quote in model.Quotes)
                 {
-                    if (quote.Status != BookingStatus.Draft)
+                    if (status != BookingStatus.Draft && quote.Status == BookingStatus.Draft)
+                        quote.Status = BookingStatus.SpotQuote;
+                    else if (status != BookingStatus.Draft)
                         quote.Status = BookingStatus.Requote;
                 }
                 

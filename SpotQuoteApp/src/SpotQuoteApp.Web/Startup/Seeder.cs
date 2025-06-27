@@ -69,7 +69,19 @@ public class Seeder : ISeeder
     {
         for (var i = 1; i <= Nr; i++)
         {
-            var customer = new Customer($"Customer {i}");
+            var customer = new Customer($"Customer {i}")
+            {
+                Users = new List<User>
+                {
+                    new(
+                        Guid.NewGuid(),
+                        $"Name {i}",
+                        $"Email {i}",
+                        $"+45 1234567{i}",
+                        $"Office {i}"
+                    ),
+                },
+            };
             await customerRepository.CreateAsync(customer);
         }
     }

@@ -164,7 +164,7 @@ public class CustomerServiceTests : IAsyncLifetime
 
         var quote = entityFactory.CreateValidSpotQuote();
         quote.Customer = customer;
-        quote.MailOptions.UserRecipients.Add(user);
+        quote.MailOptions.UserRecipients = new List<UserDto> { user };
         await spotQuoteService.CreateSpotQuoteAsync(quote);
 
         // Act & Assert

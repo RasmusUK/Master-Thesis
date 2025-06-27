@@ -19,6 +19,12 @@ public static class UserMapper
 
     public static User ToDomain(this UserDto userDto)
     {
-        return new User(userDto.Id, userDto.Name, userDto.Email, userDto.Phone, userDto.Office);
+        return new User(
+            userDto.Id == default ? Guid.NewGuid() : userDto.Id,
+            userDto.Name,
+            userDto.Email,
+            userDto.Phone,
+            userDto.Office
+        );
     }
 }

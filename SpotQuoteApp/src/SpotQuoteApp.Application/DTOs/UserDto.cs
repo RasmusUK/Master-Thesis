@@ -10,4 +10,9 @@ public class UserDto
     public string Phone { get; set; }
 
     public string Office { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Name} ({Email})";
+    }
 }

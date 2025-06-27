@@ -41,7 +41,7 @@ public static class AddressMapper
             addressDto.Airport
         )
         {
-            Id = addressDto.Id,
+            Id = addressDto.Id == default ? Guid.NewGuid() : addressDto.Id,
             ConcurrencyVersion = addressDto.ConcurrencyVersion,
         };
     }
