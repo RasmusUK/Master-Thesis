@@ -31,7 +31,7 @@
                 </MudItem>
                 <MudItem xs="6">
                     <MudText Typo="Typo.subtitle2" Class="mb-2">
-                        @e.Typename @e.Timestamp.ToString("dd/mm/yy hh:mm")
+                        @e.Typename @e.Timestamp
                     </MudText>
                     <MudTextField T="string" Label="Content" Variant="Variant.Outlined" Value="@e.ToString()" Lines="30" ReadOnly="true" />
                 </MudItem>
